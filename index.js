@@ -698,7 +698,7 @@ client.login(config.botToken);
 
 // Initialize Express server for website
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 10000;
 
 // Serve static files from the website directory
 app.use(express.static(path.join(__dirname, 'website')));
