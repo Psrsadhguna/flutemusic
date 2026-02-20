@@ -1,4 +1,5 @@
 const { Client, GatewayDispatchEvents, Collection, ActivityType } = require("discord.js");
+const express = require('express');
 
 const config = require("./config.js");
 const { Riffy } = require('riffy');
@@ -693,7 +694,23 @@ if (config.webhookUrl && config.webhookUrl.length > 5) {
     });
 }
 
-client.login(config.botToken); 
+client.login(config.botToken);
+
+// Initialize Express server for website
+const app = express();
+const port = process.env.PORT || 4000;
+
+// Serve static files from the website directory
+app.use(express.static(path.join(__dirname, 'website')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'website', 'index.html'));
+});
+
+// Start the Express server
+app.listen(port, () => {
+  console.log(`🌐 Website server listening on port ${port}`);
+});
 
 
 async function shutdown() {
