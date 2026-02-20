@@ -14,13 +14,13 @@ module.exports = {
             .setTitle('🏓 Ping Pong!')
             .addFields([
                 {
-                    name: '📡 Bot Latency',
+                    name: '<a:bot:1474526236150858015> Bot Latency',
                     value: `${latency}ms`,
                     inline: true
                 },
                 {
-                    name: '🌐 API Latency',
-                    value: `${apiLatency}ms`,
+                    name: '<a:api_latency:1474526773831008256> API Latency',
+                   value: `${apiLatency}ms`,
                     inline: true
                 },
                 {
