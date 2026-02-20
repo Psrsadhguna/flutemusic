@@ -1,0 +1,144 @@
+{
+  "servers": 3,
+  "members": 3,
+  "totalSongsPlayed": 52,
+  "totalPlaytime": 32026395,
+  "totalCommandsExecuted": 96,
+  "botUptime": "1h 30m",
+  "uptimeSeconds": 5401823,
+  "twentyFourSevenServers": 1,
+  "errorCount": 0,
+  "errorRate": 0,
+  "recentlyPlayed": [
+    {
+      "title": "Humnava | (Slowed + Reverb) by SLOWED-ERA",
+      "author": "SLOWED-ERA",
+      "uri": "https://www.youtube.com/watch?v=0fPWYNbBQCk",
+      "requester": "744044949942829127",
+      "timestamp": 1771608273295,
+      "guildId": "1466778869834191026"
+    },
+    {
+      "title": "Humnava | (Slowed + Reverb) by SLOWED-ERA",
+      "author": "SLOWED-ERA",
+      "uri": "https://www.youtube.com/watch?v=0fPWYNbBQCk",
+      "requester": "744044949942829127",
+      "timestamp": 1771606550268,
+      "guildId": "1466778869834191026"
+    },
+    {
+      "title": "Status",
+      "author": "Khasa Aala Chahar",
+      "uri": "https://open.spotify.com/track/5sXq9UvI4ocTiCDjZRPp3w",
+      "requester": "744044949942829127",
+      "timestamp": 1771603835522,
+      "guildId": "1466778869834191026"
+    },
+    {
+      "title": "Status",
+      "author": "Khasa Aala Chahar",
+      "uri": "https://open.spotify.com/track/5sXq9UvI4ocTiCDjZRPp3w",
+      "requester": "744044949942829127",
+      "timestamp": 1771603848323,
+      "guildId": "1466778869834191026"
+    },
+    {
+      "title": "Status",
+      "author": "Khasa Aala Chahar",
+      "uri": "https://open.spotify.com/track/5sXq9UvI4ocTiCDjZRPp3w",
+      "requester": "744044949942829127",
+      "timestamp": 1771599106736,
+      "guildId": "1466778869834191026"
+    },
+    {
+      "title": "Status",
+      "author": "Khasa Aala Chahar",
+      "uri": "https://www.youtube.com/watch?v=q_345u_Zbmo",
+      "requester": "744044949942829127",
+      "timestamp": 1771598557391,
+      "guildId": "1466778869834191026"
+    },
+    {
+      "title": "Status",
+      "author": "Khasa Aala Chahar",
+      "uri": "https://www.youtube.com/watch?v=q_345u_Zbmo",
+      "requester": "744044949942829127",
+      "timestamp": 1771598541573,
+      "guildId": "1466778869834191026"
+    },
+    {
+      "title": "Povodhe Prema",
+      "author": "Yuvan Shankar Raja",
+      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
+      "requester": "744044949942829127",
+      "timestamp": 1771596494367,
+      "guildId": "1466778869834191026"
+    },
+    {
+      "title": "Povodhe Prema",
+      "author": "Yuvan Shankar Raja",
+      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
+      "requester": "744044949942829127",
+      "timestamp": 1771596397604,
+      "guildId": "1466778869834191026"
+    },
+    {
+      "title": "Povodhe Prema",
+      "author": "Yuvan Shankar Raja",
+      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
+      "requester": "744044949942829127",
+      "timestamp": 1771596096554,
+      "guildId": "1466778869834191026"
+    }
+  ],
+  "topGuilds": [
+    {
+      "guildId": "1466778869834191026",
+      "songCount": 52,
+      "guildName": "Flute Community"
+    }
+  ],
+  "topArtists": [
+    {
+      "name": "Anirudh Ravichander",
+      "count": 5
+    },
+    {
+      "name": "Guru Randhawa",
+      "count": 5
+    },
+    {
+      "name": "Yuvan Shankar Raja",
+      "count": 5
+    },
+    {
+      "name": "Khasa Aala Chahar",
+      "count": 5
+    },
+    {
+      "name": "Aesthetic Lofi Vibes",
+      "count": 4
+    },
+    {
+      "name": "Vengaboys",
+      "count": 4
+    },
+    {
+      "name": "AKASA",
+      "count": 3
+    },
+    {
+      "name": "Adnan Sami",
+      "count": 3
+    },
+    {
+      "name": "Anup Rubens",
+      "count": 3
+    },
+    {
+      "name": "RATHOD TUNES",
+      "count": 2
+    }
+  ],
+  "updated": "2026-02-20T19:36:55.430Z"
+}

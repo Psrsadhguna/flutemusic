@@ -1,0 +1,22 @@
+{
+    "name": "flute-music-bot",
+    "version": "1.0.0",
+    "description": "A Discord music bot using Riffy and Lavalink",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "keywords": [
+        "discord",
+        "music",
+        "bot",
+        "riffy",
+        "lavalink"
+    ],
+    "dependencies": {
+        "axios": "^1.13.5",
+        "discord.js": "^14.15.0",
+        "dotenv": "^16.3.1",
+        "riffy": "latest"
+    }
+}
