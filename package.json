@@ -4,7 +4,8 @@
     "description": "A Discord music bot using Riffy and Lavalink",
     "main": "index.js",
     "scripts": {
-        "start": "node index.js"
+        "start": "node index.js",
+        "serve-site": "node server.js"
     },
     "keywords": [
         "discord",
@@ -17,6 +18,7 @@
         "axios": "^1.13.5",
         "discord.js": "^14.15.0",
         "dotenv": "^16.3.1",
+        "express": "^4.18.2",
         "riffy": "latest"
     }
 }
