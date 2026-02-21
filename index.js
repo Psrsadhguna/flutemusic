@@ -293,6 +293,31 @@ client.on('guildCreate', async (guild) => {
         try { await fsp.writeFile(path.join(__dirname, 'website', 'status.json'), JSON.stringify({ servers: client.guilds.cache.size, members: client.users.cache.size, updated: new Date().toISOString() }, null, 2), 'utf8'); } catch(e){/*ignore*/}
     });
     
+    // Send DM to the server owner thanking them for adding the bot
+    try {
+        const owner = await guild.fetchOwner();
+        const { EmbedBuilder } = require('discord.js');
+        const dmEmbed = new EmbedBuilder()
+            .setColor('#0099ff')
+            .setTitle('🎵 Thanks for adding Flute Music Bot!')
+            .setDescription('Thanks for joining from bot! We\'re excited to have you. Type `f help` to see all available commands.')
+            .addFields([
+                {
+                    name: '🎧 Getting Started',
+                    value: 'Use `f help` to view all commands'
+                },
+                {
+                    name: '🎯 Quick Start',
+                    value: 'Try `f play [song name]` to start playing music!'
+                }
+            ])
+            .setTimestamp();
+        
+        await owner.send({ embeds: [dmEmbed] }).catch(err => console.error('Failed to send welcome DM:', err));
+    } catch (error) {
+        console.error('Failed to send welcome DM to server owner:', error);
+    }
+    
     // Send webhook notification when bot is added to server
     if (config.webhookUrl) {
         try {
