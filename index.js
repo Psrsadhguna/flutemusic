@@ -558,12 +558,13 @@ client.on('interactionCreate', async (interaction) => {
         }
     } else if (interaction.customId === 'music_prev') {
         try {
-            // Move to previous track by removing current and replaying queue
+            // No real "previous track" implemented yet
+            // Just skip current if queue exists; else silently ignore
             if (player.queue.length > 0) {
                 player.stop();
                 await interaction.reply({ content: 'Playing previous track.', ephemeral: true });
             } else {
-                await interaction.reply({ content: 'No previous track available.', ephemeral: true });
+                await interaction.deferUpdate(); // silently acknowledge
             }
         } catch (err) {
             console.error(err);
@@ -579,7 +580,7 @@ client.on('interactionCreate', async (interaction) => {
         }
     } else if (interaction.customId === 'music_shuffle') {
         try {
-            if (player.queue.length === 0) {
+            if (!player.queue || player.queue.length < 2) {
                 return interaction.reply({ content: 'Not enough tracks to shuffle!', ephemeral: true });
             }
             player.queue.shuffle();
@@ -598,7 +599,6 @@ client.on('interactionCreate', async (interaction) => {
         }
     }
 });
-
 // Send webhook notifications for member joins/leaves if configured (fire and forget)
 if (config.webhookUrl && config.webhookUrl.length > 5) {
     client.on('guildMemberAdd', (member) => {

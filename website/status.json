@@ -1,15 +1,79 @@
 {
   "servers": 2,
   "members": 1,
-  "totalSongsPlayed": 84,
-  "totalPlaytime": 40267395,
-  "totalCommandsExecuted": 125,
+  "totalSongsPlayed": 92,
+  "totalPlaytime": 44859395,
+  "totalCommandsExecuted": 144,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1452,
+  "uptimeSeconds": 1243,
   "twentyFourSevenServers": 0,
   "errorCount": 0,
   "errorRate": 0,
   "recentlyPlayed": [
+    {
+      "title": "I Love You",
+      "author": "Mano",
+      "uri": "https://www.youtube.com/watch?v=eTCYlxHh_UY",
+      "requester": "744044949942829127",
+      "timestamp": 1771689961373,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Bollywood Dj Non Stop Remix(Remix By Dj Jitesh,Psynth)",
+      "author": "Bappi Lahiri, K.K., Anushka Manchanda, Kamal Khan, Aishwarya, Hrithik Roshan, Diljit, Farhan Akhtar, Keerthi Sagathia, Abhishek Nainwal, Abhay Deol, Amrita Kak, Bob, Akon, Shreya Ghoshal, Earl Edgar D, Hamsika Iyer, Arijit, and Javed Ali",
+      "uri": "https://www.youtube.com/watch?v=68RLvhxk_4g",
+      "requester": "744044949942829127",
+      "timestamp": 1771689910447,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I",
+      "author": "Lil Skies",
+      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
+      "requester": "744044949942829127",
+      "timestamp": 1771689876458,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I",
+      "author": "Lil Skies",
+      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
+      "requester": "744044949942829127",
+      "timestamp": 1771689869085,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I",
+      "author": "Lil Skies",
+      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
+      "requester": "744044949942829127",
+      "timestamp": 1771689850500,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I",
+      "author": "Lil Skies",
+      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
+      "requester": "744044949942829127",
+      "timestamp": 1771689805460,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Emotional",
+      "author": "Mounika.",
+      "uri": "https://www.youtube.com/watch?v=2wPO5mVvfJE",
+      "requester": "1423265663203409950",
+      "timestamp": 1771687871132,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Mounika Love Failure Song",
+      "author": "Vadlakonda Anilkumar",
+      "uri": "https://www.youtube.com/watch?v=wdigi1TpeBI",
+      "requester": "744044949942829127",
+      "timestamp": 1771687860135,
+      "guildId": "1469974428908654818"
+    },
     {
       "title": "chikiri peddi malayalam",
       "author": "Mallu ai",
@@ -25,70 +89,6 @@
       "requester": "1423265663203409950",
       "timestamp": 1771686670847,
       "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686664395,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686659990,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686650600,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686646304,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri",
-      "author": "Mohit Chauhan",
-      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
-      "requester": "744044949942829127",
-      "timestamp": 1771686631370,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri",
-      "author": "Mohit Chauhan",
-      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686543860,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686536758,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri",
-      "author": "Mohit Chauhan",
-      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
-      "requester": "744044949942829127",
-      "timestamp": 1771686524648,
-      "guildId": "1469974428908654818"
     }
   ],
   "topGuilds": [
@@ -99,7 +99,7 @@
     },
     {
       "guildId": "1469974428908654818",
-      "songCount": 32,
+      "songCount": 40,
       "guildName": "accounts  owo"
     }
   ],
@@ -145,5 +145,5 @@
       "count": 4
     }
   ],
-  "updated": "2026-02-21T15:30:16.723Z"
+  "updated": "2026-02-21T16:06:50.584Z"
 }

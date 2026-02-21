@@ -1,9 +1,57 @@
 {
-  "totalSongsPlayed": 86,
-  "totalPlaytime": 40839395,
-  "totalCommandsExecuted": 128,
+  "totalSongsPlayed": 92,
+  "totalPlaytime": 44859395,
+  "totalCommandsExecuted": 144,
   "twentyFourSevenServers": [],
   "recentlyPlayed": [
+    {
+      "title": "I Love You",
+      "author": "Mano",
+      "uri": "https://www.youtube.com/watch?v=eTCYlxHh_UY",
+      "requester": "744044949942829127",
+      "timestamp": 1771689961373,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Bollywood Dj Non Stop Remix(Remix By Dj Jitesh,Psynth)",
+      "author": "Bappi Lahiri, K.K., Anushka Manchanda, Kamal Khan, Aishwarya, Hrithik Roshan, Diljit, Farhan Akhtar, Keerthi Sagathia, Abhishek Nainwal, Abhay Deol, Amrita Kak, Bob, Akon, Shreya Ghoshal, Earl Edgar D, Hamsika Iyer, Arijit, and Javed Ali",
+      "uri": "https://www.youtube.com/watch?v=68RLvhxk_4g",
+      "requester": "744044949942829127",
+      "timestamp": 1771689910447,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I",
+      "author": "Lil Skies",
+      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
+      "requester": "744044949942829127",
+      "timestamp": 1771689876458,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I",
+      "author": "Lil Skies",
+      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
+      "requester": "744044949942829127",
+      "timestamp": 1771689869085,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I",
+      "author": "Lil Skies",
+      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
+      "requester": "744044949942829127",
+      "timestamp": 1771689850500,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I",
+      "author": "Lil Skies",
+      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
+      "requester": "744044949942829127",
+      "timestamp": 1771689805460,
+      "guildId": "1469974428908654818"
+    },
     {
       "title": "Emotional",
       "author": "Mounika.",
@@ -115,60 +163,12 @@
       "requester": "1423265663203409950",
       "timestamp": 1771686203090,
       "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686188378,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686181911,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686175701,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686169289,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686160110,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri",
-      "author": "Mohit Chauhan",
-      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
-      "requester": "744044949942829127",
-      "timestamp": 1771686143343,
-      "guildId": "1469974428908654818"
     }
   ],
   "errorCount": 0,
   "guildActivity": {
     "1466778869834191026": 52,
-    "1469974428908654818": 34
+    "1469974428908654818": 40
   },
   "topArtists": {
     "AKASA": 3,
@@ -201,8 +201,11 @@
     "A.R. Rahman": 7,
     "Mallu ai": 6,
     "Vadlakonda Anilkumar": 1,
-    "Mounika.": 1
+    "Mounika.": 1,
+    "Lil Skies": 4,
+    "Bappi Lahiri, K.K., Anushka Manchanda, Kamal Khan, Aishwarya, Hrithik Roshan, Diljit, Farhan Akhtar, Keerthi Sagathia, Abhishek Nainwal, Abhay Deol, Amrita Kak, Bob, Akon, Shreya Ghoshal, Earl Edgar D, Hamsika Iyer, Arijit, and Javed Ali": 1,
+    "Mano": 1
   },
   "commandErrors": [],
-  "lastUpdated": "2026-02-21T15:31:16.730Z"
+  "lastUpdated": "2026-02-21T16:06:04.948Z"
 }
