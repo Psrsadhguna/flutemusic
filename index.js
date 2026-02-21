@@ -573,14 +573,23 @@ client.riffy.on("queueEnd", async (player) => {
     // Handle 24/7 mode - keeps the player active and adds a random song
     if (player.twentyFourSeven) {
         try {
-            const searchTerms = ["top tracks", "trending", "popular hits"];
-            const randomTerm = searchTerms[Math.floor(Math.random() * searchTerms.length)];
+            // Use the same language-targeted queries as autoplay so 24/7 prefers Telugu/Hindi
+            const randomQueries = [
+                "random popular songs",
+                "telugu songs",
+                "hindi songs",
+                "telugu top hits",
+                "hindi top hits"
+            ];
+
+            const randomQuery = randomQueries[Math.floor(Math.random() * randomQueries.length)];
+
             const resolve = await client.riffy.resolve({
-                query: randomTerm,
+                query: randomQuery,
                 requester: client.user,
             });
 
-            if (resolve.tracks && resolve.tracks.length > 0) {
+            if (resolve && resolve.tracks && resolve.tracks.length > 0) {
                 const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','lofi','chill','ambient','relaxing music','study music','gym','workout','exercise','gym music','workout mix','megamix','mega','megami'];
                 const isUnwanted = (info) => {
                     const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
@@ -588,16 +597,40 @@ client.riffy.on("queueEnd", async (player) => {
                     return false;
                 };
 
-                const track = resolve.tracks.find(t => !isUnwanted(t.info)) || resolve.tracks[0];
-                track.info.requester = client.user;
-                player.queue.add(track);
-                player.play();
-                messages.success(channel, "🎵 24/7 Mode: Added a random track to keep the music going!");
-                return;
+                const detectLanguageFromText = (title, author) => {
+                    const text = ((title || '') + ' ' + (author || '')).toLowerCase();
+                    if (/[\u0C00-\u0C7F]/.test(text)) return 'telugu';
+                    if (/[\u0900-\u097F]/.test(text)) return 'hindi';
+                    if (text.includes('telugu')) return 'telugu';
+                    if (text.includes('hindi') || text.includes('bollywood')) return 'hindi';
+                    return '';
+                };
+
+                const candidates = resolve.tracks.filter(t => !isUnwanted(t.info));
+                let selected = null;
+
+                if (randomQuery.includes('telugu') || randomQuery.includes('hindi')) {
+                    const lang = randomQuery.includes('telugu') ? 'telugu' : 'hindi';
+                    const langMatched = candidates.filter(t => detectLanguageFromText(t.info.title, t.info.author) === lang || (t.info.title || '').toLowerCase().includes(lang) || (t.info.author || '').toLowerCase().includes(lang));
+                    if (langMatched.length > 0) selected = langMatched[Math.floor(Math.random() * langMatched.length)];
+                }
+
+                if (!selected) {
+                    if (candidates.length > 0) selected = candidates[Math.floor(Math.random() * candidates.length)];
+                    else selected = resolve.tracks[Math.floor(Math.random() * resolve.tracks.length)];
+                }
+
+                if (selected) {
+                    selected.info.requester = client.user;
+                    player.queue.add(selected);
+                    player.play();
+                    messages.success(channel, "🎵 24/7 Mode: Added a random track to keep the music going!");
+                    console.log("24/7 added:", selected.info.title);
+                    return;
+                }
             }
         } catch (error) {
             console.error("Error adding track for 24/7 mode:", error);
-            // If adding failed, allow future queueEnd handling attempts
             try { player._handledQueueEnd = false; } catch (e) { }
         }
     }
