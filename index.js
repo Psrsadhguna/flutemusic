@@ -545,7 +545,7 @@ client.riffy.on("queueEnd", async (player) => {
     // Handle 24/7 mode - keeps the player active and adds a random song
     if (player.twentyFourSeven) {
         try {
-            const searchTerms = ["lofi", "chill", "ambient", "relaxing music", "study music"];
+            const searchTerms = ["top tracks", "trending", "popular hits"];
             const randomTerm = searchTerms[Math.floor(Math.random() * searchTerms.length)];
             const resolve = await client.riffy.resolve({
                 query: randomTerm,
@@ -553,7 +553,7 @@ client.riffy.on("queueEnd", async (player) => {
             });
 
             if (resolve.tracks && resolve.tracks.length > 0) {
-                const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation'];
+                const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','lofi','chill','ambient','relaxing music','study music'];
                 const isUnwanted = (info) => {
                     const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
                     for (const k of bannedAutoplayKeywords) if (text.includes(k)) return true;
@@ -592,7 +592,7 @@ client.riffy.on("queueEnd", async (player) => {
             if (humanCount === 0) {
                 // No human users present — skip autoplay so bot doesn't keep playing for no one.
             } else {
-                const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation'];
+                const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','lofi','chill','ambient','relaxing music','study music'];
                 const isUnwanted = (info) => {
                     const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
                     for (const k of bannedAutoplayKeywords) if (text.includes(k)) return true;
@@ -621,7 +621,7 @@ client.riffy.on("queueEnd", async (player) => {
                 }
 
                 // Fallback: if no lastTrackInfo or no similar track found, pick a random chill/popular term
-                const searchTerms = ["lofi", "chill", "ambient", "relaxing music", "study music", "top tracks", "trending"];
+                const searchTerms = ["top tracks", "trending", "popular hits"];
                 const langHint = player.lastTrackInfo ? detectLanguageFromText(player.lastTrackInfo.title, player.lastTrackInfo.author) : '';
                 const randomTerm = searchTerms[Math.floor(Math.random() * searchTerms.length)];
                 const resolve = await client.riffy.resolve({
