@@ -667,16 +667,37 @@ client.riffy.on("queueEnd", async (player) => {
                     const resolve = await client.riffy.resolve({ query, requester: client.user });
 
                     if (resolve && resolve.tracks && resolve.tracks.length > 0) {
-                        // pick the first track that isn't the same URI and isn't unwanted (sleep/meditation)
-                        const candidate = resolve.tracks.find(t => t.info.uri !== player.lastTrackInfo.uri && !isUnwanted(t.info))
-                            || resolve.tracks.find(t => !isUnwanted(t.info))
-                            || resolve.tracks[0];
-                        if (candidate) {
-                            candidate.info.requester = client.user;
-                            player.queue.add(candidate);
-                            player.play();
-                            messages.success(channel, '🤖 Autoplay: Added a similar track to the queue.');
-                            return;
+                        // Filter out unwanted tracks first
+                        const searchPool = resolve.tracks.filter(t => !isUnwanted(t.info));
+
+                        // If last track language was Telugu/Hindi, require language-matching results only
+                        if (langHint === 'telugu' || langHint === 'hindi') {
+                            const langPool = searchPool.filter(t => detectLanguageFromText(t.info.title, t.info.author) === langHint || (t.info.title || '').toLowerCase().includes(langHint) || (t.info.author || '').toLowerCase().includes(langHint));
+                            if (langPool.length > 0) {
+                                const candidate = langPool.find(t => t.info.uri !== player.lastTrackInfo.uri) || langPool[0];
+                                if (candidate) {
+                                    candidate.info.requester = client.user;
+                                    player.queue.add(candidate);
+                                    player.play();
+                                    messages.success(channel, `🤖 Autoplay: Added a similar ${langHint} track to the queue.`);
+                                    return;
+                                }
+                            } else {
+                                // No language-matching similar track found — skip autoplay to honor strict language preference
+                                console.log(`Autoplay: no ${langHint} similar track found — skipping autoplay.`);
+                                try { player._handledQueueEnd = false; } catch (e) { }
+                                return;
+                            }
+                        } else {
+                            // Non-language-specific: pick best candidate as before
+                            const candidate = searchPool.find(t => t.info.uri !== player.lastTrackInfo.uri) || searchPool[0] || resolve.tracks[0];
+                            if (candidate) {
+                                candidate.info.requester = client.user;
+                                player.queue.add(candidate);
+                                player.play();
+                                messages.success(channel, '🤖 Autoplay: Added a similar track to the queue.');
+                                return;
+                            }
                         }
                     }
                 }
@@ -691,7 +712,27 @@ client.riffy.on("queueEnd", async (player) => {
                 });
 
                 if (resolve.tracks && resolve.tracks.length > 0) {
-                    const track = resolve.tracks.find(t => !isUnwanted(t.info)) || resolve.tracks[0];
+                    // Filter results
+                    const candidates = resolve.tracks.filter(t => !isUnwanted(t.info));
+                    // If last track was Telugu/Hindi, require fallback results to match that language
+                    if (langHint === 'telugu' || langHint === 'hindi') {
+                        const langCandidates = candidates.filter(t => detectLanguageFromText(t.info.title, t.info.author) === langHint || (t.info.title || '').toLowerCase().includes(langHint) || (t.info.author || '').toLowerCase().includes(langHint));
+                            if (langCandidates.length > 0) {
+                                const track = langCandidates[0];
+                                track.info.requester = client.user;
+                                player.queue.add(track);
+                                player.play();
+                                messages.success(channel, `🤖 Autoplay: Added a ${langHint} track to keep the music going.`);
+                                return;
+                            } else {
+                                console.log(`Autoplay fallback: no ${langHint} matches found — skipping autoplay.`);
+                                try { player._handledQueueEnd = false; } catch (e) { }
+                                return;
+                            }
+                    }
+
+                    // Non-language fallback: add first non-unwanted or first track
+                    const track = candidates.find(t => !isUnwanted(t.info)) || resolve.tracks[0];
                     track.info.requester = client.user;
                     player.queue.add(track);
                     player.play();
