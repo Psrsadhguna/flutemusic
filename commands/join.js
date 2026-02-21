@@ -23,9 +23,9 @@ module.exports = {
             // Restore 24/7 mode from persistent stats
             try { player.twentyFourSeven = Boolean(global.stats && global.stats.twentyFourSevenServers && global.stats.twentyFourSevenServers.has(message.guild.id)); } catch(e) { player.twentyFourSeven = false; }
 
-            // Set flag to prevent immediate queueEnd destruction
+            // Set flag to prevent immediate queueEnd destruction (lasts 5 seconds)
             player._justJoined = true;
-            setTimeout(() => { try { player._justJoined = false; } catch(e) { } }, 2000);
+            setTimeout(() => { try { player._justJoined = false; } catch(e) { } }, 5000);
 
             const embed = new EmbedBuilder()
                 .setColor('#00FF00')
