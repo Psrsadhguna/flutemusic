@@ -12,9 +12,7 @@ const formatDuration = (ms) => {
     const hours = Math.floor(ms / (1000 * 60 * 60));
 
     if (hours > 0) {
-        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds
-            .toString()
-            .padStart(2, '0')}`;
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
@@ -39,18 +37,61 @@ module.exports = {
 
         const player = client.riffy.players.get(message.guild.id);
 
+        // ================= BOT STATS EMBED (DEFAULT VIEW) =================
+
+        const totalMembers = client.guilds.cache.reduce(
+            (acc, guild) => acc + guild.memberCount,
+            0
+        );
+
+        const usedMemory = Math.round(
+            process.memoryUsage().heapUsed / 1024 / 1024
+        );
+
+        const cpuUsage = (
+            process.cpuUsage().user / 1024 / 1024
+        ).toFixed(2);
+
+        const botEmbed = new EmbedBuilder()
+            .setColor('#0061FF')
+            .setTitle('🤖 Bot Statistics')
+            .setThumbnail(client.user.displayAvatarURL())
+            .addFields(
+                {
+                    name: '📊 Bot Info',
+                    value: `**Name:** ${client.user.username}\n**Prefix:** \`f\``
+                },
+                {
+                    name: '🌐 Server Stats',
+                    value: `**Servers:** ${client.guilds.cache.size}\n**Members:** ${totalMembers}\n**Channels:** ${client.channels.cache.size}`,
+                    inline: true
+                },
+                {
+                    name: '⚡ Performance',
+                    value: `**Ping:** ${Math.round(client.ws.ping)}ms\n**Uptime:** ${formatUptime(client.uptime)}\n**Memory:** ${usedMemory}MB\n**CPU:** ${cpuUsage}%`,
+                    inline: true
+                },
+                {
+                    name: '🎵 Music Players',
+                    value: `**Active:** ${client.riffy.players.size}`,
+                    inline: true
+                }
+            )
+            .setTimestamp()
+            .setFooter({ text: '⚙️ Reddy Bhai Gaming' });
+
+        // ================= DROPDOWN =================
+
         const menu = new StringSelectMenuBuilder()
             .setCustomId(`status_menu_${message.id}`)
-            .setPlaceholder('Select what you want to view')
+            .setPlaceholder('Select Status View')
             .addOptions([
                 {
                     label: '🤖 Bot Statistics',
-                    description: 'View bot information',
                     value: 'bot'
                 },
                 {
                     label: '🎵 Player Status',
-                    description: 'View music player status',
                     value: 'player'
                 }
             ]);
@@ -58,7 +99,7 @@ module.exports = {
         const row = new ActionRowBuilder().addComponents(menu);
 
         const mainMessage = await message.channel.send({
-            content: '📊 **Status Menu**',
+            embeds: [botEmbed],
             components: [row]
         });
 
@@ -75,57 +116,15 @@ module.exports = {
                 });
             }
 
-            // ================= BOT STATS =================
+            // ================= BOT VIEW =================
             if (interaction.values[0] === 'bot') {
-
-                const totalMembers = client.guilds.cache.reduce(
-                    (acc, guild) => acc + guild.memberCount,
-                    0
-                );
-
-                const usedMemory = Math.round(
-                    process.memoryUsage().heapUsed / 1024 / 1024
-                );
-
-                const cpuUsage = (
-                    process.cpuUsage().user / 1024 / 1024
-                ).toFixed(2);
-
-                const botEmbed = new EmbedBuilder()
-                    .setColor('#0061FF')
-                    .setTitle('🤖 Bot Statistics')
-                    .setThumbnail(client.user.displayAvatarURL())
-                    .addFields(
-                        {
-                            name: '📊 Bot Info',
-                            value: `**Name:** ${client.user.username}\n**Prefix:** \`f\``
-                        },
-                        {
-                            name: '🌐 Server Stats',
-                            value: `**Servers:** ${client.guilds.cache.size}\n**Members:** ${totalMembers}\n**Channels:** ${client.channels.cache.size}`,
-                            inline: true
-                        },
-                        {
-                            name: '⚡ Performance',
-                            value: `**Ping:** ${Math.round(client.ws.ping)}ms\n**Uptime:** ${formatUptime(client.uptime)}\n**Memory:** ${usedMemory}MB\n**CPU:** ${cpuUsage}%`,
-                            inline: true
-                        },
-                        {
-                            name: '🎵 Music Players',
-                            value: `**Active:** ${client.riffy.players.size}`,
-                            inline: true
-                        }
-                    )
-                    .setTimestamp()
-                    .setFooter({ text: '⚙️ Reddy Bhai Gaming' });
-
                 return interaction.update({
                     embeds: [botEmbed],
                     components: [row]
                 });
             }
 
-            // ================= PLAYER STATUS =================
+            // ================= PLAYER VIEW =================
             if (interaction.values[0] === 'player') {
 
                 if (!player) {
