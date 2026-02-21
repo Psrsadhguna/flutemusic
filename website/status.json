@@ -1,93 +1,93 @@
 {
   "servers": 2,
   "members": 2,
-  "totalSongsPlayed": 64,
-  "totalPlaytime": 34661395,
-  "totalCommandsExecuted": 110,
+  "totalSongsPlayed": 77,
+  "totalPlaytime": 38376395,
+  "totalCommandsExecuted": 123,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 2585,
+  "uptimeSeconds": 1582,
   "twentyFourSevenServers": 0,
   "errorCount": 0,
   "errorRate": 0,
   "recentlyPlayed": [
     {
-      "title": "Uppenantha",
-      "author": "Devi Sri Prasad",
-      "uri": "https://www.youtube.com/watch?v=CShcX8SiGVc",
+      "title": "Chikiri Chikiri",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "requester": "1423265663203409950",
+      "timestamp": 1771686543860,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri - Malayalam",
+      "author": "A.R. Rahman",
+      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
+      "requester": "1423265663203409950",
+      "timestamp": 1771686536758,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
       "requester": "744044949942829127",
-      "timestamp": 1771685208625,
+      "timestamp": 1771686524648,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "Uppenantha",
-      "author": "Devi Sri Prasad",
-      "uri": "https://www.youtube.com/watch?v=CShcX8SiGVc",
+      "title": "Chikiri Chikiri",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
       "requester": "744044949942829127",
-      "timestamp": 1771685137455,
+      "timestamp": 1771686497195,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "I Love You Too",
-      "author": "Yazin Nizar",
-      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
-      "requester": "744044949942829127",
-      "timestamp": 1771685047666,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "I Love You Too",
-      "author": "Ezra Bell",
-      "uri": "https://www.youtube.com/watch?v=6E4eAqmuOz0",
+      "title": "chikiri peddi malayalam",
+      "author": "Mallu ai",
+      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
       "requester": "1423265663203409950",
-      "timestamp": 1771684988208,
+      "timestamp": 1771686203090,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "I Love You Too",
-      "author": "Peter McPoland",
-      "uri": "https://www.youtube.com/watch?v=DwefWKqGA4A",
+      "title": "Chikiri Chikiri - Malayalam",
+      "author": "A.R. Rahman",
+      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
       "requester": "1423265663203409950",
-      "timestamp": 1771684980958,
+      "timestamp": 1771686188378,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "I Love You Too",
-      "author": "Ezra Bell",
-      "uri": "https://www.youtube.com/watch?v=6E4eAqmuOz0",
+      "title": "chikiri peddi malayalam",
+      "author": "Mallu ai",
+      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
       "requester": "1423265663203409950",
-      "timestamp": 1771684965386,
+      "timestamp": 1771686181911,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "I Love You Too",
-      "author": "Peter McPoland",
-      "uri": "https://www.youtube.com/watch?v=DwefWKqGA4A",
+      "title": "Chikiri Chikiri - Malayalam",
+      "author": "A.R. Rahman",
+      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
       "requester": "1423265663203409950",
-      "timestamp": 1771684960211,
+      "timestamp": 1771686175701,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "I Love You Too",
-      "author": "Yazin Nizar",
-      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
+      "title": "chikiri peddi malayalam",
+      "author": "Mallu ai",
+      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
       "requester": "1423265663203409950",
-      "timestamp": 1771684955775,
+      "timestamp": 1771686169289,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "I Love You Too",
-      "author": "Peter McPoland",
-      "uri": "https://www.youtube.com/watch?v=DwefWKqGA4A",
+      "title": "Chikiri Chikiri - Malayalam",
+      "author": "A.R. Rahman",
+      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
       "requester": "1423265663203409950",
-      "timestamp": 1771684946721,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "I Love You Too",
-      "author": "Yazin Nizar",
-      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
-      "requester": "744044949942829127",
-      "timestamp": 1771684931540,
+      "timestamp": 1771686160110,
       "guildId": "1469974428908654818"
     }
   ],
@@ -99,7 +99,7 @@
     },
     {
       "guildId": "1469974428908654818",
-      "songCount": 12,
+      "songCount": 25,
       "guildName": "accounts  owo"
     }
   ],
@@ -133,17 +133,17 @@
       "count": 4
     },
     {
-      "name": "AKASA",
-      "count": 3
+      "name": "Devi Sri Prasad",
+      "count": 4
     },
     {
-      "name": "Adnan Sami",
-      "count": 3
+      "name": "Mohit Chauhan",
+      "count": 4
     },
     {
-      "name": "Anup Rubens",
-      "count": 3
+      "name": "A.R. Rahman",
+      "count": 4
     }
   ],
-  "updated": "2026-02-21T14:48:59.896Z"
+  "updated": "2026-02-21T15:10:15.063Z"
 }
