@@ -39,7 +39,6 @@ module.exports = {
 
         const player = client.riffy.players.get(message.guild.id);
 
-        // MAIN DROPDOWN
         const menu = new StringSelectMenuBuilder()
             .setCustomId(`status_menu_${message.id}`)
             .setPlaceholder('Select what you want to view')
@@ -76,9 +75,7 @@ module.exports = {
                 });
             }
 
-            // ===========================
-            // 🤖 BOT STATS
-            // ===========================
+            // ================= BOT STATS =================
             if (interaction.values[0] === 'bot') {
 
                 const totalMembers = client.guilds.cache.reduce(
@@ -128,9 +125,7 @@ module.exports = {
                 });
             }
 
-            // ===========================
-            // 🎵 PLAYER STATUS
-            // ===========================
+            // ================= PLAYER STATUS =================
             if (interaction.values[0] === 'player') {
 
                 if (!player) {
@@ -153,33 +148,37 @@ module.exports = {
                     '🟩'.repeat(progress) +
                     '⬜'.repeat(20 - progress);
 
+                const volumeBar =
+                    '█'.repeat(Math.floor(player.volume / 10)) +
+                    '░'.repeat(10 - Math.floor(player.volume / 10));
+
                 const playerEmbed = new EmbedBuilder()
                     .setColor('#00FF00')
                     .setTitle('🎵 Player Status')
                     .addFields(
                         {
                             name: '▶️ Status',
-                            value: player.playing
-                                ? '**Playing** 🎵'
-                                : '**Paused** ⏸️',
+                            value: player.playing ? 'Playing 🎵' : 'Paused ⏸️',
                             inline: true
                         },
                         {
                             name: '🔊 Volume',
-                            value: `${player.volume}%`,
+                            value: `${player.volume}% ${volumeBar}`,
                             inline: true
                         },
                         {
-                            name: '🔄 Loop',
-                            value:
-                                player.loop === 'queue'
-                                    ? 'On 🔁'
-                                    : 'Off ❌',
+                            name: '🔄 Loop Mode',
+                            value: player.loop === 'queue' ? 'On 🔁' : 'Off ❌',
                             inline: true
                         },
                         {
                             name: '📋 Queue Size',
                             value: `${player.queue.length} tracks`,
+                            inline: true
+                        },
+                        {
+                            name: '🤖 Autoplay',
+                            value: player.autoplay ? 'On ✅' : 'Off ❌',
                             inline: true
                         }
                     )
