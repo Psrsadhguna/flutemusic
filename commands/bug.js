@@ -1,15 +1,17 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, WebhookClient } = require('discord.js');
+const config = require('../config.js');
 
 module.exports = {
-    name: 'bug',
-    description: 'Report a bug',
-    usage: 'fbug <description>',
+    name: 'feedback',
+    aliases: ['bug'],
+    description: 'Send feedback or report a bug',
+    usage: 'ffeedback <description>',
     execute: async (message, args, client) => {
         if (args.length === 0) {
             const embed = new EmbedBuilder()
                 .setColor('#FF0000')
-                .setTitle('🐛 Bug Report')
-                .setDescription('Please provide a bug description!\n\n**Usage:** `z bug <description>`')
+                .setTitle('� Feedback')
+                .setDescription('Please provide your feedback!\n\n**Usage:** `f feedback <description>`')
                 .setFooter({ text: '⚙️ Reddy Bhai Gaming' })
                 .setTimestamp();
 
@@ -19,8 +21,8 @@ module.exports = {
         const bugReport = args.join(' ');
         const embed = new EmbedBuilder()
             .setColor('#FFA500')
-            .setTitle('🐛 Bug Report Received')
-            .setDescription(`Thank you for reporting! Our team will investigate this.`)
+            .setTitle('� Feedback Received')
+            .setDescription(`Thank you for your feedback! Our team will review this.`)
             .addFields([
                 {
                     name: '📝 Report',
@@ -44,6 +46,40 @@ module.exports = {
             })
             .setTimestamp();
 
-        return message.channel.send({ embeds: [embed] });
+        // Send acknowledgment to user
+        await message.channel.send({ embeds: [embed] });
+
+        // Send bug report to feedback webhook
+        if (config.feedbackWebhookUrl) {
+            try {
+                const webhook = new WebhookClient({ url: config.feedbackWebhookUrl });
+                const feedbackEmbed = new EmbedBuilder()
+                    .setColor('#FF0000')
+                    .setTitle('� New Feedback')
+                    .setDescription(bugReport)
+                    .addFields([
+                        {
+                            name: '👤 Reporter',
+                            value: `${message.author.tag} (${message.author.id})`,
+                            inline: true
+                        },
+                        {
+                            name: '🏢 Server',
+                            value: message.guild.name,
+                            inline: true
+                        },
+                        {
+                            name: '🕐 Reported At',
+                            value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
+                            inline: false
+                        }
+                    ])
+                    .setTimestamp();
+
+                webhook.send({ embeds: [feedbackEmbed] }).catch(err => console.error('Feedback webhook error:', err));
+            } catch (error) {
+                console.error('Failed to send feedback webhook:', error);
+            }
+        }
     }
 };

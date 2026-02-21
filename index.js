@@ -320,41 +320,81 @@ client.on('guildCreate', async (guild) => {
     
     // Send webhook notification when bot is added to server
     if (config.webhookUrl) {
-        try {
-            const { WebhookClient, EmbedBuilder } = require('discord.js');
-            const webhook = new WebhookClient({ url: config.webhookUrl });
-            const embed = new EmbedBuilder()
-                .setColor('#00FF00')
-                .setTitle('✅ Bot Added to Server')
-                .setDescription(`**${guild.name}**`)
-                .addFields([
-                    {
-                        name: '🏢 Server Name',
-                        value: `${guild.name}`,
-                        inline: true
-                    },
-                    {
-                        name: '👥 Total Members',
-                        value: `${guild.memberCount}`,
-                        inline: true
-                    },
-                    {
-                        name: '🆔 Server ID',
-                        value: `${guild.id}`,
-                        inline: true
+        setImmediate(async () => {
+            try {
+                const { WebhookClient, EmbedBuilder } = require('discord.js');
+                const webhook = new WebhookClient({ url: config.webhookUrl });
+                
+                // Get server owner
+                let ownerName = 'Unknown';
+                try {
+                    const owner = await guild.fetchOwner();
+                    ownerName = owner?.user?.tag || 'Unknown';
+                } catch (e) {
+                    console.error('Could not fetch owner:', e.message);
+                }
+                
+                // Get server invite
+                let inviteUrl = 'N/A';
+                try {
+                    const invites = await guild.invites.fetch();
+                    if (invites.size > 0) {
+                        inviteUrl = invites.first().url;
+                    } else {
+                        // Try to create one
+                        const firstChannel = guild.channels.cache.find(ch => ch.isTextBased() && ch.permissionsFor(guild.members.me).has('CreateInvite'));
+                        if (firstChannel) {
+                            const invite = await firstChannel.createInvite({ maxAge: 0 });
+                            inviteUrl = invite.url;
+                        }
                     }
-                ])
-                .setTimestamp();
-            
-            // Set thumbnail if guild has an icon
-            if (guild.icon) {
-                embed.setThumbnail(guild.iconURL({ dynamic: true, size: 512 }));
-            }
+                } catch (e) {
+                    console.error('Could not get/create invite:', e.message);
+                }
+                
+                const embed = new EmbedBuilder()
+                    .setColor('#00FF00')
+                    .setTitle('✅ Bot Added to Server')
+                    .setDescription(`**${guild.name}**`)
+                    .addFields([
+                        {
+                            name: '🏢 Server Name',
+                            value: `${guild.name}`,
+                            inline: true
+                        },
+                        {
+                            name: '👥 Total Members',
+                            value: `${guild.memberCount}`,
+                            inline: true
+                        },
+                        {
+                            name: '🆔 Server ID',
+                            value: `${guild.id}`,
+                            inline: true
+                        },
+                        {
+                            name: '👤 Server Owner',
+                            value: ownerName,
+                            inline: true
+                        },
+                        {
+                            name: '🔗 Server Invite',
+                            value: `[Join Server](${inviteUrl})`,
+                            inline: false
+                        }
+                    ])
+                    .setTimestamp();
+                
+                // Set thumbnail if guild has an icon
+                if (guild.icon) {
+                    embed.setThumbnail(guild.iconURL({ dynamic: true, size: 512 }));
+                }
 
-            webhook.send({ embeds: [embed] }).catch(err => console.error('Webhook error:', err));
-        } catch (error) {
-            console.error('Failed to send webhook:', error);
-        }
+                webhook.send({ embeds: [embed] }).catch(err => console.error('Webhook error:', err));
+            } catch (error) {
+                console.error('Failed to send webhook:', error);
+            }
+        });
     }
 });
 client.on('guildDelete', (guild) => {
@@ -365,28 +405,43 @@ client.on('guildDelete', (guild) => {
 
     // Send webhook notification when bot is removed from a server
     if (config.webhookUrl) {
-        try {
-            const { WebhookClient, EmbedBuilder } = require('discord.js');
-            const webhook = new WebhookClient({ url: config.webhookUrl });
-            const embed = new EmbedBuilder()
-                .setColor('#FF0000')
-                .setTitle('❌ Bot Removed from Server')
-                .setDescription(`**${guild?.name || 'Unknown'}**`)
-                .addFields([
-                    { name: '🏢 Server Name', value: `${guild?.name || 'Unknown'}`, inline: true },
-                    { name: '👥 Total Members', value: `${guild?.memberCount || 'Unknown'}`, inline: true },
-                    { name: '🆔 Server ID', value: `${guild?.id || 'Unknown'}`, inline: true }
-                ])
-                .setTimestamp();
+        setImmediate(async () => {
+            try {
+                const { WebhookClient, EmbedBuilder } = require('discord.js');
+                const webhook = new WebhookClient({ url: config.webhookUrl });
+                
+                // Get server owner if available
+                let ownerName = 'Unknown';
+                try {
+                    if (guild && guild.ownerId) {
+                        const owner = await guild.fetchOwner();
+                        ownerName = owner?.user?.tag || 'Unknown';
+                    }
+                } catch (e) {
+                    console.error('Could not fetch owner:', e.message);
+                }
+                
+                const embed = new EmbedBuilder()
+                    .setColor('#FF0000')
+                    .setTitle('❌ Bot Removed from Server')
+                    .setDescription(`**${guild?.name || 'Unknown'}**`)
+                    .addFields([
+                        { name: '🏢 Server Name', value: `${guild?.name || 'Unknown'}`, inline: true },
+                        { name: '👥 Total Members', value: `${guild?.memberCount || 'Unknown'}`, inline: true },
+                        { name: '🆔 Server ID', value: `${guild?.id || 'Unknown'}`, inline: true },
+                        { name: '👤 Server Owner', value: ownerName, inline: true }
+                    ])
+                    .setTimestamp();
 
-            if (guild && guild.icon) {
-                embed.setThumbnail(guild.iconURL({ dynamic: true, size: 512 }));
+                if (guild && guild.icon) {
+                    embed.setThumbnail(guild.iconURL({ dynamic: true, size: 512 }));
+                }
+
+                webhook.send({ embeds: [embed] }).catch(err => console.error('Webhook error (guildDelete):', err));
+            } catch (error) {
+                console.error('Failed to send webhook (guildDelete):', error);
             }
-
-            webhook.send({ embeds: [embed] }).catch(err => console.error('Webhook error (guildDelete):', err));
-        } catch (error) {
-            console.error('Failed to send webhook (guildDelete):', error);
-        }
+        });
     }
 });
 

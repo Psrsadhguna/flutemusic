@@ -21,5 +21,7 @@ module.exports = {
     // Toggle whether the bot should rename voice channels to show the currently playing track
     voiceChannelstatus: true,
     // Webhook URL to receive join/leave notifications. Leave empty to disable.
-    webhookUrl: process.env.WEBHOOK_URL || ''
+    webhookUrl: process.env.WEBHOOK_URL || '',
+    // Webhook URL to receive bug/feedback reports. Leave empty to disable.
+    feedbackWebhookUrl: process.env.FEEDBACK_WEBHOOK_URL || ''
 };
