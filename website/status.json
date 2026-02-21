@@ -1,15 +1,71 @@
 {
   "servers": 2,
-  "members": 2,
-  "totalSongsPlayed": 77,
-  "totalPlaytime": 38376395,
-  "totalCommandsExecuted": 123,
+  "members": 1,
+  "totalSongsPlayed": 84,
+  "totalPlaytime": 40267395,
+  "totalCommandsExecuted": 125,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1582,
+  "uptimeSeconds": 1281,
   "twentyFourSevenServers": 0,
   "errorCount": 0,
   "errorRate": 0,
   "recentlyPlayed": [
+    {
+      "title": "chikiri peddi malayalam",
+      "author": "Mallu ai",
+      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
+      "requester": "1423265663203409950",
+      "timestamp": 1771686674750,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri - Malayalam",
+      "author": "A.R. Rahman",
+      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
+      "requester": "1423265663203409950",
+      "timestamp": 1771686670847,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "chikiri peddi malayalam",
+      "author": "Mallu ai",
+      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
+      "requester": "1423265663203409950",
+      "timestamp": 1771686664395,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri - Malayalam",
+      "author": "A.R. Rahman",
+      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
+      "requester": "1423265663203409950",
+      "timestamp": 1771686659990,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "chikiri peddi malayalam",
+      "author": "Mallu ai",
+      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
+      "requester": "1423265663203409950",
+      "timestamp": 1771686650600,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri - Malayalam",
+      "author": "A.R. Rahman",
+      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
+      "requester": "1423265663203409950",
+      "timestamp": 1771686646304,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "requester": "744044949942829127",
+      "timestamp": 1771686631370,
+      "guildId": "1469974428908654818"
+    },
     {
       "title": "Chikiri Chikiri",
       "author": "Mohit Chauhan",
@@ -33,62 +89,6 @@
       "requester": "744044949942829127",
       "timestamp": 1771686524648,
       "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri",
-      "author": "Mohit Chauhan",
-      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
-      "requester": "744044949942829127",
-      "timestamp": 1771686497195,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686203090,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686188378,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686181911,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686175701,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686169289,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686160110,
-      "guildId": "1469974428908654818"
     }
   ],
   "topGuilds": [
@@ -99,11 +99,19 @@
     },
     {
       "guildId": "1469974428908654818",
-      "songCount": 25,
+      "songCount": 32,
       "guildName": "accounts  owo"
     }
   ],
   "topArtists": [
+    {
+      "name": "A.R. Rahman",
+      "count": 7
+    },
+    {
+      "name": "Mallu ai",
+      "count": 6
+    },
     {
       "name": "Anirudh Ravichander",
       "count": 5
@@ -121,6 +129,10 @@
       "count": 5
     },
     {
+      "name": "Mohit Chauhan",
+      "count": 5
+    },
+    {
       "name": "Aesthetic Lofi Vibes",
       "count": 4
     },
@@ -131,19 +143,7 @@
     {
       "name": "Yazin Nizar",
       "count": 4
-    },
-    {
-      "name": "Devi Sri Prasad",
-      "count": 4
-    },
-    {
-      "name": "Mohit Chauhan",
-      "count": 4
-    },
-    {
-      "name": "A.R. Rahman",
-      "count": 4
     }
   ],
-  "updated": "2026-02-21T15:10:15.063Z"
+  "updated": "2026-02-21T15:16:34.990Z"
 }
