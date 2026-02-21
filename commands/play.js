@@ -19,6 +19,9 @@ module.exports = {
             // Ensure sensible defaults: no autoplay and no queue loop by default
             try { player.autoplay = false; player.setLoop("none"); } catch(e) {/* ignore if not supported */}
 
+            // Restore 24/7 mode from persistent stats (so toggled servers keep 24/7 across reconnections)
+            try { player.twentyFourSeven = Boolean(global.stats && global.stats.twentyFourSevenServers && global.stats.twentyFourSevenServers.has(message.guild.id)); } catch(e) { player.twentyFourSeven = false; }
+
             const resolve = await client.riffy.resolve({
                 query: query,
                 requester: message.author,

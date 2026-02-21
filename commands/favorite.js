@@ -123,6 +123,9 @@ module.exports = {
                     deaf: true,
                 });
 
+                // Restore 24/7 mode from persistent stats
+                try { player.twentyFourSeven = Boolean(global.stats && global.stats.twentyFourSevenServers && global.stats.twentyFourSevenServers.has(message.guild.id)); } catch(e) { player.twentyFourSeven = false; }
+
                 if (selectedFav) {
                     const track = await client.riffy.resolve({
                         query: selectedFav.uri,

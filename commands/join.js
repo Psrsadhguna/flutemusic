@@ -20,6 +20,9 @@ module.exports = {
             // Ensure sensible defaults when creating the connection
             try { player.autoplay = false; player.setLoop("none"); } catch(e) {/* ignore if not supported */}
 
+            // Restore 24/7 mode from persistent stats
+            try { player.twentyFourSeven = Boolean(global.stats && global.stats.twentyFourSevenServers && global.stats.twentyFourSevenServers.has(message.guild.id)); } catch(e) { player.twentyFourSeven = false; }
+
             const embed = new EmbedBuilder()
                 .setColor('#00FF00')
                 .setTitle('🎶 Bot Joined Voice Channel')
