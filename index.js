@@ -471,6 +471,8 @@ client.riffy.on("trackStart", async (player, track) => {
         author: track.info.author,
         uri: track.info.uri
     };
+    // Clear any previous queueEnd handling flag so future queueEnd can be processed
+    try { player._handledQueueEnd = false; } catch (e) { /* ignore */ }
     // Update the text channel topic/status to show current playing track
     try {
         if (channel && typeof channel.setTopic === 'function') {
@@ -488,6 +490,9 @@ client.riffy.on("trackStart", async (player, track) => {
 
 client.riffy.on("queueEnd", async (player) => {
     const channel = client.channels.cache.get(player.textChannel);
+    // Prevent duplicate handling when multiple rapid events (skip/stop) fire
+    if (player._handledQueueEnd) return;
+    player._handledQueueEnd = true;
     
     // Handle 24/7 mode - keeps the player active and adds a random song
     if (player.twentyFourSeven) {
@@ -516,6 +521,8 @@ client.riffy.on("queueEnd", async (player) => {
             }
         } catch (error) {
             console.error("Error adding track for 24/7 mode:", error);
+            // If adding failed, allow future queueEnd handling attempts
+            try { player._handledQueueEnd = false; } catch (e) { }
         }
     }
     
@@ -585,6 +592,8 @@ client.riffy.on("queueEnd", async (player) => {
             }
         } catch (error) {
             console.error("Error adding track for autoplay mode:", error);
+            // If autoplay addition failed, allow future queueEnd handling attempts
+            try { player._handledQueueEnd = false; } catch (e) { }
         }
     }
     
