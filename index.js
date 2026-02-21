@@ -577,8 +577,7 @@ client.riffy.on("queueEnd", async (player) => {
     
     // Handle 24/7 mode - keeps the bot in VC but doesn't add songs (autoplay handles that)
     if (player.twentyFourSeven) {
-        messages.success(channel, "🎵 24/7 Mode: Bot is staying in the voice channel. Use autoplay to add songs automatically!");
-        console.log("24/7 mode active - waiting for autoplay or manual queue");
+        console.log("24/7 mode active - bot staying in voice channel");
         return;
     }
     
