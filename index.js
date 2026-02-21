@@ -703,6 +703,7 @@ client.riffy.on("queueEnd", async (player) => {
                 messages.success(channel, '🤖 Autoplay: Added a track to keep the music going.');
                 console.log("Autoplay fallback added:", track.info.title);
                 return;
+            }
         } catch (error) {
             console.error("Error adding track for autoplay mode:", error);
             // If autoplay addition failed, allow future queueEnd handling attempts
