@@ -461,6 +461,16 @@ module.exports = {
 
 
             {
+                name: '📂 Playlist Commands',
+                value: helpData.playlistCommands && helpData.playlistCommands.length > 0
+                    ? helpData.playlistCommands.map(cmd => `\`${cmd}\``).join(' • ')
+                    : 'Coming soon...',
+                inline: false
+            },
+
+
+
+            {
                 name: '<a:users:1474075424765247780>  User Commands',
                 value: helpData.userCommands && helpData.userCommands.length > 0
                     ? helpData.userCommands.map(cmd => `\`${cmd}\``).join(' • ')

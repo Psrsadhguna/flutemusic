@@ -99,8 +99,26 @@ async function saveUserData() {
     }
 }
 
+// Load playlists data
+const playlistsPath = path.join(__dirname, 'playlists.json');
+async function loadPlaylists() {
+    try {
+        if (fs.existsSync(playlistsPath)) {
+            const data = JSON.parse(await fsp.readFile(playlistsPath, 'utf8'));
+            global.playlists = data;
+            console.log(`✅ Loaded playlists for ${Object.keys(data).length} users`);
+        } else {
+            global.playlists = {};
+            console.log('📂 No playlists.json found - creating new...');
+        }
+    } catch (err) {
+        console.error('Failed to load playlists.json:', err.message);
+        global.playlists = {};
+    }
+}
+
 // Export stats to global for access from commands (load in background)
-Promise.all([loadStats(), loadUserData()]).then(() => {
+Promise.all([loadStats(), loadUserData(), loadPlaylists()]).then(() => {
     console.log(`✅ Loaded user and stats data in ${Date.now() - startupTime}ms`);
     // Clear 247 mode on restart
     const serversBefore = stats.twentyFourSevenServers.size;
