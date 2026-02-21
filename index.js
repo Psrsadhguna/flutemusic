@@ -34,6 +34,9 @@ const stats = {
 // User data (favorites and history)
 const userData = {}; // {userId: {favorites: [], history: []}}
 
+// Track song history per guild for Previous button (stack of played songs)
+const songHistory = {}; // {guildId: [track1, track2, ...]}
+
 const statsPath = path.join(__dirname, 'stats.json');
 const userDataPath = path.join(__dirname, 'userdata.json');
 
@@ -444,6 +447,15 @@ client.riffy.on("trackStart", async (player, track) => {
         return;
     }
     
+    // Add current track to song history (keep last 50 songs)
+    if (!songHistory[player.guildId]) {
+        songHistory[player.guildId] = [];
+    }
+    songHistory[player.guildId].push(track);
+    if (songHistory[player.guildId].length > 50) {
+        songHistory[player.guildId].shift();
+    }
+    
     // Track song play and playtime
     stats.totalSongsPlayed++;
     if (track.info.length) {
@@ -537,65 +549,79 @@ client.on('interactionCreate', async (interaction) => {
 
     const guildId = interaction.guildId;
     const player = client.riffy.players.get(guildId);
-    if (!player) return interaction.reply({ content: 'No active player.', ephemeral: true });
+    
+    if (!player) return interaction.reply({ content: '❌ No active player.', ephemeral: true });
 
     // Only allow users in voice channel to control
     const member = interaction.guild.members.cache.get(interaction.user.id);
-    if (!member || !member.voice.channel) return interaction.reply({ content: 'You must be in a voice channel to use this.', ephemeral: true });
+    if (!member || !member.voice.channel) return interaction.reply({ content: '❌ You must be in a voice channel to use this.', ephemeral: true });
 
     if (interaction.customId === 'music_pause') {
         try {
             if (player.paused) {
-                player.pause(false);
-                await interaction.reply({ content: 'Resumed playback.', ephemeral: true });
+                await player.pause(false);
+                await interaction.reply({ content: '▶️ Resumed playback.', ephemeral: true });
             } else {
-                player.pause(true);
-                await interaction.reply({ content: 'Paused playback.', ephemeral: true });
+                await player.pause(true);
+                await interaction.reply({ content: '⏸️ Paused playback.', ephemeral: true });
             }
         } catch (err) {
-            console.error(err);
-            await interaction.reply({ content: 'Failed to toggle pause.', ephemeral: true });
-        }
-    } else if (interaction.customId === 'music_prev') {
-        try {
-            // No real "previous track" implemented yet
-            // Just skip current if queue exists; else silently ignore
-            if (player.queue.length > 0) {
-                player.stop();
-                await interaction.reply({ content: 'Playing previous track.', ephemeral: true });
-            } else {
-                await interaction.deferUpdate(); // silently acknowledge
-            }
-        } catch (err) {
-            console.error(err);
-            await interaction.reply({ content: 'Failed to play previous track.', ephemeral: true });
+            console.error('Pause error:', err);
+            await interaction.reply({ content: '❌ Failed to toggle pause: ' + err.message, ephemeral: true });
         }
     } else if (interaction.customId === 'music_skip') {
         try {
-            player.stop();
-            await interaction.reply({ content: 'Skipped track.', ephemeral: true });
+            const skipped = player.queue.current;
+            await player.stop();
+            await interaction.reply({ content: `⏭️ Skipped: **${skipped?.info?.title || 'Unknown'}**`, ephemeral: true });
         } catch (err) {
-            console.error(err);
-            await interaction.reply({ content: 'Failed to skip.', ephemeral: true });
+            console.error('Skip error:', err);
+            await interaction.reply({ content: '❌ Failed to skip: ' + err.message, ephemeral: true });
+        }
+    } else if (interaction.customId === 'music_prev') {
+        try {
+            // Get history for this guild
+            const history = songHistory[guildId];
+            if (!history || history.length < 2) {
+                return interaction.reply({ content: '❌ No previous track in history!', ephemeral: true });
+            }
+            
+            // Get the previous track (second to last, since last is current song)
+            const prevTrack = history[history.length - 2];
+            if (!prevTrack) {
+                return interaction.reply({ content: '❌ No previous track!', ephemeral: true });
+            }
+            
+            // Remove the previous track from history
+            history.splice(history.length - 2, 1);
+            
+            // Queue it and play
+            player.queue.unshift(prevTrack);
+            player.stop();
+            
+            await interaction.reply({ content: `⏮️ Playing previous: **${prevTrack.info.title}**`, ephemeral: true });
+        } catch (err) {
+            console.error('Previous error:', err);
+            await interaction.reply({ content: '❌ Failed to play previous: ' + err.message, ephemeral: true });
         }
     } else if (interaction.customId === 'music_shuffle') {
         try {
             if (!player.queue || player.queue.length < 2) {
-                return interaction.reply({ content: 'Not enough tracks to shuffle!', ephemeral: true });
+                return interaction.reply({ content: '🔀 Need at least 2 tracks to shuffle!', ephemeral: true });
             }
-            player.queue.shuffle();
-            await interaction.reply({ content: `Queue shuffled! **${player.queue.length}** tracks remaining.`, ephemeral: true });
+            await player.queue.shuffle();
+            await interaction.reply({ content: `🔀 Queue shuffled! **${player.queue.length}** tracks remaining.`, ephemeral: true });
         } catch (err) {
-            console.error(err);
-            await interaction.reply({ content: 'Failed to shuffle queue.', ephemeral: true });
+            console.error('Shuffle error:', err);
+            await interaction.reply({ content: '❌ Failed to shuffle: ' + err.message, ephemeral: true });
         }
     } else if (interaction.customId === 'music_stop') {
         try {
-            player.destroy();
-            await interaction.reply({ content: 'Stopped playback and left channel.', ephemeral: true });
+            await player.destroy();
+            await interaction.reply({ content: '⏹️ Stopped playback and left channel.', ephemeral: true });
         } catch (err) {
-            console.error(err);
-            await interaction.reply({ content: 'Failed to stop player.', ephemeral: true });
+            console.error('Stop error:', err);
+            await interaction.reply({ content: '❌ Failed to stop: ' + err.message, ephemeral: true });
         }
     }
 });

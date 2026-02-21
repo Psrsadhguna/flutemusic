@@ -137,6 +137,14 @@ module.exports = {
             const embed = baseEmbed(`${emojis.playing} Now Playing`)
                 .setDescription(`**[${track.info.title}](${track.info.uri})**`);
 
+            // Set author with requester avatar
+            if (track.info.requester) {
+                embed.setAuthor({
+                    name: `Requested by ${track.info.requester.tag || 'Unknown'}`,
+                    iconURL: track.info.requester.displayAvatarURL({ dynamic: true })
+                });
+            }
+
             if (track.info.thumbnail) {
                 embed.setThumbnail(track.info.thumbnail);
             }
@@ -152,16 +160,21 @@ module.exports = {
                     inline: false
                 },
                 {
-                    name: '<a:users:1474075424765247780> ',
-                    value: `${track.info.requester?.tag || 'Unknown'}`,
-                    inline: false
-                },
-                {
                     name: '🔗 Source',
                     value: track.info.sourceName || 'Unknown',
                     inline: false
                 }
             ];
+
+            // Add shuffle indicator
+            if (player) {
+                const shuffleStatus = player.queue.shuffle ? '🔀 ON' : '🔀 OFF';
+                fields.push({
+                    name: 'Shuffle',
+                    value: shuffleStatus,
+                    inline: true
+                });
+            }
 
             if (progressBar) {
                 fields.push({
@@ -178,6 +191,16 @@ module.exports = {
                     : formatDuration(track.info.length),
                 inline: false
             });
+
+            // Add lyrics preview if available
+            if (track.info.lyrics && track.info.lyrics.length > 0) {
+                const lyricsPreview = track.info.lyrics.substring(0, 200) + (track.info.lyrics.length > 200 ? '...' : '');
+                fields.push({
+                    name: '📝 Lyrics Preview',
+                    value: `\`\`\`${lyricsPreview}\`\`\``,
+                    inline: false
+                });
+            }
 
             // Add next 3 tracks preview
             if (player && player.queue && player.queue.length > 0) {

@@ -1,15 +1,47 @@
 {
-  "totalSongsPlayed": 92,
-  "totalPlaytime": 44859395,
-  "totalCommandsExecuted": 144,
+  "totalSongsPlayed": 123,
+  "totalPlaytime": 58719299,
+  "totalCommandsExecuted": 179,
   "twentyFourSevenServers": [],
   "recentlyPlayed": [
     {
-      "title": "I Love You",
-      "author": "Mano",
-      "uri": "https://www.youtube.com/watch?v=eTCYlxHh_UY",
+      "title": "Chikiri Chikiri - Telugu",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
       "requester": "744044949942829127",
-      "timestamp": 1771689961373,
+      "timestamp": 1771703260718,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri - Telugu",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "requester": "744044949942829127",
+      "timestamp": 1771703067519,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri - Telugu",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "requester": "744044949942829127",
+      "timestamp": 1771702836466,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri - Telugu",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "requester": "744044949942829127",
+      "timestamp": 1771702585391,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Chikiri Chikiri",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "requester": "744044949942829127",
+      "timestamp": 1771702238693,
       "guildId": "1469974428908654818"
     },
     {
@@ -17,103 +49,7 @@
       "author": "Bappi Lahiri, K.K., Anushka Manchanda, Kamal Khan, Aishwarya, Hrithik Roshan, Diljit, Farhan Akhtar, Keerthi Sagathia, Abhishek Nainwal, Abhay Deol, Amrita Kak, Bob, Akon, Shreya Ghoshal, Earl Edgar D, Hamsika Iyer, Arijit, and Javed Ali",
       "uri": "https://www.youtube.com/watch?v=68RLvhxk_4g",
       "requester": "744044949942829127",
-      "timestamp": 1771689910447,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "I",
-      "author": "Lil Skies",
-      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
-      "requester": "744044949942829127",
-      "timestamp": 1771689876458,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "I",
-      "author": "Lil Skies",
-      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
-      "requester": "744044949942829127",
-      "timestamp": 1771689869085,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "I",
-      "author": "Lil Skies",
-      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
-      "requester": "744044949942829127",
-      "timestamp": 1771689850500,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "I",
-      "author": "Lil Skies",
-      "uri": "https://www.youtube.com/watch?v=irE3g6aACmU",
-      "requester": "744044949942829127",
-      "timestamp": 1771689805460,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Emotional",
-      "author": "Mounika.",
-      "uri": "https://www.youtube.com/watch?v=2wPO5mVvfJE",
-      "requester": "1423265663203409950",
-      "timestamp": 1771687871132,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Mounika Love Failure Song",
-      "author": "Vadlakonda Anilkumar",
-      "uri": "https://www.youtube.com/watch?v=wdigi1TpeBI",
-      "requester": "744044949942829127",
-      "timestamp": 1771687860135,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686674750,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686670847,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686664395,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686659990,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686650600,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686646304,
+      "timestamp": 1771702236052,
       "guildId": "1469974428908654818"
     },
     {
@@ -121,54 +57,118 @@
       "author": "Mohit Chauhan",
       "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
       "requester": "744044949942829127",
-      "timestamp": 1771686631370,
+      "timestamp": 1771702223139,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "Chikiri Chikiri",
-      "author": "Mohit Chauhan",
-      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686543860,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri - Malayalam",
-      "author": "A.R. Rahman",
-      "uri": "https://www.youtube.com/watch?v=vfX-3UutDyk",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686536758,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Chikiri Chikiri",
-      "author": "Mohit Chauhan",
-      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "title": "Maalik Marzi Da",
+      "author": "Kaka",
+      "uri": "https://www.youtube.com/watch?v=xriEG5yvoDs",
       "requester": "744044949942829127",
-      "timestamp": 1771686524648,
+      "timestamp": 1771702048193,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "Chikiri Chikiri",
-      "author": "Mohit Chauhan",
-      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "title": "Maalik Marzi Da",
+      "author": "Kaka",
+      "uri": "https://www.youtube.com/watch?v=xriEG5yvoDs",
       "requester": "744044949942829127",
-      "timestamp": 1771686497195,
+      "timestamp": 1771702042430,
       "guildId": "1469974428908654818"
     },
     {
-      "title": "chikiri peddi malayalam",
-      "author": "Mallu ai",
-      "uri": "https://www.youtube.com/watch?v=MaYTc8lEJKo",
-      "requester": "1423265663203409950",
-      "timestamp": 1771686203090,
+      "title": "Maalik Marzi Da",
+      "author": "Kaka",
+      "uri": "https://www.youtube.com/watch?v=xriEG5yvoDs",
+      "requester": "744044949942829127",
+      "timestamp": 1771702038766,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Hiii",
+      "author": "Dj Sam GOLD & dj drico",
+      "uri": "https://www.youtube.com/watch?v=p_xzFklHDyk",
+      "requester": "744044949942829127",
+      "timestamp": 1771702031973,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Bollywood Dj Non Stop Remix(Remix By Dj Jitesh,Psynth)",
+      "author": "Bappi Lahiri, K.K., Anushka Manchanda, Kamal Khan, Aishwarya, Hrithik Roshan, Diljit, Farhan Akhtar, Keerthi Sagathia, Abhishek Nainwal, Abhay Deol, Amrita Kak, Bob, Akon, Shreya Ghoshal, Earl Edgar D, Hamsika Iyer, Arijit, and Javed Ali",
+      "uri": "https://www.youtube.com/watch?v=68RLvhxk_4g",
+      "requester": "744044949942829127",
+      "timestamp": 1771701885434,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Hello Hi (feat. SpiritBanger & Dankie Boi)",
+      "author": "Dladla Mshunqisi",
+      "uri": "https://www.youtube.com/watch?v=M6KZ7NKq12M",
+      "requester": "744044949942829127",
+      "timestamp": 1771701875172,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Maalik Marzi Da",
+      "author": "Kaka",
+      "uri": "https://www.youtube.com/watch?v=xriEG5yvoDs",
+      "requester": "744044949942829127",
+      "timestamp": 1771701852144,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Hello Hi (feat. SpiritBanger & Dankie Boi)",
+      "author": "Dladla Mshunqisi",
+      "uri": "https://www.youtube.com/watch?v=M6KZ7NKq12M",
+      "requester": "744044949942829127",
+      "timestamp": 1771701692660,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Happy (From \"Despicable Me 2\")",
+      "author": "Pharrell Williams",
+      "uri": "https://www.youtube.com/watch?v=dJqxQzxLbHM",
+      "requester": "744044949942829127",
+      "timestamp": 1771701551873,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Jeena Jeena (From \"Badlapur\")",
+      "author": "Atif Aslam",
+      "uri": "https://open.spotify.com/track/5ZhKD46Q7mhsl0awl7ZMJc",
+      "requester": "744044949942829127",
+      "timestamp": 1771701548383,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Jeena Jeena (From \"Badlapur\")",
+      "author": "Atif Aslam",
+      "uri": "https://open.spotify.com/track/5ZhKD46Q7mhsl0awl7ZMJc",
+      "requester": "744044949942829127",
+      "timestamp": 1771701510624,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Jeena Jeena (From \"Badlapur\")",
+      "author": "Atif Aslam",
+      "uri": "https://open.spotify.com/track/5ZhKD46Q7mhsl0awl7ZMJc",
+      "requester": "744044949942829127",
+      "timestamp": 1771701372971,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Uppenantha",
+      "author": "Devi Sri Prasad",
+      "uri": "https://www.youtube.com/watch?v=CShcX8SiGVc",
+      "requester": "744044949942829127",
+      "timestamp": 1771701354448,
       "guildId": "1469974428908654818"
     }
   ],
   "errorCount": 0,
   "guildActivity": {
     "1466778869834191026": 52,
-    "1469974428908654818": 40
+    "1469974428908654818": 71
   },
   "topArtists": {
     "AKASA": 3,
@@ -196,16 +196,22 @@
     "Yazin Nizar": 4,
     "Peter McPoland": 3,
     "Ezra Bell": 2,
-    "Devi Sri Prasad": 4,
-    "Mohit Chauhan": 5,
+    "Devi Sri Prasad": 15,
+    "Mohit Chauhan": 11,
     "A.R. Rahman": 7,
     "Mallu ai": 6,
     "Vadlakonda Anilkumar": 1,
     "Mounika.": 1,
     "Lil Skies": 4,
-    "Bappi Lahiri, K.K., Anushka Manchanda, Kamal Khan, Aishwarya, Hrithik Roshan, Diljit, Farhan Akhtar, Keerthi Sagathia, Abhishek Nainwal, Abhay Deol, Amrita Kak, Bob, Akon, Shreya Ghoshal, Earl Edgar D, Hamsika Iyer, Arijit, and Javed Ali": 1,
-    "Mano": 1
+    "Bappi Lahiri, K.K., Anushka Manchanda, Kamal Khan, Aishwarya, Hrithik Roshan, Diljit, Farhan Akhtar, Keerthi Sagathia, Abhishek Nainwal, Abhay Deol, Amrita Kak, Bob, Akon, Shreya Ghoshal, Earl Edgar D, Hamsika Iyer, Arijit, and Javed Ali": 3,
+    "Mano": 1,
+    "Sagar & Sumangali (Humming)": 1,
+    "Atif Aslam": 3,
+    "Pharrell Williams": 1,
+    "Dladla Mshunqisi": 2,
+    "Kaka": 4,
+    "Dj Sam GOLD & dj drico": 1
   },
   "commandErrors": [],
-  "lastUpdated": "2026-02-21T16:06:04.948Z"
+  "lastUpdated": "2026-02-21T19:50:14.364Z"
 }
