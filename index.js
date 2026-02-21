@@ -500,10 +500,13 @@ client.riffy.on("trackEnd", async (player, track) => {
     if (player.queue && player.queue.length > 0) return;
 
     try {
+        // Use targeted queries to bias results toward the requested languages
         const randomQueries = [
             "random popular songs",
-            "telugu songs",
-            "hindi songs"
+            "telugu top hits",
+            "telugu hits playlist",
+            "hindi bollywood hits",
+            "hindi top hits"
         ];
 
         // Pick random search keyword
@@ -516,8 +519,16 @@ client.riffy.on("trackEnd", async (player, track) => {
 
         if (!resolve || !resolve.tracks || resolve.tracks.length === 0) return;
 
-        // Pick random track from search result
-        const randomTrack = resolve.tracks[Math.floor(Math.random() * resolve.tracks.length)];
+        // Filter out unwanted genres like gym/workout mixes or lo-fi so we get language-specific songs
+        const bannedAutoplayKeywords = ['gym', 'workout', 'exercise', 'gym music', 'workout mix', 'lofi', 'study music'];
+        const isUnwanted = (info) => {
+            const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
+            for (const k of bannedAutoplayKeywords) if (text.includes(k)) return true;
+            return false;
+        };
+
+        // Pick the first non-unwanted track, otherwise fallback to a random track
+        const randomTrack = resolve.tracks.find(t => !isUnwanted(t.info)) || resolve.tracks[Math.floor(Math.random() * resolve.tracks.length)];
 
         randomTrack.info.requester = track.requester || client.user;
         player.queue.add(randomTrack);
