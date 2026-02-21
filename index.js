@@ -571,6 +571,11 @@ client.riffy.on("trackEnd", async (player, track) => {
 
 client.riffy.on("queueEnd", async (player) => {
     const channel = client.channels.cache.get(player.textChannel);
+    // Prevent destruction if bot just joined
+    if (player._justJoined) {
+        console.log("Bot just joined - ignoring queueEnd");
+        return;
+    }
     // Prevent duplicate handling when multiple rapid events (skip/stop) fire
     if (player._handledQueueEnd) return;
     player._handledQueueEnd = true;
