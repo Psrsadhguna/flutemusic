@@ -520,7 +520,7 @@ client.riffy.on("trackEnd", async (player, track) => {
         if (!resolve || !resolve.tracks || resolve.tracks.length === 0) return;
 
         // Filter out unwanted genres like gym/workout mixes or lo-fi so we get language-specific songs
-        const bannedAutoplayKeywords = ['gym', 'workout', 'exercise', 'gym music', 'workout mix', 'lofi', 'study music'];
+        const bannedAutoplayKeywords = ['gym', 'workout', 'exercise', 'gym music', 'workout mix', 'megamix', 'mega', 'megami', 'megamix', 'lofi', 'study music'];
         const isUnwanted = (info) => {
             const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
             for (const k of bannedAutoplayKeywords) if (text.includes(k)) return true;
@@ -557,7 +557,7 @@ client.riffy.on("queueEnd", async (player) => {
             });
 
             if (resolve.tracks && resolve.tracks.length > 0) {
-                const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','lofi','chill','ambient','relaxing music','study music'];
+                const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','lofi','chill','ambient','relaxing music','study music','gym','workout','exercise','gym music','workout mix','megamix','mega','megami'];
                 const isUnwanted = (info) => {
                     const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
                     for (const k of bannedAutoplayKeywords) if (text.includes(k)) return true;
@@ -596,7 +596,7 @@ client.riffy.on("queueEnd", async (player) => {
             if (humanCount === 0) {
                 // No human users present — skip autoplay so bot doesn't keep playing for no one.
             } else {
-                const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','lofi','chill','ambient','relaxing music','study music'];
+                const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','lofi','chill','ambient','relaxing music','study music','gym','workout','exercise','gym music','workout mix','megamix','mega','megami'];
                 const isUnwanted = (info) => {
                     const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
                     for (const k of bannedAutoplayKeywords) if (text.includes(k)) return true;
