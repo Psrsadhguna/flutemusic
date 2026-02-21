@@ -1,5 +1,5 @@
 const messages = require('../utils/messages.js');
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const os = require('os');
 
 const formatDuration = (ms) => {
@@ -174,7 +174,42 @@ module.exports = {
 
             embed.setFooter({ text: '⚙️ Reddy Bhai Gaming' });
 
-            return message.channel.send({ embeds: [botEmbed, embed] });
+            // Dropdown / Select menu showing player status summary (kept as a display/control dropdown)
+            const statusPlaceholder = player.playing ? 'Playing' : 'Paused';
+            const statusSelect = new StringSelectMenuBuilder()
+                .setCustomId(`status_select_${message.guild.id}`)
+                .setPlaceholder(`Player: ${statusPlaceholder}`)
+                .addOptions([
+                    {
+                        label: `Status: ${player.playing ? 'Playing' : 'Paused'}`,
+                        description: 'Toggle play / pause',
+                        value: 'toggle_play'
+                    },
+                    {
+                        label: `Volume: ${player.volume}%`,
+                        description: 'Adjust volume',
+                        value: 'volume'
+                    },
+                    {
+                        label: `Loop: ${player.loop === 'queue' ? 'On' : 'Off'}`,
+                        description: 'Toggle loop mode',
+                        value: 'loop'
+                    },
+                    {
+                        label: `Autoplay: ${player.autoplay ? 'On' : 'Off'}`,
+                        description: 'Toggle autoplay',
+                        value: 'autoplay'
+                    },
+                    {
+                        label: `Queue: ${player.queue.length}`,
+                        description: 'Open queue',
+                        value: 'queue'
+                    }
+                ]);
+
+            const row = new ActionRowBuilder().addComponents(statusSelect);
+
+            return message.channel.send({ embeds: [botEmbed, embed], components: [row] });
         } else {
             botEmbed.setFooter({ text: '⚙️ Reddy Bhai Gaming' });
             return message.channel.send({ embeds: [botEmbed] });

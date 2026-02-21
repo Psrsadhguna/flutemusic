@@ -1,11 +1,11 @@
 {
-  "servers": 3,
+  "servers": 6,
   "members": 2,
   "totalSongsPlayed": 52,
   "totalPlaytime": 32026395,
   "totalCommandsExecuted": 96,
-  "botUptime": "0h 20m",
-  "uptimeSeconds": 1201723,
+  "botUptime": "0h 15m",
+  "uptimeSeconds": 903897,
   "twentyFourSevenServers": 1,
   "errorCount": 0,
   "errorRate": 0,
@@ -140,5 +140,5 @@
       "count": 2
     }
   ],
-  "updated": "2026-02-20T19:53:49.717Z"
+  "updated": "2026-02-21T06:10:17.310Z"
 }
