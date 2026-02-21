@@ -2,7 +2,7 @@ const messages = require('../utils/messages.js');
 
 module.exports = {
     name: '247',
-    description: 'Toggle 24/7 mode - bot keeps playing music',
+    description: 'Toggle 24/7 mode - bot stays in voice channel (use autoplay for automatic songs)',
     usage: 'f247',
     execute: async (message, args, client) => {
         const player = client.riffy.players.get(message.guild.id);
@@ -23,6 +23,6 @@ module.exports = {
             }
         }
 
-        messages.success(message.channel, `🎵 24/7 Mode ${status}! The bot will ${player.twentyFourSeven ? 'keep playing songs' : 'stop when the queue ends'}.`);
+        messages.success(message.channel, `🎵 24/7 Mode ${status}! The bot will ${player.twentyFourSeven ? 'stay in the voice channel' : 'leave when the queue ends'}. Use \`fautoplay\` to auto-add songs.`);
     }
 };

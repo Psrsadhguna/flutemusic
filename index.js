@@ -575,94 +575,11 @@ client.riffy.on("queueEnd", async (player) => {
     if (player._handledQueueEnd) return;
     player._handledQueueEnd = true;
     
-    // Handle 24/7 mode - keeps the player active and adds a random song
+    // Handle 24/7 mode - keeps the bot in VC but doesn't add songs (autoplay handles that)
     if (player.twentyFourSeven) {
-        try {
-            // Use the same language-targeted queries as autoplay so 24/7 prefers Telugu/Hindi
-            const randomQueries = [
-                "random popular songs",
-                "telugu songs",
-                "hindi songs",
-                "telugu top hits",
-                "hindi top hits"
-            ];
-
-            const randomQuery = randomQueries[Math.floor(Math.random() * randomQueries.length)];
-
-            const resolve = await client.riffy.resolve({
-                query: randomQuery,
-                requester: client.user,
-            });
-
-            if (resolve && resolve.tracks && resolve.tracks.length > 0) {
-                const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','lofi','chill','ambient','relaxing music','study music','gym','workout','exercise','gym music','workout mix','megamix','mega','megami'];
-                const isUnwanted = (info) => {
-                    const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
-                    for (const k of bannedAutoplayKeywords) if (text.includes(k)) return true;
-                    return false;
-                };
-
-                const detectLanguageFromText = (title, author) => {
-                    const text = ((title || '') + ' ' + (author || '')).toLowerCase();
-                    // Telugu
-                    if (/[\u0C00-\u0C7F]/.test(text)) return 'telugu';
-                    // Devanagari (Hindi, Marathi, Nepali) - treat as 'hindi' for matching
-                    if (/[\u0900-\u097F]/.test(text)) return 'hindi';
-                    // Tamil
-                    if (/[\u0B80-\u0BFF]/.test(text)) return 'tamil';
-                    // Kannada
-                    if (/[\u0C80-\u0CFF]/.test(text)) return 'kannada';
-                    // Malayalam
-                    if (/[\u0D00-\u0D7F]/.test(text)) return 'malayalam';
-                    // Bengali
-                    if (/[\u0980-\u09FF]/.test(text)) return 'bengali';
-                    // Gurmukhi (Punjabi)
-                    if (/[\u0A00-\u0A7F]/.test(text)) return 'punjabi';
-                    // Arabic script (Urdu, Arabic) - mark as 'urdu'
-                    if (/[\u0600-\u06FF]/.test(text)) return 'urdu';
-
-                    // Fallback: explicit language words
-                    if (text.includes('telugu')) return 'telugu';
-                    if (text.includes('hindi') || text.includes('bollywood')) return 'hindi';
-                    if (text.includes('tamil')) return 'tamil';
-                    if (text.includes('kannada')) return 'kannada';
-                    if (text.includes('malayalam')) return 'malayalam';
-                    if (text.includes('bengali')) return 'bengali';
-                    if (text.includes('punjabi')) return 'punjabi';
-                    if (text.includes('urdu')) return 'urdu';
-
-                    // If Latin letters only and looks English-ish, mark english
-                    if (/^[\u0000-\u007F\s0-9a-zA-Z\p{Punct}]+$/.test(text)) return 'english';
-                    return '';
-                };
-
-                const candidates = resolve.tracks.filter(t => !isUnwanted(t.info));
-                let selected = null;
-
-                if (randomQuery.includes('telugu') || randomQuery.includes('hindi')) {
-                    const lang = randomQuery.includes('telugu') ? 'telugu' : 'hindi';
-                    const langMatched = candidates.filter(t => detectLanguageFromText(t.info.title, t.info.author) === lang || (t.info.title || '').toLowerCase().includes(lang) || (t.info.author || '').toLowerCase().includes(lang));
-                    if (langMatched.length > 0) selected = langMatched[Math.floor(Math.random() * langMatched.length)];
-                }
-
-                if (!selected) {
-                    if (candidates.length > 0) selected = candidates[Math.floor(Math.random() * candidates.length)];
-                    else selected = resolve.tracks[Math.floor(Math.random() * resolve.tracks.length)];
-                }
-
-                if (selected) {
-                    selected.info.requester = client.user;
-                    player.queue.add(selected);
-                    player.play();
-                    messages.success(channel, "🎵 24/7 Mode: Added a random track to keep the music going!");
-                    console.log("24/7 added:", selected.info.title);
-                    return;
-                }
-            }
-        } catch (error) {
-            console.error("Error adding track for 24/7 mode:", error);
-            try { player._handledQueueEnd = false; } catch (e) { }
-        }
+        messages.success(channel, "🎵 24/7 Mode: Bot is staying in the voice channel. Use autoplay to add songs automatically!");
+        console.log("24/7 mode active - waiting for autoplay or manual queue");
+        return;
     }
     
     // Handle autoplay mode - adds similar songs when queue ends
