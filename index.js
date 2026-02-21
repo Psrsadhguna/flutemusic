@@ -500,23 +500,39 @@ client.riffy.on("trackEnd", async (player, track) => {
     if (player.queue && player.queue.length > 0) return;
 
     try {
+        const randomQueries = [
+            "top global hits",
+            "random popular songs",
+            "spotify viral songs",
+            "bollywood hits",
+            "english pop music",
+            "telugu songs",
+            "tamil songs",
+            "kpop hits",
+            "edm mix",
+            "lofi chill beats"
+        ];
+
+        // Pick random search keyword
+        const randomQuery = randomQueries[Math.floor(Math.random() * randomQueries.length)];
+
         const resolve = await client.riffy.resolve({
-            query: "random popular music",
-            requester: client.user,
+            query: randomQuery,
+            requester: track.requester || client.user,
         });
 
         if (!resolve || !resolve.tracks || resolve.tracks.length === 0) return;
 
-        // Pick random song from search result
+        // Pick random track from search result
         const randomTrack = resolve.tracks[Math.floor(Math.random() * resolve.tracks.length)];
 
-        randomTrack.info.requester = client.user;
+        randomTrack.info.requester = track.requester || client.user;
         player.queue.add(randomTrack);
         player.play();
 
         console.log("🎲 Random autoplay song added:", randomTrack.info.title);
     } catch (err) {
-        console.error("Autoplay Error:", err);
+        console.error("Autoplay Random Error:", err);
     }
 });
 
