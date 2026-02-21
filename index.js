@@ -102,6 +102,11 @@ async function saveUserData() {
 // Export stats to global for access from commands (load in background)
 Promise.all([loadStats(), loadUserData()]).then(() => {
     console.log(`✅ Loaded user and stats data in ${Date.now() - startupTime}ms`);
+    // Clear 247 mode on restart
+    const serversBefore = stats.twentyFourSevenServers.size;
+    console.log(`🔄 Clearing 24/7 mode from ${serversBefore} server(s)...`);
+    stats.twentyFourSevenServers.clear();
+    console.log(`✅ 24/7 mode cleared - ${stats.twentyFourSevenServers.size} servers now enabled`);
     global.stats = stats;
     global.userData = userData;
 }).catch(err => console.error('Error loading data:', err));
