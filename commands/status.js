@@ -177,17 +177,29 @@ module.exports = {
             // Send Bot Statistics separately first
             await message.channel.send({ embeds: [botEmbed] });
 
-            // Dropdown / Select menu showing player status summary (kept as a separate message)
+            // Create two separate dropdowns: one for Player Status, one for Player Controls
             const statusPlaceholder = player.playing ? 'Playing' : 'Paused';
-            const statusSelect = new StringSelectMenuBuilder()
-                .setCustomId(`status_select_${message.guild.id}`)
-                .setPlaceholder(`Player: ${statusPlaceholder}`)
+
+            const playerStatusSelect = new StringSelectMenuBuilder()
+                .setCustomId(`player_status_select_${message.guild.id}`)
+                .setPlaceholder(`Player Status: ${statusPlaceholder}`)
                 .addOptions([
                     {
                         label: `Status: ${player.playing ? 'Playing' : 'Paused'}`,
                         description: 'Toggle play / pause',
                         value: 'toggle_play'
                     },
+                    {
+                        label: 'Now Playing',
+                        description: 'Show current track details',
+                        value: 'now_playing'
+                    }
+                ]);
+
+            const controlsSelect = new StringSelectMenuBuilder()
+                .setCustomId(`player_controls_select_${message.guild.id}`)
+                .setPlaceholder('Player Controls')
+                .addOptions([
                     {
                         label: `Volume: ${player.volume}%`,
                         description: 'Adjust volume',
@@ -210,9 +222,10 @@ module.exports = {
                     }
                 ]);
 
-            const row = new ActionRowBuilder().addComponents(statusSelect);
+            const row1 = new ActionRowBuilder().addComponents(playerStatusSelect);
+            const row2 = new ActionRowBuilder().addComponents(controlsSelect);
 
-            return message.channel.send({ embeds: [embed], components: [row] });
+            return message.channel.send({ embeds: [embed], components: [row1, row2] });
         } else {
             botEmbed.setFooter({ text: '⚙️ Reddy Bhai Gaming' });
             return message.channel.send({ embeds: [botEmbed] });
