@@ -520,21 +520,45 @@ client.riffy.on("trackEnd", async (player, track) => {
         if (!resolve || !resolve.tracks || resolve.tracks.length === 0) return;
 
         // Filter out unwanted genres like gym/workout mixes or lo-fi so we get language-specific songs
-        const bannedAutoplayKeywords = ['gym', 'workout', 'exercise', 'gym music', 'workout mix', 'megamix', 'mega', 'megami', 'megamix', 'lofi', 'study music'];
+        const bannedAutoplayKeywords = ['gym', 'workout', 'exercise', 'gym music', 'workout mix', 'megamix', 'mega', 'megami', 'lofi', 'study music', 'sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','chill','ambient','relaxing music'];
         const isUnwanted = (info) => {
             const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
             for (const k of bannedAutoplayKeywords) if (text.includes(k)) return true;
             return false;
         };
 
-        // Pick the first non-unwanted track, otherwise fallback to a random track
-        const randomTrack = resolve.tracks.find(t => !isUnwanted(t.info)) || resolve.tracks[Math.floor(Math.random() * resolve.tracks.length)];
+        // Helper: detect Telugu or Hindi script/language hints
+        const detectLanguageFromText = (title, author) => {
+            const text = ((title || '') + ' ' + (author || '')).toLowerCase();
+            if (/[\u0C00-\u0C7F]/.test(text)) return 'telugu'; // Telugu script
+            if (/[\u0900-\u097F]/.test(text)) return 'hindi';  // Devanagari (Hindi)
+            if (text.includes('telugu')) return 'telugu';
+            if (text.includes('hindi') || text.includes('bollywood')) return 'hindi';
+            return '';
+        };
 
-        randomTrack.info.requester = track.requester || client.user;
-        player.queue.add(randomTrack);
+        // Prefer script/language matches when the chosen query requests a language
+        const candidates = resolve.tracks.filter(t => !isUnwanted(t.info));
+        let selected = null;
+        if (randomQuery.includes('telugu') || randomQuery.includes('hindi')) {
+            const lang = randomQuery.includes('telugu') ? 'telugu' : 'hindi';
+            const langMatched = candidates.filter(t => detectLanguageFromText(t.info.title, t.info.author) === lang || (t.info.title || '').toLowerCase().includes(lang) || (t.info.author || '').toLowerCase().includes(lang));
+            if (langMatched.length > 0) selected = langMatched[Math.floor(Math.random() * langMatched.length)];
+        }
+
+        // Fallback to any non-unwanted candidate
+        if (!selected) {
+            if (candidates.length > 0) selected = candidates[Math.floor(Math.random() * candidates.length)];
+            else selected = resolve.tracks[Math.floor(Math.random() * resolve.tracks.length)];
+        }
+
+        if (!selected) return;
+
+        selected.info.requester = track.requester || client.user;
+        player.queue.add(selected);
         player.play();
 
-        console.log("🎲 Random autoplay song added:", randomTrack.info.title);
+        console.log("🎲 Random autoplay song added:", selected.info.title);
     } catch (err) {
         console.error("Autoplay Random Error:", err);
     }
