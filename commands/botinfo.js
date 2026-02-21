@@ -13,56 +13,41 @@ module.exports = {
             .setThumbnail(client.user.displayAvatarURL({ dynamic: true }))
             .addFields([
                 {
-                    name: '👑 Bot Name',
-                    value: 'flute music',
-                    inline: true
-                },
-
-
-
-
-                {
-                    name: '📅 Created',
+                    name: '📅 Creation Date',
                     value: `<t:${Math.floor(client.user.createdTimestamp / 1000)}:D>`,
-                    inline: true
+                    inline: false
                 },
-
-
-
-
+        
                 {
-                    name: '⚡ Servers',
+                    name: '🌍 Servers',
                     value: `${client.guilds.cache.size}`,
-                    inline: true
+                    inline: false
                 },
-
-
-
-            
+                {
+                    name: '📢 Channels',
+                    value: `${client.channels.cache.size}`,
+                    inline: false
+                },
                 {
                     name: '👥 Users',
                     value: `${client.users.cache.size}`,
-                    inline: true
+                    inline: false
                 },
-
-
-
                 {
-                    name: '📚 Commands',
-                    value: '30+',
-                    inline: true
+                    name: '📡 Ping',
+                    value: `${Math.round(client.ws.ping)}ms`,
+                    inline: false
                 },
-
-
-
                 {
-                    name: '� Prefix',
-                    value: '`f`',
-                    inline: true
+                    name: '💾 Memory',
+                    value: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`,
+                    inline: false
+                },
+                {
+                    name: '🎵 Total Streams',
+                    value: `Playing Music In ${client.guilds.cache.filter(g => g.members.me?.voice.channel).size} Server!`,
+                    inline: false
                 }
-
-
-                
             ])
             .setFooter({
                 text: '⚙️ Powered By Reddy Bhai Gaming',

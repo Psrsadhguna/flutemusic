@@ -167,14 +167,6 @@ module.exports = {
             ];
 
             // Add shuffle indicator
-            if (player) {
-                const shuffleStatus = player.queue.shuffle ? '🔀 ON' : '🔀 OFF';
-                fields.push({
-                    name: 'Shuffle',
-                    value: shuffleStatus,
-                    inline: true
-                });
-            }
 
             if (progressBar) {
                 fields.push({
