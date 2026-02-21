@@ -488,6 +488,38 @@ client.riffy.on("trackStart", async (player, track) => {
 // Helper: set voice channel "status"/topic to show now playing (if supported)
 // (Persistent now-playing message removed)
 
+// Simple autoplay on track end: when autoplay is enabled and the queue is empty,
+// add a random popular track and play it.
+client.riffy.on("trackEnd", async (player, track) => {
+    if (!player) return;
+
+    // Autoplay must be enabled
+    if (!player.autoplay) return;
+
+    // If queue still has songs → don't autoplay
+    if (player.queue && player.queue.length > 0) return;
+
+    try {
+        const resolve = await client.riffy.resolve({
+            query: "random popular music",
+            requester: client.user,
+        });
+
+        if (!resolve || !resolve.tracks || resolve.tracks.length === 0) return;
+
+        // Pick random song from search result
+        const randomTrack = resolve.tracks[Math.floor(Math.random() * resolve.tracks.length)];
+
+        randomTrack.info.requester = client.user;
+        player.queue.add(randomTrack);
+        player.play();
+
+        console.log("🎲 Random autoplay song added:", randomTrack.info.title);
+    } catch (err) {
+        console.error("Autoplay Error:", err);
+    }
+});
+
 client.riffy.on("queueEnd", async (player) => {
     const channel = client.channels.cache.get(player.textChannel);
     // Prevent duplicate handling when multiple rapid events (skip/stop) fire
