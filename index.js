@@ -709,6 +709,7 @@ client.riffy.on("queueEnd", async (player) => {
             // If autoplay addition failed, allow future queueEnd handling attempts
             try { player._handledQueueEnd = false; } catch (e) { }
         }
+        return; // Exit after autoplay handling
     }
     
     
