@@ -63,11 +63,6 @@ module.exports = {
                 inline: true
             },
             {
-                name: '💾 Memory Usage',
-                value: `**Used:** ${usedMemory}MB\n**Total:** ${totalMemory}MB\n**Node.js:** ${process.version}`,
-                inline: true
-            },
-            {
                 name: '🎵 Music Players',
                 value: `**Active:** ${client.riffy.players.size}`,
                 inline: true
