@@ -33,5 +33,29 @@ module.exports = {
                 message.channel.setTopic(topic).catch(() => {});
             }
         } catch (e) { /* ignore */ }
+
+        // If autoplay was just enabled, immediately add a track
+        if (player.autoplay && player.current) {
+            try {
+                const currentTrack = player.current;
+                const query = `${currentTrack.info.title} ${currentTrack.info.author}`;
+                
+                const resolve = await client.riffy.resolve({
+                    query: query,
+                    requester: client.user,
+                });
+
+                if (resolve && resolve.tracks && resolve.tracks.length > 0) {
+                    const track = resolve.tracks[1] || resolve.tracks[0]; // Get second result to avoid same track
+                    if (track) {
+                        track.info.requester = client.user;
+                        player.queue.add(track);
+                        messages.success(message.channel, '🤖 Autoplay: Added a similar track to the queue.');
+                    }
+                }
+            } catch (error) {
+                console.error("Error adding initial autoplay track:", error);
+            }
+        }
     }
 };
