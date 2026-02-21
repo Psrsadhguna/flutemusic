@@ -1,9 +1,25 @@
 {
-  "totalSongsPlayed": 84,
-  "totalPlaytime": 40267395,
-  "totalCommandsExecuted": 125,
+  "totalSongsPlayed": 86,
+  "totalPlaytime": 40839395,
+  "totalCommandsExecuted": 128,
   "twentyFourSevenServers": [],
   "recentlyPlayed": [
+    {
+      "title": "Emotional",
+      "author": "Mounika.",
+      "uri": "https://www.youtube.com/watch?v=2wPO5mVvfJE",
+      "requester": "1423265663203409950",
+      "timestamp": 1771687871132,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Mounika Love Failure Song",
+      "author": "Vadlakonda Anilkumar",
+      "uri": "https://www.youtube.com/watch?v=wdigi1TpeBI",
+      "requester": "744044949942829127",
+      "timestamp": 1771687860135,
+      "guildId": "1469974428908654818"
+    },
     {
       "title": "chikiri peddi malayalam",
       "author": "Mallu ai",
@@ -147,28 +163,12 @@
       "requester": "744044949942829127",
       "timestamp": 1771686143343,
       "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Karige Loga",
-      "author": "Devi Sri Prasad",
-      "uri": "https://www.youtube.com/watch?v=DV_WP62Oo4c",
-      "requester": "744044949942829127",
-      "timestamp": 1771686039409,
-      "guildId": "1469974428908654818"
-    },
-    {
-      "title": "Karige Loga",
-      "author": "Devi Sri Prasad",
-      "uri": "https://www.youtube.com/watch?v=DV_WP62Oo4c",
-      "requester": "744044949942829127",
-      "timestamp": 1771685992133,
-      "guildId": "1469974428908654818"
     }
   ],
   "errorCount": 0,
   "guildActivity": {
     "1466778869834191026": 52,
-    "1469974428908654818": 32
+    "1469974428908654818": 34
   },
   "topArtists": {
     "AKASA": 3,
@@ -199,8 +199,10 @@
     "Devi Sri Prasad": 4,
     "Mohit Chauhan": 5,
     "A.R. Rahman": 7,
-    "Mallu ai": 6
+    "Mallu ai": 6,
+    "Vadlakonda Anilkumar": 1,
+    "Mounika.": 1
   },
   "commandErrors": [],
-  "lastUpdated": "2026-02-21T15:26:35.042Z"
+  "lastUpdated": "2026-02-21T15:31:16.730Z"
 }

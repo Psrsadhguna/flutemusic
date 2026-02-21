@@ -488,12 +488,6 @@ client.riffy.on("trackStart", async (player, track) => {
         }
     }
     
-    // Store track info for autoplay mode to find similar tracks
-    player.lastTrackInfo = {
-        title: track.info.title,
-        author: track.info.author,
-        uri: track.info.uri
-    };
     // Clear any previous queueEnd handling flag so future queueEnd can be processed
     try { player._handledQueueEnd = false; } catch (e) { /* ignore */ }
     // Update the text channel topic/status to show current playing track
@@ -522,141 +516,10 @@ client.riffy.on("queueEnd", async (player) => {
     if (player._handledQueueEnd) return;
     player._handledQueueEnd = true;
     
-    // Handle 24/7 mode - keeps the bot in VC but doesn't add songs (autoplay handles that)
+    // Handle 24/7 mode - keeps the bot in VC but doesn't add songs
     if (player.twentyFourSeven) {
         console.log("24/7 mode active - bot staying in voice channel");
         return;
-    }
-    
-    // Handle autoplay mode - adds similar songs when queue ends
-    if (player.autoplay) {
-        try {
-            // Helper: detect simple language hints from title/author (e.g., Telugu)
-            const detectLanguageFromText = (title, author) => {
-                const text = ((title || '') + ' ' + (author || '')).toLowerCase();
-                if (/[\u0C00-\u0C7F]/.test(text)) return 'telugu';
-                if (/[\u0900-\u097F]/.test(text)) return 'hindi';
-                if (/[\u0B80-\u0BFF]/.test(text)) return 'tamil';
-                if (/[\u0C80-\u0CFF]/.test(text)) return 'kannada';
-                if (/[\u0D00-\u0D7F]/.test(text)) return 'malayalam';
-                if (/[\u0980-\u09FF]/.test(text)) return 'bengali';
-                if (/[\u0A00-\u0A7F]/.test(text)) return 'punjabi';
-                if (/[\u0600-\u06FF]/.test(text)) return 'urdu';
-
-                if (text.includes('telugu')) return 'telugu';
-                if (text.includes('hindi') || text.includes('bollywood')) return 'hindi';
-                if (text.includes('tamil')) return 'tamil';
-                if (text.includes('kannada')) return 'kannada';
-                if (text.includes('malayalam')) return 'malayalam';
-                if (text.includes('bengali')) return 'bengali';
-                if (text.includes('punjabi')) return 'punjabi';
-                if (text.includes('urdu')) return 'urdu';
-                if (text.includes('spanish')) return 'spanish';
-                if (text.includes('portuguese')) return 'portuguese';
-                if (text.includes('french')) return 'french';
-                if (text.includes('german')) return 'german';
-
-                if (/^[\u0000-\u007F\s0-9a-zA-Z\p{Punct}]+$/.test(text)) return 'english';
-                return '';
-            };
-
-            const bannedAutoplayKeywords = ['sleep','sleep music','deep sleep','sleep sounds','sleeping','bedtime','insomnia','asleep','nap','meditation','lofi','chill','ambient','relaxing music','study music','gym','workout','exercise','gym music','workout mix','megamix','mega','megami'];
-            const isUnwanted = (info) => {
-                const text = ((info.title || '') + ' ' + (info.author || '')).toLowerCase();
-                for (const k of bannedAutoplayKeywords) if (text.includes(k)) return true;
-                return false;
-            };
-
-            // If we have info about the last track, try to find similar tracks
-            if (player.lastTrackInfo) {
-                const langHint = detectLanguageFromText(player.lastTrackInfo.title, player.lastTrackInfo.author);
-                const baseQuery = `${player.lastTrackInfo.title} ${player.lastTrackInfo.author}`;
-                const query = (langHint ? `${player.lastTrackInfo.title} ${langHint}` : baseQuery).slice(0, 200);
-                const resolve = await client.riffy.resolve({ query, requester: client.user });
-
-                if (resolve && resolve.tracks && resolve.tracks.length > 0) {
-                    // Filter out unwanted tracks first
-                    const searchPool = resolve.tracks.filter(t => !isUnwanted(t.info));
-
-                    // If last track language was Telugu/Hindi, require language-matching results only
-                    if (langHint === 'telugu' || langHint === 'hindi') {
-                        const langPool = searchPool.filter(t => detectLanguageFromText(t.info.title, t.info.author) === langHint || (t.info.title || '').toLowerCase().includes(langHint) || (t.info.author || '').toLowerCase().includes(langHint));
-                        if (langPool.length > 0) {
-                            const candidate = langPool.find(t => t.info.uri !== player.lastTrackInfo.uri) || langPool[0];
-                            if (candidate) {
-                                candidate.info.requester = client.user;
-                                player.queue.add(candidate);
-                                player.play();
-                                messages.success(channel, `🤖 Autoplay: Added a similar ${langHint} track to the queue.`);
-                                console.log("Autoplay added:", candidate.info.title);
-                                return;
-                            }
-                        } else {
-                            // No language-matching similar track found — skip autoplay to honor strict language preference
-                            console.log(`Autoplay: no ${langHint} similar track found — skipping autoplay.`);
-                            try { player._handledQueueEnd = false; } catch (e) { }
-                            return;
-                        }
-                    } else {
-                        // Non-language-specific: pick best candidate as before
-                        const candidate = searchPool.find(t => t.info.uri !== player.lastTrackInfo.uri) || searchPool[0] || resolve.tracks[0];
-                        if (candidate) {
-                            candidate.info.requester = client.user;
-                            player.queue.add(candidate);
-                            player.play();
-                            messages.success(channel, '🤖 Autoplay: Added a similar track to the queue.');
-                            console.log("Autoplay added:", candidate.info.title);
-                            return;
-                        }
-                    }
-                }
-            }
-
-            // Fallback: if no lastTrackInfo or no similar track found, pick a random chill/popular term
-            const searchTerms = ["top tracks", "trending", "popular hits"];
-            const langHint = player.lastTrackInfo ? detectLanguageFromText(player.lastTrackInfo.title, player.lastTrackInfo.author) : '';
-            const randomTerm = searchTerms[Math.floor(Math.random() * searchTerms.length)];
-            const resolve = await client.riffy.resolve({
-                query: (langHint ? `${randomTerm} ${langHint}` : randomTerm),
-                requester: client.user,
-            });
-
-            if (resolve.tracks && resolve.tracks.length > 0) {
-                // Filter results
-                const candidates = resolve.tracks.filter(t => !isUnwanted(t.info));
-                // If last track was Telugu/Hindi, require fallback results to match that language
-                if (langHint === 'telugu' || langHint === 'hindi') {
-                    const langCandidates = candidates.filter(t => detectLanguageFromText(t.info.title, t.info.author) === langHint || (t.info.title || '').toLowerCase().includes(langHint) || (t.info.author || '').toLowerCase().includes(langHint));
-                        if (langCandidates.length > 0) {
-                            const track = langCandidates[0];
-                            track.info.requester = client.user;
-                            player.queue.add(track);
-                            player.play();
-                            messages.success(channel, `🤖 Autoplay: Added a ${langHint} track to keep the music going.`);
-                            console.log("Autoplay fallback added:", track.info.title);
-                            return;
-                        } else {
-                            console.log(`Autoplay fallback: no ${langHint} matches found — skipping autoplay.`);
-                            try { player._handledQueueEnd = false; } catch (e) { }
-                            return;
-                        }
-                }
-
-                // Non-language fallback: add first non-unwanted or first track
-                const track = candidates.find(t => !isUnwanted(t.info)) || resolve.tracks[0];
-                track.info.requester = client.user;
-                player.queue.add(track);
-                player.play();
-                messages.success(channel, '🤖 Autoplay: Added a track to keep the music going.');
-                console.log("Autoplay fallback added:", track.info.title);
-                return;
-            }
-        } catch (error) {
-            console.error("Error adding track for autoplay mode:", error);
-            // If autoplay addition failed, allow future queueEnd handling attempts
-            try { player._handledQueueEnd = false; } catch (e) { }
-        }
-        return; // Exit after autoplay handling
     }
     
     
