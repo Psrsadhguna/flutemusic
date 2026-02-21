@@ -1,11 +1,105 @@
 {
-  "totalSongsPlayed": 52,
-  "totalPlaytime": 32026395,
-  "totalCommandsExecuted": 96,
-  "twentyFourSevenServers": [
-    "1466778869834191026"
-  ],
+  "totalSongsPlayed": 64,
+  "totalPlaytime": 34661395,
+  "totalCommandsExecuted": 110,
+  "twentyFourSevenServers": [],
   "recentlyPlayed": [
+    {
+      "title": "Uppenantha",
+      "author": "Devi Sri Prasad",
+      "uri": "https://www.youtube.com/watch?v=CShcX8SiGVc",
+      "requester": "744044949942829127",
+      "timestamp": 1771685208625,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "Uppenantha",
+      "author": "Devi Sri Prasad",
+      "uri": "https://www.youtube.com/watch?v=CShcX8SiGVc",
+      "requester": "744044949942829127",
+      "timestamp": 1771685137455,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I Love You Too",
+      "author": "Yazin Nizar",
+      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
+      "requester": "744044949942829127",
+      "timestamp": 1771685047666,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I Love You Too",
+      "author": "Ezra Bell",
+      "uri": "https://www.youtube.com/watch?v=6E4eAqmuOz0",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684988208,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I Love You Too",
+      "author": "Peter McPoland",
+      "uri": "https://www.youtube.com/watch?v=DwefWKqGA4A",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684980958,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I Love You Too",
+      "author": "Ezra Bell",
+      "uri": "https://www.youtube.com/watch?v=6E4eAqmuOz0",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684965386,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I Love You Too",
+      "author": "Peter McPoland",
+      "uri": "https://www.youtube.com/watch?v=DwefWKqGA4A",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684960211,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I Love You Too",
+      "author": "Yazin Nizar",
+      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684955775,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I Love You Too",
+      "author": "Peter McPoland",
+      "uri": "https://www.youtube.com/watch?v=DwefWKqGA4A",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684946721,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I Love You Too",
+      "author": "Yazin Nizar",
+      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
+      "requester": "744044949942829127",
+      "timestamp": 1771684931540,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "I Love You Too",
+      "author": "Yazin Nizar",
+      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
+      "requester": "744044949942829127",
+      "timestamp": 1771684914865,
+      "guildId": "1469974428908654818"
+    },
+    {
+      "title": "i love u.",
+      "author": "wiv",
+      "uri": "https://www.youtube.com/watch?v=eNDyar-q1Hk",
+      "requester": "744044949942829127",
+      "timestamp": 1771684828048,
+      "guildId": "1469974428908654818"
+    },
     {
       "title": "Humnava | (Slowed + Reverb) by SLOWED-ERA",
       "author": "SLOWED-ERA",
@@ -69,107 +163,12 @@
       "requester": "744044949942829127",
       "timestamp": 1771596494367,
       "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Povodhe Prema",
-      "author": "Yuvan Shankar Raja",
-      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
-      "requester": "744044949942829127",
-      "timestamp": 1771596397604,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Povodhe Prema",
-      "author": "Yuvan Shankar Raja",
-      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
-      "requester": "744044949942829127",
-      "timestamp": 1771596096554,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Povodhe Prema",
-      "author": "Yuvan Shankar Raja",
-      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
-      "requester": "744044949942829127",
-      "timestamp": 1771595907099,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Povodhe Prema",
-      "author": "Yuvan Shankar Raja",
-      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
-      "requester": "744044949942829127",
-      "timestamp": 1771595749347,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Hello Rammante",
-      "author": "Vijay Prakash",
-      "uri": "https://open.spotify.com/track/7czCPelOubkNC5jfUNq7UP",
-      "requester": "744044949942829127",
-      "timestamp": 1771594809402,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Lagdi Lahore Di (From \"Street Dancer 3D\")",
-      "author": "Guru Randhawa",
-      "uri": "https://open.spotify.com/track/5ZQnQnbUVtBO0pl3ShqVHG",
-      "requester": "744044949942829127",
-      "timestamp": 1771593854196,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Lagdi Lahore Di (From \"Street Dancer 3D\")",
-      "author": "Guru Randhawa",
-      "uri": "https://open.spotify.com/track/5ZQnQnbUVtBO0pl3ShqVHG",
-      "requester": "744044949942829127",
-      "timestamp": 1771593704129,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Vellipothundhe Vellipothundhe",
-      "author": "Anup Rubens",
-      "uri": "https://open.spotify.com/track/5RmNccBoBS6xok0t9EffEj",
-      "requester": "744044949942829127",
-      "timestamp": 1771593397036,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Vellipothundhe Vellipothundhe",
-      "author": "Anup Rubens",
-      "uri": "https://open.spotify.com/track/5RmNccBoBS6xok0t9EffEj",
-      "requester": "744044949942829127",
-      "timestamp": 1771593106051,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Vellipothundhe Vellipothundhe",
-      "author": "Anup Rubens",
-      "uri": "https://open.spotify.com/track/5RmNccBoBS6xok0t9EffEj",
-      "requester": "744044949942829127",
-      "timestamp": 1771593049266,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Lagdi Lahore Di (From \"Street Dancer 3D\")",
-      "author": "Guru Randhawa",
-      "uri": "https://open.spotify.com/track/5ZQnQnbUVtBO0pl3ShqVHG",
-      "requester": "744044949942829127",
-      "timestamp": 1771592853560,
-      "guildId": "1466778869834191026"
-    },
-    {
-      "title": "Lagdi Lahore Di (From \"Street Dancer 3D\")",
-      "author": "Guru Randhawa",
-      "uri": "https://open.spotify.com/track/5ZQnQnbUVtBO0pl3ShqVHG",
-      "requester": "744044949942829127",
-      "timestamp": 1771592668275,
-      "guildId": "1466778869834191026"
     }
   ],
   "errorCount": 0,
   "guildActivity": {
-    "1466778869834191026": 52
+    "1466778869834191026": 52,
+    "1469974428908654818": 12
   },
   "topArtists": {
     "AKASA": 3,
@@ -192,8 +191,13 @@
     "Vijay Prakash": 1,
     "Yuvan Shankar Raja": 5,
     "Khasa Aala Chahar": 5,
-    "SLOWED-ERA": 2
+    "SLOWED-ERA": 2,
+    "wiv": 1,
+    "Yazin Nizar": 4,
+    "Peter McPoland": 3,
+    "Ezra Bell": 2,
+    "Devi Sri Prasad": 2
   },
   "commandErrors": [],
-  "lastUpdated": "2026-02-21T06:10:17.385Z"
+  "lastUpdated": "2026-02-21T14:49:59.902Z"
 }

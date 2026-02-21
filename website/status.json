@@ -1,101 +1,106 @@
 {
-  "servers": 6,
+  "servers": 2,
   "members": 2,
-  "totalSongsPlayed": 52,
-  "totalPlaytime": 32026395,
-  "totalCommandsExecuted": 96,
-  "botUptime": "0h 15m",
-  "uptimeSeconds": 903897,
-  "twentyFourSevenServers": 1,
+  "totalSongsPlayed": 64,
+  "totalPlaytime": 34661395,
+  "totalCommandsExecuted": 110,
+  "botUptime": "0h 0m",
+  "uptimeSeconds": 2585,
+  "twentyFourSevenServers": 0,
   "errorCount": 0,
   "errorRate": 0,
   "recentlyPlayed": [
     {
-      "title": "Humnava | (Slowed + Reverb) by SLOWED-ERA",
-      "author": "SLOWED-ERA",
-      "uri": "https://www.youtube.com/watch?v=0fPWYNbBQCk",
+      "title": "Uppenantha",
+      "author": "Devi Sri Prasad",
+      "uri": "https://www.youtube.com/watch?v=CShcX8SiGVc",
       "requester": "744044949942829127",
-      "timestamp": 1771608273295,
-      "guildId": "1466778869834191026"
+      "timestamp": 1771685208625,
+      "guildId": "1469974428908654818"
     },
     {
-      "title": "Humnava | (Slowed + Reverb) by SLOWED-ERA",
-      "author": "SLOWED-ERA",
-      "uri": "https://www.youtube.com/watch?v=0fPWYNbBQCk",
+      "title": "Uppenantha",
+      "author": "Devi Sri Prasad",
+      "uri": "https://www.youtube.com/watch?v=CShcX8SiGVc",
       "requester": "744044949942829127",
-      "timestamp": 1771606550268,
-      "guildId": "1466778869834191026"
+      "timestamp": 1771685137455,
+      "guildId": "1469974428908654818"
     },
     {
-      "title": "Status",
-      "author": "Khasa Aala Chahar",
-      "uri": "https://open.spotify.com/track/5sXq9UvI4ocTiCDjZRPp3w",
+      "title": "I Love You Too",
+      "author": "Yazin Nizar",
+      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
       "requester": "744044949942829127",
-      "timestamp": 1771603835522,
-      "guildId": "1466778869834191026"
+      "timestamp": 1771685047666,
+      "guildId": "1469974428908654818"
     },
     {
-      "title": "Status",
-      "author": "Khasa Aala Chahar",
-      "uri": "https://open.spotify.com/track/5sXq9UvI4ocTiCDjZRPp3w",
-      "requester": "744044949942829127",
-      "timestamp": 1771603848323,
-      "guildId": "1466778869834191026"
+      "title": "I Love You Too",
+      "author": "Ezra Bell",
+      "uri": "https://www.youtube.com/watch?v=6E4eAqmuOz0",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684988208,
+      "guildId": "1469974428908654818"
     },
     {
-      "title": "Status",
-      "author": "Khasa Aala Chahar",
-      "uri": "https://open.spotify.com/track/5sXq9UvI4ocTiCDjZRPp3w",
-      "requester": "744044949942829127",
-      "timestamp": 1771599106736,
-      "guildId": "1466778869834191026"
+      "title": "I Love You Too",
+      "author": "Peter McPoland",
+      "uri": "https://www.youtube.com/watch?v=DwefWKqGA4A",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684980958,
+      "guildId": "1469974428908654818"
     },
     {
-      "title": "Status",
-      "author": "Khasa Aala Chahar",
-      "uri": "https://www.youtube.com/watch?v=q_345u_Zbmo",
-      "requester": "744044949942829127",
-      "timestamp": 1771598557391,
-      "guildId": "1466778869834191026"
+      "title": "I Love You Too",
+      "author": "Ezra Bell",
+      "uri": "https://www.youtube.com/watch?v=6E4eAqmuOz0",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684965386,
+      "guildId": "1469974428908654818"
     },
     {
-      "title": "Status",
-      "author": "Khasa Aala Chahar",
-      "uri": "https://www.youtube.com/watch?v=q_345u_Zbmo",
-      "requester": "744044949942829127",
-      "timestamp": 1771598541573,
-      "guildId": "1466778869834191026"
+      "title": "I Love You Too",
+      "author": "Peter McPoland",
+      "uri": "https://www.youtube.com/watch?v=DwefWKqGA4A",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684960211,
+      "guildId": "1469974428908654818"
     },
     {
-      "title": "Povodhe Prema",
-      "author": "Yuvan Shankar Raja",
-      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
-      "requester": "744044949942829127",
-      "timestamp": 1771596494367,
-      "guildId": "1466778869834191026"
+      "title": "I Love You Too",
+      "author": "Yazin Nizar",
+      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684955775,
+      "guildId": "1469974428908654818"
     },
     {
-      "title": "Povodhe Prema",
-      "author": "Yuvan Shankar Raja",
-      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
-      "requester": "744044949942829127",
-      "timestamp": 1771596397604,
-      "guildId": "1466778869834191026"
+      "title": "I Love You Too",
+      "author": "Peter McPoland",
+      "uri": "https://www.youtube.com/watch?v=DwefWKqGA4A",
+      "requester": "1423265663203409950",
+      "timestamp": 1771684946721,
+      "guildId": "1469974428908654818"
     },
     {
-      "title": "Povodhe Prema",
-      "author": "Yuvan Shankar Raja",
-      "uri": "https://open.spotify.com/track/4HkipUaRTXwhDqstRFz9oB",
+      "title": "I Love You Too",
+      "author": "Yazin Nizar",
+      "uri": "https://www.youtube.com/watch?v=fza5ru35JT8",
       "requester": "744044949942829127",
-      "timestamp": 1771596096554,
-      "guildId": "1466778869834191026"
+      "timestamp": 1771684931540,
+      "guildId": "1469974428908654818"
     }
   ],
   "topGuilds": [
     {
       "guildId": "1466778869834191026",
       "songCount": 52,
-      "guildName": "Flute Community"
+      "guildName": "Unknown"
+    },
+    {
+      "guildId": "1469974428908654818",
+      "songCount": 12,
+      "guildName": "accounts  owo"
     }
   ],
   "topArtists": [
@@ -124,6 +129,10 @@
       "count": 4
     },
     {
+      "name": "Yazin Nizar",
+      "count": 4
+    },
+    {
       "name": "AKASA",
       "count": 3
     },
@@ -134,11 +143,7 @@
     {
       "name": "Anup Rubens",
       "count": 3
-    },
-    {
-      "name": "RATHOD TUNES",
-      "count": 2
     }
   ],
-  "updated": "2026-02-21T06:10:17.310Z"
+  "updated": "2026-02-21T14:48:59.896Z"
 }

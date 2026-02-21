@@ -9,6 +9,11 @@ module.exports = {
         const query = args.join(" ");
         if (!query) return messages.error(message.channel, "Please provide a search query!");
 
+        // Check if user is in a voice channel
+        if (!message.member.voice.channel) {
+            return messages.error(message.channel, "You must be connected to a voice channel to play music!");
+        }
+
         try {
             const player = client.riffy.createConnection({
                 guildId: message.guild.id,

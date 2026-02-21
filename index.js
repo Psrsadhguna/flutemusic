@@ -370,7 +370,7 @@ client.on("messageCreate", async (message) => {
     const commandName = args.shift().toLowerCase();
 
     // Check if user is in a voice channel for music commands
-    const musicCommands = ["play", "skip", "stop", "pause", "resume", "queue", "nowplaying", "volume", "shuffle", "loop", "remove", "clear", "autoplay", "247"];
+    const musicCommands = ["play", "skip", "stop", "pause", "resume", "queue", "nowplaying", "volume", "shuffle", "loop", "remove", "clear", "247"];
     if (musicCommands.includes(commandName)) {
         if (!message.member.voice.channel) {
             return messages.error(message.channel, "You must be in a voice channel!");
