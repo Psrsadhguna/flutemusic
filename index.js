@@ -599,10 +599,35 @@ client.riffy.on("queueEnd", async (player) => {
 
                 const detectLanguageFromText = (title, author) => {
                     const text = ((title || '') + ' ' + (author || '')).toLowerCase();
+                    // Telugu
                     if (/[\u0C00-\u0C7F]/.test(text)) return 'telugu';
+                    // Devanagari (Hindi, Marathi, Nepali) - treat as 'hindi' for matching
                     if (/[\u0900-\u097F]/.test(text)) return 'hindi';
+                    // Tamil
+                    if (/[\u0B80-\u0BFF]/.test(text)) return 'tamil';
+                    // Kannada
+                    if (/[\u0C80-\u0CFF]/.test(text)) return 'kannada';
+                    // Malayalam
+                    if (/[\u0D00-\u0D7F]/.test(text)) return 'malayalam';
+                    // Bengali
+                    if (/[\u0980-\u09FF]/.test(text)) return 'bengali';
+                    // Gurmukhi (Punjabi)
+                    if (/[\u0A00-\u0A7F]/.test(text)) return 'punjabi';
+                    // Arabic script (Urdu, Arabic) - mark as 'urdu'
+                    if (/[\u0600-\u06FF]/.test(text)) return 'urdu';
+
+                    // Fallback: explicit language words
                     if (text.includes('telugu')) return 'telugu';
                     if (text.includes('hindi') || text.includes('bollywood')) return 'hindi';
+                    if (text.includes('tamil')) return 'tamil';
+                    if (text.includes('kannada')) return 'kannada';
+                    if (text.includes('malayalam')) return 'malayalam';
+                    if (text.includes('bengali')) return 'bengali';
+                    if (text.includes('punjabi')) return 'punjabi';
+                    if (text.includes('urdu')) return 'urdu';
+
+                    // If Latin letters only and looks English-ish, mark english
+                    if (/^[\u0000-\u007F\s0-9a-zA-Z\p{Punct}]+$/.test(text)) return 'english';
                     return '';
                 };
 
@@ -641,10 +666,29 @@ client.riffy.on("queueEnd", async (player) => {
             // Helper: detect simple language hints from title/author (e.g., Telugu)
             const detectLanguageFromText = (title, author) => {
                 const text = ((title || '') + ' ' + (author || '')).toLowerCase();
-                const langs = ['telugu','tamil','hindi','kannada','malayalam','bengali','punjabi','urdu','english','spanish','portuguese','french','german'];
-                // detect by script (Telugu block) or explicit language name
                 if (/[\u0C00-\u0C7F]/.test(text)) return 'telugu';
-                for (const l of langs) if (text.includes(l)) return l;
+                if (/[\u0900-\u097F]/.test(text)) return 'hindi';
+                if (/[\u0B80-\u0BFF]/.test(text)) return 'tamil';
+                if (/[\u0C80-\u0CFF]/.test(text)) return 'kannada';
+                if (/[\u0D00-\u0D7F]/.test(text)) return 'malayalam';
+                if (/[\u0980-\u09FF]/.test(text)) return 'bengali';
+                if (/[\u0A00-\u0A7F]/.test(text)) return 'punjabi';
+                if (/[\u0600-\u06FF]/.test(text)) return 'urdu';
+
+                if (text.includes('telugu')) return 'telugu';
+                if (text.includes('hindi') || text.includes('bollywood')) return 'hindi';
+                if (text.includes('tamil')) return 'tamil';
+                if (text.includes('kannada')) return 'kannada';
+                if (text.includes('malayalam')) return 'malayalam';
+                if (text.includes('bengali')) return 'bengali';
+                if (text.includes('punjabi')) return 'punjabi';
+                if (text.includes('urdu')) return 'urdu';
+                if (text.includes('spanish')) return 'spanish';
+                if (text.includes('portuguese')) return 'portuguese';
+                if (text.includes('french')) return 'french';
+                if (text.includes('german')) return 'german';
+
+                if (/^[\u0000-\u007F\s0-9a-zA-Z\p{Punct}]+$/.test(text)) return 'english';
                 return '';
             };
             // Only run autoplay if there are non-bot users in the voice channel
