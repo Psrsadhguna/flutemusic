@@ -174,7 +174,10 @@ module.exports = {
 
             embed.setFooter({ text: '⚙️ Reddy Bhai Gaming' });
 
-            // Dropdown / Select menu showing player status summary (kept as a display/control dropdown)
+            // Send Bot Statistics separately first
+            await message.channel.send({ embeds: [botEmbed] });
+
+            // Dropdown / Select menu showing player status summary (kept as a separate message)
             const statusPlaceholder = player.playing ? 'Playing' : 'Paused';
             const statusSelect = new StringSelectMenuBuilder()
                 .setCustomId(`status_select_${message.guild.id}`)
@@ -209,7 +212,7 @@ module.exports = {
 
             const row = new ActionRowBuilder().addComponents(statusSelect);
 
-            return message.channel.send({ embeds: [botEmbed, embed], components: [row] });
+            return message.channel.send({ embeds: [embed], components: [row] });
         } else {
             botEmbed.setFooter({ text: '⚙️ Reddy Bhai Gaming' });
             return message.channel.send({ embeds: [botEmbed] });
