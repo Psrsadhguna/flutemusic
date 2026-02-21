@@ -501,16 +501,9 @@ client.riffy.on("trackEnd", async (player, track) => {
 
     try {
         const randomQueries = [
-            "top global hits",
             "random popular songs",
-            "spotify viral songs",
-            "bollywood hits",
-            "english pop music",
             "telugu songs",
-            "tamil songs",
-            "kpop hits",
-            "edm mix",
-            "lofi chill beats"
+            "hindi songs"
         ];
 
         // Pick random search keyword
