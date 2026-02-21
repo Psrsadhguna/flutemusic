@@ -9,9 +9,6 @@ module.exports = {
         const player = client.riffy.players.get(message.guild.id);
         if (!player) return messages.error(message.channel, '❌ Nothing is playing!');
 
-        // Store previous state to detect toggle
-        const wasAutoplayEnabled = player.autoplay;
-        
         // Toggle autoplay mode
         player.autoplay = !player.autoplay;
 
@@ -36,30 +33,5 @@ module.exports = {
                 message.channel.setTopic(topic).catch(() => {});
             }
         } catch (e) { /* ignore */ }
-
-        // If autoplay was just enabled (toggled from false to true), immediately add a track
-        if (!wasAutoplayEnabled && player.autoplay && player.current) {
-            try {
-                const currentTrack = player.current;
-                const query = `${currentTrack.info.title} ${currentTrack.info.author}`;
-                
-                const resolve = await client.riffy.resolve({
-                    query: query,
-                    requester: client.user,
-                });
-
-                if (resolve && resolve.tracks && resolve.tracks.length > 0) {
-                    const track = resolve.tracks[1] || resolve.tracks[0]; // Get second result to avoid same track
-                    if (track) {
-                        track.info.requester = client.user;
-                        player.queue.add(track);
-                        player.play();
-                        messages.success(message.channel, '🤖 Autoplay: Added a similar track to the queue.');
-                    }
-                }
-            } catch (error) {
-                console.error("Error adding initial autoplay track:", error);
-            }
-        }
     }
 };
