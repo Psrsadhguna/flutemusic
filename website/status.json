@@ -4,8 +4,8 @@
   "totalSongsPlayed": 382,
   "totalPlaytime": 213469434,
   "totalCommandsExecuted": 420,
-  "botUptime": "0h 0m",
-  "uptimeSeconds": 2800,
+  "botUptime": "0h 5m",
+  "uptimeSeconds": 302802,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
   "errorRate": 0.95,
@@ -150,5 +150,5 @@
       "count": 11
     }
   ],
-  "updated": "2026-02-24T10:32:22.951Z"
+  "updated": "2026-02-24T10:37:22.954Z"
 }
