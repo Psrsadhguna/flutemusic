@@ -131,6 +131,7 @@ Or use `npm start` if a start script is configured in `package.json`.
 - Ensure the bot token in `config.js` is valid and the bot has the required gateway and voice permissions.
 - If audio or filters fail, check any ffmpeg installation or platform-specific audio prerequisites.
 
+
 ## 🤝 Contributing
 
 Pull requests are welcome. For small edits (typos, readme improvements) open a PR. For code changes, please describe the change and test locally.
