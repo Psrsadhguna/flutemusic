@@ -24,6 +24,8 @@ module.exports = {
     song: "<:song:1350022769118547968>",
     time: "<:time:1350022772067274783>",
     volume: "<:volume:1350022766379929601>",
+    supportserver: "<:supportserver:1475873585468936295> ",
+    website: "<:website:1475873526522056746> ",
 
     // actions / helpers
     loadingSmall: "<:loading:1350022748809723904>",

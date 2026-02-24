@@ -161,7 +161,7 @@ function createHelpButtons() {
                 .setLabel('Support')
                 .setStyle(ButtonStyle.Link)
                 .setURL(config.supportURL)
-                .setEmoji('🔗')
+                .setEmoji(emojis.supportserver || '<:supportserver:1475873585468936295> ')
         );
     }
     
@@ -183,7 +183,7 @@ function createHelpButtons() {
                 .setLabel('Website')
                 .setStyle(ButtonStyle.Link)
                 .setURL(config.websiteURL)
-                .setEmoji('🌐')
+                .setEmoji(emojis.website)
         );
     }
     
@@ -208,8 +208,9 @@ const formatDuration = (ms) => {
 
 const getDurationString = (track) => {
     if (track.info.isStream) return '';
-    if (!track.info.duration) return 'N/A';
-    return formatDuration(track.info.duration);
+    const duration = track.info.duration || track.info.length;
+    if (!duration) return 'N/A';
+    return formatDuration(duration);
 };
 
 // Detect language from title/author using heuristics
@@ -693,7 +694,7 @@ module.exports = {
                 {
                     label: 'Loading...',
                     value: 'loading',
-                    emoji: '⏳'
+                    emoji: '<a:loading:1475224967103910119> '
                 }
             ]);
             
@@ -935,7 +936,7 @@ module.exports = {
                     }
                     if (allRecs.find(ar => normalizeKey(ar.label) === key)) continue;
 
-                    const emoji = spotifyRecs && spotifyRecs.includes(cand) ? '🎵' : (youtubeRecs && youtubeRecs.includes(cand) ? '▶️' : '🙏');
+                    const emoji = spotifyRecs && spotifyRecs.includes(cand) ? '🎵' : (youtubeRecs && youtubeRecs.includes(cand) ? '<a:play:1475228960823705752> ' : '<a:play:1475228960823705752> ');
                     allRecs.push({ label, value, emoji });
                 }
 
@@ -1074,11 +1075,20 @@ module.exports = {
             }
 
             embed.addFields([
-                { name: '📌 Position', value: `${position}`, inline: true },
-                { name: '⏱️ Duration', value: getDurationString(track) || 'N/A', inline: true }
+                { name: '📌 Position', value: `${position}`, inline: false },
+                { name: '⏱️ Duration', value: getDurationString(track) || 'N/A', inline: false }
             ]);
 
-            return channel.send({ embeds: [embed] }).catch(() => {});
+            // Add Play Now button
+            const playNowButton = new ButtonBuilder()
+                .setCustomId('play_now_track')
+                .setLabel('Play Now')
+                .setStyle(ButtonStyle.Success)
+                .setEmoji('▶️');
+            
+            const row = new ActionRowBuilder().addComponents(playNowButton);
+
+            return channel.send({ embeds: [embed], components: [row] }).catch(() => {});
         } catch (e) {
             return channel.send({ content: `✅ Added to queue: ${track.info.title || 'Unknown'}` }).catch(() => {});
         }
@@ -1257,8 +1267,8 @@ module.exports = {
             iconURL: channel.client.user.displayAvatarURL()
         });
 
-        const buttonRow = buttonUtils.createHelpCommandButtons(config);
-        return channel.send({ embeds: [embed], components: buttonRow ? [buttonRow] : [] });
+        const helpButtonsRow = createHelpButtons();
+        return channel.send({ embeds: [embed], components: helpButtonsRow ? [helpButtonsRow] : [] });
     },
 
     // Helper exports

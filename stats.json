@@ -1,9 +1,17 @@
 {
-  "totalSongsPlayed": 387,
-  "totalPlaytime": 215858434,
-  "totalCommandsExecuted": 422,
+  "totalSongsPlayed": 388,
+  "totalPlaytime": 216656434,
+  "totalCommandsExecuted": 431,
   "twentyFourSevenServers": [],
   "recentlyPlayed": [
+    {
+      "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
+      "author": "Pandit Pulse",
+      "uri": "https://www.youtube.com/watch?v=KgM3a_1zBfc",
+      "requester": "744044949942829127",
+      "timestamp": 1771943501569,
+      "guildId": "1475011449834176543"
+    },
     {
       "title": "Pushpa Pushpa",
       "author": "Nakash Aziz",
@@ -155,21 +163,13 @@
       "requester": "744044949942829127",
       "timestamp": 1771820374814,
       "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Rooba Rooba",
-      "author": "Various Artists - Topic",
-      "uri": "https://www.youtube.com/watch?v=tL08JUXGJGo",
-      "requester": "744044949942829127",
-      "timestamp": 1771820300065,
-      "guildId": "1475011449834176543"
     }
   ],
   "errorCount": 4,
   "guildActivity": {
     "1466778869834191026": 52,
     "1469974428908654818": 71,
-    "1475011449834176543": 264
+    "1475011449834176543": 265
   },
   "topArtists": {
     "AKASA": 3,
@@ -264,7 +264,7 @@
     "CHITRA": 1,
     "Anuradha Paudwal - Topic": 1,
     "William Augusto": 1,
-    "Pandit Pulse": 5
+    "Pandit Pulse": 6
   },
   "commandErrors": [
     {
@@ -296,5 +296,5 @@
       "timestamp": 1771801007273
     }
   ],
-  "lastUpdated": "2026-02-24T14:23:24.101Z"
+  "lastUpdated": "2026-02-24T15:27:38.641Z"
 }

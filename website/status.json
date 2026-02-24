@@ -1,15 +1,55 @@
 {
   "servers": 6,
   "members": 3,
-  "totalSongsPlayed": 383,
-  "totalPlaytime": 214267434,
-  "totalCommandsExecuted": 421,
+  "totalSongsPlayed": 388,
+  "totalPlaytime": 216656434,
+  "totalCommandsExecuted": 431,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1458,
+  "uptimeSeconds": 1791,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
-  "errorRate": 0.95,
+  "errorRate": 0.93,
   "recentlyPlayed": [
+    {
+      "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
+      "author": "Pandit Pulse",
+      "uri": "https://www.youtube.com/watch?v=KgM3a_1zBfc",
+      "requester": "744044949942829127",
+      "timestamp": 1771943501569,
+      "guildId": "1475011449834176543"
+    },
+    {
+      "title": "Pushpa Pushpa",
+      "author": "Nakash Aziz",
+      "uri": "https://www.youtube.com/watch?v=ynWvtBg0K5w",
+      "requester": "744044949942829127",
+      "timestamp": 1771943001919,
+      "guildId": "1475011449834176543"
+    },
+    {
+      "title": "Ratthaalu",
+      "author": "Nakash Aziz",
+      "uri": "https://www.youtube.com/watch?v=fLf4EooJUGA",
+      "requester": "744044949942829127",
+      "timestamp": 1771942975151,
+      "guildId": "1475011449834176543"
+    },
+    {
+      "title": "Chikiri Chikiri",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "requester": "744044949942829127",
+      "timestamp": 1771942962896,
+      "guildId": "1475011449834176543"
+    },
+    {
+      "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
+      "author": "Pandit Pulse",
+      "uri": "https://www.youtube.com/watch?v=KgM3a_1zBfc",
+      "requester": "744044949942829127",
+      "timestamp": 1771942951039,
+      "guildId": "1475011449834176543"
+    },
     {
       "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
       "author": "Pandit Pulse",
@@ -49,52 +89,12 @@
       "requester": "744044949942829127",
       "timestamp": 1771858486582,
       "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
-      "author": "Pandit Pulse",
-      "uri": "https://www.youtube.com/watch?v=KgM3a_1zBfc",
-      "requester": "744044949942829127",
-      "timestamp": 1771857517887,
-      "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Rooba Rooba",
-      "author": "Shahil Hada",
-      "uri": "https://open.spotify.com/track/7gVqTSJ4Mr5uKkM9yhQKop",
-      "requester": "744044949942829127",
-      "timestamp": 1771856466253,
-      "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Rooba Rooba",
-      "author": "Shahil Hada & Chinmayee",
-      "uri": "https://www.youtube.com/watch?v=tL08JUXGJGo",
-      "requester": "744044949942829127",
-      "timestamp": 1771821448437,
-      "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Die On This Hill",
-      "author": "SIENNA SPIRO",
-      "uri": "https://www.youtube.com/watch?v=dXncjYrvuNY",
-      "requester": "744044949942829127",
-      "timestamp": 1771821114245,
-      "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Aigiri Nandini",
-      "author": "Rajalakshmee Sanjay",
-      "uri": "https://www.youtube.com/watch?v=1Yycc3tejNw",
-      "requester": "744044949942829127",
-      "timestamp": 1771821061265,
-      "guildId": "1475011449834176543"
     }
   ],
   "topGuilds": [
     {
       "guildId": "1475011449834176543",
-      "songCount": 260,
+      "songCount": 265,
       "guildName": "Bot setting"
     },
     {
@@ -111,7 +111,7 @@
   "topArtists": [
     {
       "name": "Mohit Chauhan",
-      "count": 31
+      "count": 32
     },
     {
       "name": "Shahil Hada",
@@ -134,6 +134,10 @@
       "count": 15
     },
     {
+      "name": "Nakash Aziz",
+      "count": 13
+    },
+    {
       "name": "M.M. Sreelekha",
       "count": 12
     },
@@ -144,11 +148,7 @@
     {
       "name": "Shahil Hada & Chinmayee",
       "count": 12
-    },
-    {
-      "name": "Nakash Aziz",
-      "count": 11
     }
   ],
-  "updated": "2026-02-24T14:22:24.088Z"
+  "updated": "2026-02-24T15:46:52.875Z"
 }

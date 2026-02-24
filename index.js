@@ -747,7 +747,7 @@ client.on('interactionCreate', async (interaction) => {
                 player.play();
             }
 
-            await interaction.reply({ content: `✅ Playing next: **${track.info.title}**`, ephemeral: true });
+            await interaction.reply({ content: `<a:play:1475228960823705752> Playing next: **${track.info.title}**`, ephemeral: true });
         } catch (err) {
             console.error('Recommendation selection error:', err);
             await interaction.reply({ content: '❌ Failed to play recommendation: ' + err.message, ephemeral: true });
@@ -879,6 +879,29 @@ client.on('interactionCreate', async (interaction) => {
         } catch (err) {
             console.error('Refresh recs error:', err);
             await interaction.reply({ content: '❌ Failed to refresh recommendations: ' + err.message, ephemeral: true });
+        }
+    } else if (interaction.customId === 'play_now_track') {
+        try {
+            // Get the current queue to find and move the requested track to front
+            if (!player.queue || player.queue.length === 0) {
+                return interaction.reply({ content: '❌ Queue is empty!', ephemeral: true });
+            }
+
+            // Find the track that was just added (usually at position 0 or close to it)
+            // Move first track in queue to play immediately
+            const trackToPlay = player.queue[0];
+            
+            if (!trackToPlay) {
+                return interaction.reply({ content: '❌ No track found in queue!', ephemeral: true });
+            }
+
+            // Stop current playback and play the track
+            await player.stop();
+            
+            await interaction.reply({ content: `▶️ Now playing: **${trackToPlay.info.title}**`, ephemeral: true });
+        } catch (err) {
+            console.error('Play now error:', err);
+            await interaction.reply({ content: '❌ Failed to play track: ' + err.message, ephemeral: true });
         }
     }
 });
