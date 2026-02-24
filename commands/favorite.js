@@ -123,6 +123,14 @@ module.exports = {
                     deaf: true,
                 });
 
+                // Disable autoplay to prevent automatic song continuation
+                try {
+                    player.autoplay = false;
+                } catch (e) {}
+                try {
+                    player.setLoop("none");
+                } catch (e) {}
+
                 // Restore 24/7 mode from persistent stats
                 try { player.twentyFourSeven = Boolean(global.stats && global.stats.twentyFourSevenServers && global.stats.twentyFourSevenServers.has(message.guild.id)); } catch(e) { player.twentyFourSeven = false; }
 

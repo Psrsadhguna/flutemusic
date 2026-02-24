@@ -47,6 +47,14 @@ module.exports = {
                 });
             }
 
+            // Disable autoplay to prevent automatic song continuation
+            try {
+                player.autoplay = false;
+            } catch (e) {}
+            try {
+                player.setLoop("none");
+            } catch (e) {}
+
             // Clear current queue
             if (player.queue.current) {
                 player.queue.current = null;

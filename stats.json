@@ -1,9 +1,49 @@
 {
-  "totalSongsPlayed": 382,
-  "totalPlaytime": 213469434,
-  "totalCommandsExecuted": 420,
+  "totalSongsPlayed": 387,
+  "totalPlaytime": 215858434,
+  "totalCommandsExecuted": 422,
   "twentyFourSevenServers": [],
   "recentlyPlayed": [
+    {
+      "title": "Pushpa Pushpa",
+      "author": "Nakash Aziz",
+      "uri": "https://www.youtube.com/watch?v=ynWvtBg0K5w",
+      "requester": "744044949942829127",
+      "timestamp": 1771943001919,
+      "guildId": "1475011449834176543"
+    },
+    {
+      "title": "Ratthaalu",
+      "author": "Nakash Aziz",
+      "uri": "https://www.youtube.com/watch?v=fLf4EooJUGA",
+      "requester": "744044949942829127",
+      "timestamp": 1771942975151,
+      "guildId": "1475011449834176543"
+    },
+    {
+      "title": "Chikiri Chikiri",
+      "author": "Mohit Chauhan",
+      "uri": "https://www.youtube.com/watch?v=oUmLhFhNy4A",
+      "requester": "744044949942829127",
+      "timestamp": 1771942962896,
+      "guildId": "1475011449834176543"
+    },
+    {
+      "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
+      "author": "Pandit Pulse",
+      "uri": "https://www.youtube.com/watch?v=KgM3a_1zBfc",
+      "requester": "744044949942829127",
+      "timestamp": 1771942951039,
+      "guildId": "1475011449834176543"
+    },
+    {
+      "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
+      "author": "Pandit Pulse",
+      "uri": "https://www.youtube.com/watch?v=KgM3a_1zBfc",
+      "requester": "744044949942829127",
+      "timestamp": 1771942850901,
+      "guildId": "1475011449834176543"
+    },
     {
       "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
       "author": "Pandit Pulse",
@@ -123,53 +163,13 @@
       "requester": "744044949942829127",
       "timestamp": 1771820300065,
       "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Rooba Rooba",
-      "author": "Shahil Hada & Chinmayee",
-      "uri": "https://www.youtube.com/watch?v=tL08JUXGJGo",
-      "requester": "744044949942829127",
-      "timestamp": 1771819482212,
-      "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Rooba Rooba",
-      "author": "Shahil Hada",
-      "uri": "https://open.spotify.com/track/7gVqTSJ4Mr5uKkM9yhQKop",
-      "requester": "744044949942829127",
-      "timestamp": 1771819217250,
-      "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Bollywood Dj Non Stop Remix(Remix By Dj Jitesh,Psynth)",
-      "author": "Bappi Lahiri, K.K., Anushka Manchanda, Kamal Khan, Aishwarya, Hrithik Roshan, Diljit, Farhan Akhtar, Keerthi Sagathia, Abhishek Nainwal, Abhay Deol, Amrita Kak, Bob, Akon, Shreya Ghoshal, Earl Edgar D, Hamsika Iyer, Arijit, and Javed Ali",
-      "uri": "https://www.youtube.com/watch?v=68RLvhxk_4g",
-      "requester": "744044949942829127",
-      "timestamp": 1771819121141,
-      "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Siva Simiran / Siva Amrithavani / Shambho Tere Jaijaikar",
-      "author": "Anuradha Paudwal",
-      "uri": "https://www.youtube.com/watch?v=S7Zlyryra9I",
-      "requester": "744044949942829127",
-      "timestamp": 1771819118222,
-      "guildId": "1475011449834176543"
-    },
-    {
-      "title": "3 Hours of Soaking in His Presence",
-      "author": "William Augusto",
-      "uri": "https://www.youtube.com/watch?v=WAVO1_7cABU",
-      "requester": "744044949942829127",
-      "timestamp": 1771819091408,
-      "guildId": "1475011449834176543"
     }
   ],
   "errorCount": 4,
   "guildActivity": {
     "1466778869834191026": 52,
     "1469974428908654818": 71,
-    "1475011449834176543": 259
+    "1475011449834176543": 264
   },
   "topArtists": {
     "AKASA": 3,
@@ -198,7 +198,7 @@
     "Peter McPoland": 3,
     "Ezra Bell": 2,
     "Devi Sri Prasad": 25,
-    "Mohit Chauhan": 31,
+    "Mohit Chauhan": 32,
     "A.R. Rahman": 7,
     "Mallu ai": 6,
     "Vadlakonda Anilkumar": 1,
@@ -253,7 +253,7 @@
     "Thaman S": 1,
     "MM Sreelekha": 1,
     "Ren": 1,
-    "Nakash Aziz": 11,
+    "Nakash Aziz": 13,
     "Shahil Hada & Chinmayee": 12,
     "Prasanna": 1,
     "Ajay-Atul": 1,
@@ -264,7 +264,7 @@
     "CHITRA": 1,
     "Anuradha Paudwal - Topic": 1,
     "William Augusto": 1,
-    "Pandit Pulse": 3
+    "Pandit Pulse": 5
   },
   "commandErrors": [
     {
@@ -296,5 +296,5 @@
       "timestamp": 1771801007273
     }
   ],
-  "lastUpdated": "2026-02-24T10:37:22.984Z"
+  "lastUpdated": "2026-02-24T14:23:24.101Z"
 }

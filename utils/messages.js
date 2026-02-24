@@ -103,8 +103,6 @@ const getYouTubeRecommendations = async (trackTitle, artistName) => {
             suggestions.push(`${artistShort} ${trackTitle}`);
         }
 
-        suggestions.push('telugu movie songs');
-        suggestions.push('telugu hit songs');
 
         const seen = new Set();
         const results = [];

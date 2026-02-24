@@ -1,15 +1,23 @@
 {
   "servers": 6,
-  "members": 2,
-  "totalSongsPlayed": 382,
-  "totalPlaytime": 213469434,
-  "totalCommandsExecuted": 420,
+  "members": 3,
+  "totalSongsPlayed": 383,
+  "totalPlaytime": 214267434,
+  "totalCommandsExecuted": 421,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 2177,
+  "uptimeSeconds": 1458,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
   "errorRate": 0.95,
   "recentlyPlayed": [
+    {
+      "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
+      "author": "Pandit Pulse",
+      "uri": "https://www.youtube.com/watch?v=KgM3a_1zBfc",
+      "requester": "744044949942829127",
+      "timestamp": 1771942850901,
+      "guildId": "1475011449834176543"
+    },
     {
       "title": "Powerful Panchamukha Hanuman Kavacham |  Panchamukhi Kavacham With Lyrics | Hanuman Divine Blessings",
       "author": "Pandit Pulse",
@@ -81,20 +89,12 @@
       "requester": "744044949942829127",
       "timestamp": 1771821061265,
       "guildId": "1475011449834176543"
-    },
-    {
-      "title": "Rooba Rooba",
-      "author": "Various Artists - Topic",
-      "uri": "https://www.youtube.com/watch?v=tL08JUXGJGo",
-      "requester": "744044949942829127",
-      "timestamp": 1771821010850,
-      "guildId": "1475011449834176543"
     }
   ],
   "topGuilds": [
     {
       "guildId": "1475011449834176543",
-      "songCount": 259,
+      "songCount": 260,
       "guildName": "Bot setting"
     },
     {
@@ -150,5 +150,5 @@
       "count": 11
     }
   ],
-  "updated": "2026-02-24T13:44:00.679Z"
+  "updated": "2026-02-24T14:22:24.088Z"
 }
