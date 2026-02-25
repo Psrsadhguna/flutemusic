@@ -505,7 +505,7 @@ client.riffy.on("trackStart", async (player, track) => {
         
         // Send now playing message for every track (not just first)
         try {
-            await messages.nowPlaying(channel, track, player).catch(err => {
+            await messages.nowPlaying(channel, track, player, client).catch(err => {
                 console.error(`${emojis.error} Failed to send now playing message:`, err.message);
             });
         } catch (err) {
@@ -640,89 +640,13 @@ client.on('interactionCreate', async (interaction) => {
     const guildId = interaction.guildId;
     const player = client.riffy.players.get(guildId);
     
-    if (!player) return interaction.reply({ content: '❌ No active player.', ephemeral: true });
+    if (!player) return interaction.reply({ content: '❌ No active player.', flags: 64 });
 
     // Only allow users in voice channel to control
     const member = interaction.guild.members.cache.get(interaction.user.id);
-    if (!member || !member.voice.channel) return interaction.reply({ content: '❌ You must be in a voice channel to use this.', ephemeral: true });
+    if (!member || !member.voice.channel) return interaction.reply({ content: '❌ You must be in a voice channel to use this.', flags: 64 });
 
-    // Handle dropdown menu selection
-    if (interaction.isStringSelectMenu() && interaction.customId === 'recommendation_select') {
-        try {
-            const selectedValue = interaction.values[0];
-            
-            if (selectedValue === 'loading') {
-                return interaction.reply({ content: '⏳ Recommendations are still loading. Please try again in a moment!', ephemeral: true });
-            }
-
-            // Get current track to find recommendation cache
-            let currentTrack = null;
-            if (player.queue && player.queue.current) {
-                currentTrack = player.queue.current;
-            } else if (player.current) {
-                currentTrack = player.current;
-            } else if (player.nowPlaying) {
-                currentTrack = player.nowPlaying;
-            }
-
-            if (!currentTrack) {
-                return interaction.reply({ content: '❌ No track currently playing!', ephemeral: true });
-            }
-
-            // Get recommendations from cache
-            const cacheKey = currentTrack.info.recommendationCacheKey;
-            const cached = cacheKey && global.recommendationCache && global.recommendationCache[cacheKey];
-            
-            let selectedRec = null;
-            if (cached) {
-                // Find the exact recommendation that was selected
-                selectedRec = cached.recs.find(r => r.value === selectedValue);
-            }
-
-            if (!selectedRec) {
-                // Fallback: search for the song
-                selectedRec = { value: selectedValue, label: selectedValue };
-            }
-
-            // Search for the selected song using the exact value
-            const resolve = await client.riffy.resolve({
-                query: selectedRec.value,
-                requester: interaction.user,
-            });
-
-            const { loadType, tracks } = resolve;
-
-            if (loadType === 'LOAD_FAILED' || !tracks || tracks.length === 0) {
-                return interaction.reply({ content: `❌ Could not find: **${selectedRec.label}**`, ephemeral: true });
-            }
-
-            const track = tracks[0];
-            track.info.requester = interaction.user;
-            
-            // Check if track is already in queue
-            const normalize = (s = '') => (s || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
-            const trackKeyNorm = normalize(track.info.title || '');
-            const isDuplicate = player.queue.some(qt => normalize(qt.info.title || '') === trackKeyNorm);
-            
-            if (isDuplicate) {
-                return interaction.reply({ content: `⚠️ **${track.info.title}** is already in the queue!`, ephemeral: true });
-            }
-            
-            // Add to front of queue so it plays next
-            player.queue.unshift(track);
-            
-            // If nothing playing, start this track immediately
-            if (!player.playing && !player.paused) {
-                player.play();
-            }
-
-            await interaction.reply({ content: `<a:play:1475228960823705752> Playing next: **${track.info.title}**`, ephemeral: true });
-        } catch (err) {
-            console.error('Recommendation selection error:', err);
-            await interaction.reply({ content: '❌ Failed to play recommendation: ' + err.message, ephemeral: true });
-        }
-        return;
-    }
+    // Recommendation dropdown handling removed.
 
     if (!interaction.isButton()) return;
 
@@ -730,14 +654,16 @@ client.on('interactionCreate', async (interaction) => {
         try {
             if (player.paused) {
                 await player.pause(false);
-                await interaction.reply({ content: '▶️ Resumed playback.', ephemeral: true });
+                await interaction.reply({ content: '▶️ Resumed playback.', flags: 64 });
+                try { await messages.updateNowPlaying(client, player); } catch (e) {}
             } else {
                 await player.pause(true);
-                await interaction.reply({ content: '⏸️ Paused playback.', ephemeral: true });
+                await interaction.reply({ content: '⏸️ Paused playback.', flags: 64 });
+                try { await messages.updateNowPlaying(client, player); } catch (e) {}
             }
         } catch (err) {
             console.error('Pause error:', err);
-            await interaction.reply({ content: '❌ Failed to toggle pause: ' + err.message, ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to toggle pause: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_skip') {
         try {
@@ -752,23 +678,23 @@ client.on('interactionCreate', async (interaction) => {
             }
             const skipped = currentTrack;
             await player.stop();
-            await interaction.reply({ content: `⏭️ Skipped: **${skipped?.info?.title || 'Unknown'}**`, ephemeral: true });
+            await interaction.reply({ content: `⏭️ Skipped: **${skipped?.info?.title || 'Unknown'}**`, flags: 64 });
         } catch (err) {
             console.error('Skip error:', err);
-            await interaction.reply({ content: '❌ Failed to skip: ' + err.message, ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to skip: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_prev') {
         try {
             // Get history for this guild
             const history = songHistory[guildId];
             if (!history || history.length < 2) {
-                return interaction.reply({ content: '❌ No previous track in history!', ephemeral: true });
+                return interaction.reply({ content: '❌ No previous track in history!', flags: 64 });
             }
             
             // Get the previous track (second to last, since last is current song)
             const prevTrack = history[history.length - 2];
             if (!prevTrack) {
-                return interaction.reply({ content: '❌ No previous track!', ephemeral: true });
+                return interaction.reply({ content: '❌ No previous track!', flags: 64 });
             }
             
             // Remove the previous track from history
@@ -778,29 +704,46 @@ client.on('interactionCreate', async (interaction) => {
             player.queue.unshift(prevTrack);
             player.stop();
             
-            await interaction.reply({ content: `⏮️ Playing previous: **${prevTrack.info.title}**`, ephemeral: true });
+            await interaction.reply({ content: `⏮️ Playing previous: **${prevTrack.info.title}**`, flags: 64 });
         } catch (err) {
             console.error('Previous error:', err);
-            await interaction.reply({ content: '❌ Failed to play previous: ' + err.message, ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to play previous: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_shuffle') {
         try {
             if (!player.queue || player.queue.length < 2) {
-                return interaction.reply({ content: '🔀 Need at least 2 tracks to shuffle!', ephemeral: true });
+                return interaction.reply({ content: '🔀 Need at least 2 tracks to shuffle!', flags: 64 });
             }
             await player.queue.shuffle();
-            await interaction.reply({ content: `🔀 Queue shuffled! **${player.queue.length}** tracks remaining.`, ephemeral: true });
+            await interaction.reply({ content: `🔀 Queue shuffled! **${player.queue.length}** tracks remaining.`, flags: 64 });
         } catch (err) {
             console.error('Shuffle error:', err);
-            await interaction.reply({ content: '❌ Failed to shuffle: ' + err.message, ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to shuffle: ' + err.message, flags: 64 });
+        }
+    } else if (interaction.customId === 'music_loop') {
+        try {
+            const currentMode = player.loop;
+            const newMode = currentMode === 'none' ? 'queue' : 'none';
+            if (typeof player.setLoop === 'function') {
+                await player.setLoop(newMode);
+            } else {
+                player.loop = newMode;
+            }
+            await interaction.reply({ content: newMode === 'queue' ? '🔁 Loop enabled for queue.' : '🔂 Loop disabled.', flags: 64 });
+            try { await messages.updateNowPlaying(client, player); } catch (e) {}
+        } catch (err) {
+            console.error('Loop toggle error:', err);
+            await interaction.reply({ content: '❌ Failed to toggle loop: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_stop') {
         try {
+            // delete now-playing message first if present
+            try { await messages.clearNowPlaying(client, player); } catch (e) {}
             await player.destroy();
-            await interaction.reply({ content: '⏹️ Stopped playback and left channel.', ephemeral: true });
+            await interaction.reply({ content: '⏹️ Stopped playback and left channel.', flags: 64 });
         } catch (err) {
             console.error('Stop error:', err);
-            await interaction.reply({ content: '❌ Failed to stop: ' + err.message, ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to stop: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_replay') {
         try {
@@ -815,45 +758,22 @@ client.on('interactionCreate', async (interaction) => {
             }
             
             if (!currentTrack) {
-                return interaction.reply({ content: '❌ No track is currently playing!', ephemeral: true });
+                return interaction.reply({ content: '❌ No track is currently playing!', flags: 64 });
             }
             
             // Seek to the beginning
             await player.seek(0);
-            await interaction.reply({ content: `🔄 Replaying: **${currentTrack.info.title}**`, ephemeral: true });
+            await interaction.reply({ content: `🔄 Replaying: **${currentTrack.info.title}**`, flags: 64 });
         } catch (err) {
             console.error('Replay error:', err);
-            await interaction.reply({ content: '❌ Failed to replay: ' + err.message, ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to replay: ' + err.message, flags: 64 });
         }
-    } else if (interaction.customId === 'music_refresh_recs') {
-        try {
-            // Get current track
-            let currentTrack = null;
-            if (player.queue && player.queue.current) {
-                currentTrack = player.queue.current;
-            } else if (player.current) {
-                currentTrack = player.current;
-            } else if (player.nowPlaying) {
-                currentTrack = player.nowPlaying;
-            }
-            
-            if (!currentTrack) {
-                return interaction.reply({ content: '❌ No track is currently playing!', ephemeral: true });
-            }
-            
-            // Refresh recommendations
-            await interaction.deferReply({ ephemeral: true });
-            await messages.generateRecommendations(currentTrack, interaction.channel, client);
-            await interaction.editReply({ content: '🔄 Recommendations refreshed!' });
-        } catch (err) {
-            console.error('Refresh recs error:', err);
-            await interaction.reply({ content: '❌ Failed to refresh recommendations: ' + err.message, ephemeral: true });
-        }
+    
     } else if (interaction.customId === 'play_now_track') {
         try {
             // Get the current queue to find and move the requested track to front
             if (!player.queue || player.queue.length === 0) {
-                return interaction.reply({ content: '❌ Queue is empty!', ephemeral: true });
+                return interaction.reply({ content: '❌ Queue is empty!', flags: 64 });
             }
 
             // Find the track that was just added (usually at position 0 or close to it)
@@ -861,16 +781,16 @@ client.on('interactionCreate', async (interaction) => {
             const trackToPlay = player.queue[0];
             
             if (!trackToPlay) {
-                return interaction.reply({ content: '❌ No track found in queue!', ephemeral: true });
+                return interaction.reply({ content: '❌ No track found in queue!', flags: 64 });
             }
 
             // Stop current playback and play the track
             await player.stop();
             
-            await interaction.reply({ content: `▶️ Now playing: **${trackToPlay.info.title}**`, ephemeral: true });
+            await interaction.reply({ content: `▶️ Now playing: **${trackToPlay.info.title}**`, flags: 64 });
         } catch (err) {
             console.error('Play now error:', err);
-            await interaction.reply({ content: '❌ Failed to play track: ' + err.message, ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to play track: ' + err.message, flags: 64 });
         }
     }
 });

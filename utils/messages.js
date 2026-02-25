@@ -1,144 +1,19 @@
+// @ts-nocheck - file uses dynamic JS patterns; disable TS checks here
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const emojis = require('../emojis.js');
 const config = require('../config.js');
 const buttonUtils = require('./buttons.js');
 
-// Spotify API helper
-const getSpotifyRecommendations = async (trackTitle, artistName) => {
-    try {
-        const clientId = process.env.SPOTIFY_CLIENT_ID;
-        const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-        
-        if (!clientId || !clientSecret) {
-            console.log('Spotify credentials not available');
-            return null;
-        }
-
-        // Get access token
-        const authResponse = await fetch('https://accounts.spotify.com/api/token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + Buffer.from(clientId + ':' + clientSecret).toString('base64')
-            },
-            body: 'grant_type=client_credentials'
-        });
-
-        if (!authResponse.ok) {
-            console.log('Spotify auth failed');
-            return null;
-        }
-
-        const authData = await authResponse.json();
-        const accessToken = authData.access_token;
-
-        // Search for track on Spotify
-        const searchResponse = await fetch(`https://api.spotify.com/v1/search?q=track:${encodeURIComponent(trackTitle)}+artist:${encodeURIComponent(artistName)}&type=track&limit=1`, {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
-
-        if (!searchResponse.ok) return null;
-
-        const searchData = await searchResponse.json();
-        const tracks = searchData.tracks?.items;
-
-        if (!tracks || tracks.length === 0) {
-            console.log('Track not found on Spotify');
-            return null;
-        }
-
-        const spotifyTrackId = tracks[0].id;
-
-        // Get recommendations - returns completely DIFFERENT songs (fetch 10 for variety)
-        const recResponse = await fetch(`https://api.spotify.com/v1/recommendations?seed_tracks=${spotifyTrackId}&limit=10&market=US`, {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
-
-        if (!recResponse.ok) return null;
-
-        const recData = await recResponse.json();
-        // Return ONLY song names, no artist info to avoid duplicates
-        return recData.tracks?.map(t => t.name) || null;
-
-    } catch (e) {
-        console.error('Spotify recommendations error:', e.message);
-        return null;
-    }
-};
-
-// YouTube recommendations helper - generate pragmatic search queries
-const getYouTubeRecommendations = async (trackTitle, artistName) => {
-    try {
-        const normalize = (s) => (s || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
-        const titleNorm = normalize(trackTitle);
-        const artistNorm = normalize(artistName);
-        const artistShort = ((artistName || '').split(/&|,|feat|ft| and /i)[0] || '').trim();
-
-        // Filter only compilation/remix indicators, not genre names
-        const compilationBanned = ['remix', 'mix', 'playlist', 'megamix', 'mashup', 'compilation', 'medley'];
-        const containsBanned = (s = '') => compilationBanned.some(b => (s || '').toLowerCase().includes(b));
-
-        const suggestions = [];
-
-        if (trackTitle && trackTitle.length > 1 && !containsBanned(trackTitle)) {
-            suggestions.push(`${trackTitle} similar songs`);
-            suggestions.push(`${trackTitle} soundtrack`);
-        }
-
-        const lang = detectLanguage(trackTitle || '', artistName || '');
-        if (lang && lang.toLowerCase().includes('telugu')) {
-            if (trackTitle) suggestions.push(`${trackTitle} telugu songs`);
-            if (artistShort) suggestions.push(`${artistShort} telugu songs`);
-        }
-
-        if (artistShort && !titleNorm) {
-            suggestions.push(`${artistShort} movie songs`);
-            suggestions.push(`${artistShort} hero songs`);
-            suggestions.push(`${artistShort} top songs`);
-            suggestions.push(`${artistShort} songs`);
-        }
-
-        if (trackTitle && artistShort) {
-            suggestions.push(`${trackTitle} ${artistShort} songs`);
-            suggestions.push(`${artistShort} ${trackTitle}`);
-        }
-
-
-        const seen = new Set();
-        const results = [];
-        for (const s of suggestions) {
-            if (results.length >= 5) break;
-            if (!s || typeof s !== 'string') continue;
-            const n = normalize(s);
-            if (!n) continue;
-            if (containsBanned(n)) continue;
-            if (titleNorm && titleNorm.length > 0 && n.includes(titleNorm)) continue;
-            if (artistNorm && artistNorm.length > 0 && n.includes(artistNorm)) continue;
-            if (seen.has(n)) continue;
-            seen.add(n);
-            results.push(s);
-        }
-
-        return results.slice(0, 5);
-    } catch (e) {
-        console.error('YouTube recommendations error:', e.message);
-        return null;
-    }
-};
+// Recommendation engine removed
 
 // URL validation function
 function isValidURL(string) {
-    try {
-        new URL(string);
-        return true;
-    } catch (e) {
-        return false;
-    }
+    try { new URL(string); return true; } catch (e) { return false; }
 }
 
 // Create help button
 function createHelpButton() {
-    const url = config.helpURL || '';
+    const url = config.websiteURL || config.helpURL || '';
     if (url && isValidURL(url)) {
         return new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -175,7 +50,7 @@ function createHelpButtons() {
                 .setEmoji('⭐')
         );
     }
-    
+
     // Website button
     if (config.websiteURL && isValidURL(config.websiteURL)) {
         components.push(
@@ -183,81 +58,18 @@ function createHelpButtons() {
                 .setLabel('Website')
                 .setStyle(ButtonStyle.Link)
                 .setURL(config.websiteURL)
-                .setEmoji(emojis.website)
+                .setEmoji('🌐')
         );
     }
-    
-    // Only return a row if we have buttons
+
+    // Return an ActionRowBuilder containing the buttons, or null if none
     if (components.length > 0) {
         return new ActionRowBuilder().addComponents(...components);
     }
     return null;
 }
 
-// Format duration in milliseconds to HH:MM:SS or MM:SS
-const formatDuration = (ms) => {
-    if (!ms || ms <= 0 || ms === 'Infinity') return '';
-    const seconds = Math.floor((ms / 1000) % 60);
-    const minutes = Math.floor((ms / (1000 * 60)) % 60);
-    const hours = Math.floor(ms / (1000 * 60 * 60));
-    if (hours > 0) {
-        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-};
-
-const getDurationString = (track) => {
-    if (track.info.isStream) return '';
-    const duration = track.info.duration || track.info.length;
-    if (!duration) return 'N/A';
-    return formatDuration(duration);
-};
-
-// Detect language from title/author using heuristics
-const detectLanguage = (title = '', author = '') => {
-    const text = ((title || '') + ' ' + (author || '')).toLowerCase();
-    
-    // Detect by Unicode script blocks (most reliable)
-    if (/[\u0900-\u097F]/.test(text)) return '🇮🇳 Hindi';
-    if (/[\u0C00-\u0C7F]/.test(text)) return '🇮🇳 Telugu';
-    if (/[\u0B80-\u0BFF]/.test(text)) return '🇮🇳 Tamil';
-    if (/[\u0C80-\u0CFF]/.test(text)) return '🇮🇳 Kannada';
-    if (/[\u0D00-\u0D7F]/.test(text)) return '🇮🇳 Malayalam';
-    if (/[\u0A00-\u0A7F]/.test(text)) return '🇮🇳 Punjabi';
-    if (/[\u0600-\u06FF]/.test(text)) return '🇵🇰 Urdu/Arabic';
-    
-    // Detect by keyword (case-insensitive)
-    const langMap = [
-        ['hindi', '🇮🇳 Hindi'],
-        ['telugu', '🇮🇳 Telugu'],
-        ['tamil', '🇮🇳 Tamil'],
-        ['kannada', '🇮🇳 Kannada'],
-        ['malayalam', '🇮🇳 Malayalam'],
-        ['punjabi', '🇮🇳 Punjabi'],
-        ['marathi', '🇮🇳 Marathi'],
-        ['bengali', '🇧🇩 Bengali'],
-        ['gujarati', '🇮🇳 Gujarati'],
-        ['urdu', '🇵🇰 Urdu'],
-        ['english', '🇬🇧 English'],
-        ['spanish', '🇪🇸 Spanish'],
-        ['portuguese', '🇵🇹 Portuguese'],
-        ['french', '🇫🇷 French'],
-        ['german', '🇩🇪 German'],
-        ['italian', '🇮🇹 Italian'],
-        ['russian', '🇷🇺 Russian'],
-        ['japanese', '🇯🇵 Japanese'],
-        ['korean', '🇰🇷 Korean'],
-        ['chinese', '🇨🇳 Chinese'],
-    ];
-    
-    for (const [keyword, flag] of langMap) {
-        if (text.includes(keyword)) return flag;
-    }
-    
-    return '';
-};
-
-// Base embed builder
+// Basic embed helpers
 const baseEmbed = (title, description = '') => {
     const embed = new EmbedBuilder()
         .setColor(config.embedColor)
@@ -282,219 +94,81 @@ const errorEmbed = (message) => {
         .setTimestamp();
 };
 
-// ====================================
-// RECOMMENDATION ENGINE
-// ====================================
-
-const generateRecommendations = async (track, client) => {
-    if (!track || !track.info) return [];
-
-    try {
-        const [spotifyRecs, youtubeRecs] = await Promise.all([
-            getSpotifyRecommendations(
-                track.info.title || 'Unknown',
-                track.info.author || 'Unknown'
-            ),
-            getYouTubeRecommendations(
-                track.info.title || 'Unknown',
-                track.info.author || 'Unknown'
-            )
-        ]);
-
-        const allRecs = [];
-        const seenLabels = new Set();
-
-        const normalizeKey = (s = '') => {
-            let normalized = (s || '').toString().toLowerCase();
-            // Remove remix, version, and similar suffixes
-            normalized = normalized.replace(/\s*(remix|edit|version|feat|featuring|ft|ft\.|radio|live|acoustic|cover|mix|remaster|slowed|reverb)\s*/gi, ' ');
-            normalized = normalized.replace(/\([^)]*\)/g, ' ');
-            // Remove special characters but keep space structure
-            normalized = normalized.replace(/[^a-z0-9\s]/g, ' ');
-            // Collapse multiple spaces and trim
-            normalized = normalized.replace(/\s+/g, ' ').trim();
-            return normalized;
-        };
-
-        const currentTitleNorm = normalizeKey(track?.info?.title || '');
-        const currentAuthorNorm = normalizeKey(track?.info?.author || '');
-        
-        // Helper to check if a recommendation is similar to current track
-        const isSimilarToCurrentTrack = (recNorm) => {
-            if (!recNorm) return false;
-            // Exact match
-            if (recNorm === currentTitleNorm) return true;
-            if (recNorm === currentAuthorNorm) return true;
-            
-            // Partial word match (prevent artist's other songs)
-            if (currentAuthorNorm && currentAuthorNorm.length > 3) {
-                if (recNorm.includes(currentAuthorNorm) || currentAuthorNorm.includes(recNorm)) return true;
-            }
-            
-            // Check if most of the words match (70%+ overlap)
-            const recWords = recNorm.split(' ').filter(w => w);
-            const currentWords = currentTitleNorm.split(' ').filter(w => w);
-            if (recWords.length > 0 && currentWords.length > 0) {
-                const commonWords = recWords.filter(w => currentWords.includes(w));
-                const overlapRatio = commonWords.length / Math.max(recWords.length, currentWords.length);
-                if (overlapRatio > 0.7) return true;
-            }
-            
-            return false;
-        };
-        
-        const recentTitlesNorm = new Set();
-        try {
-            if (global.stats && Array.isArray(global.stats.recentlyPlayed)) {
-                const recent5 = global.stats.recentlyPlayed.slice(-5);
-                for (const r of recent5) {
-                    recentTitlesNorm.add(normalizeKey(r.title || ''));
-                }
-            }
-        } catch (e) {}
-
-        // Get queue titles to avoid duplicates
-        const queuedTitlesNorm = new Set();
-        try {
-            if (track && track.queue && Array.isArray(track.queue)) {
-                for (const qTrack of track.queue) {
-                    if (qTrack && qTrack.info && qTrack.info.title) {
-                        queuedTitlesNorm.add(normalizeKey(qTrack.info.title));
-                    }
-                }
-            }
-        } catch (e) {}
-
-        const recentlyRecommendedNorm = new Set();
-        try {
-            if (global.recentlyRecommended && Array.isArray(global.recentlyRecommended)) {
-                const recentOnly = global.recentlyRecommended.slice(-3);
-                for (const r of recentOnly) {
-                    recentlyRecommendedNorm.add(normalizeKey(r || ''));
-                }
-            }
-        } catch (e) {}
-
-        // Filter only compilation/remix indicators, not genre names
-        const compilationBanned = ['remix', 'mix', 'playlist', 'megamix', 'mashup', 'compilation', 'medley'];
-        const containsBanned = (s = '') => compilationBanned.some(b => (s || '').toLowerCase().includes(b));
-
-        const resolveWithTimeout = (query, ms = 1200) => {
-            return new Promise(resolve => {
-                let done = false;
-                const timer = setTimeout(() => {
-                    if (!done) { done = true; resolve(null); }
-                }, ms);
-                (async () => {
-                    try {
-                        if (!client || !client.riffy) { clearTimeout(timer); return resolve(null); }
-                        const res = await client.riffy.resolve({ query, requester: track.info.requester || undefined }).catch(() => null);
-                        if (!done) {
-                            done = true;
-                            clearTimeout(timer);
-                            const t = res?.tracks?.[0];
-                            if (t && t.info && t.info.title) return resolve({ title: t.info.title, query });
-                            return resolve(null);
-                        }
-                    } catch (e) {
-                        if (!done) { done = true; clearTimeout(timer); return resolve(null); }
-                    }
-                })();
-            });
-        };
-
-        const candidates = [];
-        if (spotifyRecs && Array.isArray(spotifyRecs)) {
-            for (const r of spotifyRecs.slice(0, 15)) {
-                if (!r || containsBanned(r)) continue;
-                const n = normalizeKey(r);
-                if (seenLabels.has(n)) continue;
-                candidates.push(r);
-                seenLabels.add(n);
-            }
-        }
-        if (youtubeRecs && Array.isArray(youtubeRecs)) {
-            for (const r of youtubeRecs) {
-                if (!r || containsBanned(r)) continue;
-                const n = normalizeKey(r);
-                if (seenLabels.has(n)) continue;
-                candidates.push(r);
-                seenLabels.add(n);
-            }
-        }
-
-        // Only use actual Spotify and YouTube song recommendations (no generic categories)
-        // This prevents duplicate songs and ensures real song names only
-        const promises = candidates.map(c => resolveWithTimeout(c, 1200));
-        const settled = await Promise.allSettled(promises);
-
-        for (let i = 0; i < settled.length && allRecs.length < 6; i++) {
-            const res = settled[i];
-            const cand = candidates[i];
-            let label = null;
-            let value = cand;
-            if (res.status === 'fulfilled' && res.value && res.value.title) {
-                label = res.value.title;
-                value = res.value.query || cand;
-            } else {
-                label = cand;
-                value = cand;
-            }
-            label = (label || '').substring(0, 80);
-            const key = normalizeKey(label);
-            if (!label) continue;
-
-            // Additional check: filter out titles with banned words
-            if (containsBanned(label)) continue;
-
-            // Filter out currently playing song and similar tracks
-            if (isSimilarToCurrentTrack(key)) continue;
-            if (recentTitlesNorm.has(key)) continue;
-            if (queuedTitlesNorm.has(key)) continue; // Skip songs already in queue
-            if (global.recentlyRecommended && global.recentlyRecommended.length > 0) {
-                const lastThree = global.recentlyRecommended.slice(-3);
-                if (lastThree.some(r => normalizeKey(r || '') === key)) continue;
-            }
-            if (allRecs.find(ar => normalizeKey(ar.label) === key)) continue;
-
-            const emoji = spotifyRecs && spotifyRecs.includes(cand) ? '🎵' : (youtubeRecs && youtubeRecs.includes(cand) ? '▶️' : '🙏');
-            allRecs.push({ label, value, emoji });
-        }
-
-        if (allRecs.length > 6) allRecs.length = 6;
-
-        if (allRecs.length > 0) {
-            track.info.recommendations = allRecs;
-            
-            // Cache recommendations globally for exact playback
-            if (!global.recommendationCache) global.recommendationCache = {};
-            const cacheKey = `${track.info.identifier || track.info.title}_${Date.now()}`;
-            global.recommendationCache[cacheKey] = {
-                recs: allRecs,
-                timestamp: Date.now(),
-                trackIdentifier: track.info.identifier || track.info.title
-            };
-            track.info.recommendationCacheKey = cacheKey;
-            
-            if (!global.recentlyRecommended) global.recentlyRecommended = [];
-            for (const rec of allRecs) {
-                const recKey = normalizeKey(rec.label);
-                if (!global.recentlyRecommended.find(r => normalizeKey(r) === recKey)) {
-                    global.recentlyRecommended.push(rec.label);
-                }
-            }
-            if (global.recentlyRecommended.length > 20) {
-                global.recentlyRecommended = global.recentlyRecommended.slice(-20);
-            }
-            console.log(`✅ Loaded ${allRecs.length} recommendations`);
-        }
-
-        return allRecs;
-    } catch (err) {
-        console.log('Failed to generate recommendations:', err.message);
-        return [];
+// Duration formatter helper
+function formatDuration(ms) {
+    if (ms === undefined || ms === null) return 'N/A';
+    if (ms === 'Infinity' || ms === Infinity) return 'Live';
+    const msec = Number(ms) || 0;
+    if (msec <= 0) return '0:00';
+    const seconds = Math.floor((msec / 1000) % 60);
+    const minutes = Math.floor((msec / (1000 * 60)) % 60);
+    const hours = Math.floor(msec / (1000 * 60 * 60));
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
-};
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function getDurationString(track) {
+    try {
+        if (!track) return 'N/A';
+        const len = track.info && (track.info.length || track.info.duration) ? (track.info.length || track.info.duration) : (track.length || null);
+        return formatDuration(len);
+    } catch (e) {
+        return 'N/A';
+    }
+}
+
+// Update the existing now-playing message for a player (if one exists)
+async function updateNowPlaying(client, player) {
+    try {
+        if (!player || !player.nowPlayingMessage) return;
+        const ref = player.nowPlayingMessage;
+        if (!ref || !ref.channelId || !ref.messageId) return;
+        const channel = await client.channels.fetch(ref.channelId).catch(() => null);
+        if (!channel || !channel.isTextBased?.()) return;
+
+        // Determine current track
+        let currentTrack = null;
+        if (player.queue && player.queue.current) {
+            currentTrack = player.queue.current;
+        } else if (player.current) {
+            currentTrack = player.current;
+        } else if (player.nowPlaying) {
+            currentTrack = player.nowPlaying;
+        }
+        if (!currentTrack) {
+            // Nothing to show; remove old message
+            try { const old = await channel.messages.fetch(ref.messageId).catch(() => null); if (old) await old.delete().catch(() => {}); } catch (e) {}
+            player.nowPlayingMessage = null;
+            return;
+        }
+
+        // Send a fresh nowPlaying message and delete the previous one
+        const newMsg = await module.exports.nowPlaying(channel, currentTrack, player, client).catch(() => null);
+        try {
+            const old = await channel.messages.fetch(ref.messageId).catch(() => null);
+            if (old && (!newMsg || old.id !== newMsg.id)) await old.delete().catch(() => {});
+        } catch (e) {}
+        if (newMsg) player.nowPlayingMessage = { channelId: channel.id, messageId: newMsg.id };
+    } catch (e) {
+        // silently ignore
+    }
+}
+
+async function clearNowPlaying(client, player) {
+    try {
+        if (!player || !player.nowPlayingMessage) return;
+        const ref = player.nowPlayingMessage;
+        const channel = await client.channels.fetch(ref.channelId).catch(() => null);
+        if (channel) {
+            try { const msg = await channel.messages.fetch(ref.messageId).catch(() => null); if (msg) await msg.delete().catch(() => {}); } catch (e) {}
+        }
+        player.nowPlayingMessage = null;
+    } catch (e) {
+        // ignore
+    }
+}
 
 // Main module exports
 module.exports = {
@@ -512,13 +186,13 @@ module.exports = {
     },
 
     // Music Player Messages
-    nowPlaying: (channel, track, player) => {
+    nowPlaying: async (channel, track, player, client) => {
         try {
             if (!track || !track.info) {
                 return channel.send({ content: '❌ No valid track information available' });
             }
 
-            track.info.recommendations = [];
+            // recommendations removed
 
             const createProgressBar = (position, length, isStream) => {
                 if (!position || !length || isStream) return '';
@@ -645,6 +319,10 @@ module.exports = {
                 }
             };
 
+            const playPauseLabel = (player && player.paused) ? 'Play' : 'Pause';
+            const loopOnInitial = (player && player.loop === 'queue');
+            const loopLabelInitial = loopOnInitial ? 'Loop: On' : 'Loop: Off';
+
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -654,7 +332,7 @@ module.exports = {
                         .setEmoji(emojis.previous),
                     new ButtonBuilder()
                         .setCustomId('music_pause')
-                        .setLabel('Pause')
+                        .setLabel(playPauseLabel)
                         .setStyle(ButtonStyle.Secondary)
                         .setEmoji(emojis.pause),
                     new ButtonBuilder()
@@ -663,15 +341,15 @@ module.exports = {
                         .setStyle(ButtonStyle.Secondary)
                         .setEmoji(emojis.skip),
                     new ButtonBuilder()
+                        .setCustomId('music_loop')
+                        .setLabel(loopLabelInitial)
+                        .setStyle(loopOnInitial ? ButtonStyle.Success : ButtonStyle.Secondary)
+                        .setEmoji(emojis.repeat),
+                    new ButtonBuilder()
                         .setCustomId('music_shuffle')
                         .setLabel('Shuffle')
                         .setStyle(ButtonStyle.Secondary)
-                        .setEmoji(emojis.shuffle),
-                    new ButtonBuilder()
-                        .setCustomId('music_refresh_recs')
-                        .setLabel('Refresh')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setEmoji('🔄')
+                        .setEmoji(emojis.shuffle)
                 );
 
             const row2 = new ActionRowBuilder()
@@ -685,294 +363,29 @@ module.exports = {
 
             const playerPosition = player && typeof player.position === 'number' ? player.position : 0;
             
-            const selectMenuRow = new ActionRowBuilder();
-            const selectMenu = new StringSelectMenuBuilder()
-                .setCustomId('recommendation_select')
-                .setPlaceholder('Loading recommendations...');
+            // Recommendation dropdown has been removed.
             
-            selectMenu.addOptions([
-                {
-                    label: 'Loading...',
-                    value: 'loading',
-                    emoji: '<a:loading:1475224967103910119> '
-                }
-            ]);
+            // Use provided client or fallback to channel.client
+            const clientInstance = client || channel?.client;
             
-            selectMenuRow.addComponents(selectMenu);
-            
-            // Get client from channel
-            const clientInstance = channel?.client;
-            
-            return channel.send({ embeds: [buildEmbed(playerPosition)], components: [row, row2, selectMenuRow] }).then(async msg => {
+            try {
+                console.log('📤 Sending now-playing message...');
+                const msg = await channel.send({ 
+                    embeds: [buildEmbed(playerPosition)], 
+                    components: [row, row2]
+                });
+                console.log('✅ Message sent successfully');
+                
+                // store reference to message so interactions can update it live
+                try {
+                    if (player) player.nowPlayingMessage = { channelId: channel.id, messageId: msg.id };
+                } catch (e) {}
                 if (!player) return msg;
                 
-                // Generate recommendations and update message
-                (async () => {
-                    try {
-                        const recs = await generateRecommendations(track, channel, clientInstance);
-                        
-                        if (recs && recs.length > 0) {
-                            // Create fresh select menu with recommendations
-                            const newSelectMenuRow = new ActionRowBuilder();
-                            const newSelectMenu = new StringSelectMenuBuilder()
-                                .setCustomId('recommendation_select')
-                                .setPlaceholder(`Pick a song (${recs.length} available)`);
-                            
-                            const options = recs
-                                .filter(rec => rec && rec.label && rec.value)
-                                .map((rec) => ({
-                                    label: rec.label.substring(0, 100),
-                                    value: rec.value,
-                                    emoji: rec.emoji
-                                }))
-                                .slice(0, 25);
-                            
-                            newSelectMenu.addOptions(options);
-                            newSelectMenuRow.addComponents(newSelectMenu);
-                            
-                            // Update the message with recommendations
-                            await msg.edit({ components: [row, row2, newSelectMenuRow] }).catch(() => {});
-                        }
-                    } catch (err) {
-                        console.log('Error updating recommendations:', err.message);
-                    }
-                })();
-                
-                Promise.all([
-                    getSpotifyRecommendations(
-                        track.info.title || 'Unknown', 
-                        track.info.author || 'Unknown'
-                    ),
-                    getYouTubeRecommendations(
-                        track.info.title || 'Unknown', 
-                        track.info.author || 'Unknown'
-                    )
-                ]).then(async ([spotifyRecs, youtubeRecs]) => {
-                const allRecs = [];
-                const seenLabels = new Set();
-
-                const normalizeKey = (s = '') => {
-                    let normalized = (s || '').toString().toLowerCase();
-                    // Remove remix, version, and similar suffixes
-                    normalized = normalized.replace(/\s*(remix|edit|version|feat|featuring|ft|ft\.|radio|live|acoustic|cover|mix|remaster|slowed|reverb)\s*/gi, ' ');
-                    normalized = normalized.replace(/\([^)]*\)/g, ' ');
-                    // Remove special characters but keep space structure
-                    normalized = normalized.replace(/[^a-z0-9\s]/g, ' ');
-                    // Collapse multiple spaces and trim
-                    normalized = normalized.replace(/\s+/g, ' ').trim();
-                    return normalized;
-                };
-
-                const currentTitleNorm = normalizeKey(track?.info?.title || '');
-                const currentAuthorNorm = normalizeKey(track?.info?.author || '');
-                
-                // Helper to check if a recommendation is similar to current track
-                const isSimilarToCurrentTrack = (recNorm) => {
-                    if (!recNorm) return false;
-                    // Exact match
-                    if (recNorm === currentTitleNorm) return true;
-                    if (recNorm === currentAuthorNorm) return true;
-                    
-                    // Partial word match (prevent artist's other songs)
-                    if (currentAuthorNorm && currentAuthorNorm.length > 3) {
-                        if (recNorm.includes(currentAuthorNorm) || currentAuthorNorm.includes(recNorm)) return true;
-                    }
-                    
-                    // Check if most of the words match (70%+ overlap)
-                    const recWords = recNorm.split(' ').filter(w => w);
-                    const currentWords = currentTitleNorm.split(' ').filter(w => w);
-                    if (recWords.length > 0 && currentWords.length > 0) {
-                        const commonWords = recWords.filter(w => currentWords.includes(w));
-                        const overlapRatio = commonWords.length / Math.max(recWords.length, currentWords.length);
-                        if (overlapRatio > 0.7) return true;
-                    }
-                    
-                    return false;
-                };
-                
-                const recentTitlesNorm = new Set();
-                try {
-                    if (global.stats && Array.isArray(global.stats.recentlyPlayed)) {
-                        const recent5 = global.stats.recentlyPlayed.slice(-5);
-                        for (const r of recent5) {
-                            recentTitlesNorm.add(normalizeKey(r.title || ''));
-                        }
-                    }
-                } catch (e) {}
-
-                const recentlyRecommendedNorm = new Set();
-                try {
-                    if (global.recentlyRecommended && Array.isArray(global.recentlyRecommended)) {
-                        const recentOnly = global.recentlyRecommended.slice(-8);
-                        for (const r of recentOnly) {
-                            recentlyRecommendedNorm.add(normalizeKey(r || ''));
-                        }
-                    }
-                } catch (e) {}
-
-                // Filter only compilation/remix indicators, not genre names
-                const compilationBanned = ['remix', 'mix', 'playlist', 'megamix', 'mashup', 'compilation', 'medley'];
-                const containsBanned = (s = '') => compilationBanned.some(b => (s || '').toLowerCase().includes(b));
-
-                const client = channel?.client;
-                const resolveWithTimeout = (query, ms = 1200) => {
-                    return new Promise(resolve => {
-                        let done = false;
-                        const timer = setTimeout(() => {
-                            if (!done) { done = true; resolve(null); }
-                        }, ms);
-                        (async () => {
-                            try {
-                                if (!client || !client.riffy) { clearTimeout(timer); return resolve(null); }
-                                const res = await client.riffy.resolve({ query, requester: track.info.requester || undefined }).catch(() => null);
-                                if (!done) {
-                                    done = true;
-                                    clearTimeout(timer);
-                                    const t = res?.tracks?.[0];
-                                    if (t && t.info && t.info.title) return resolve({ title: t.info.title, query });
-                                    return resolve(null);
-                                }
-                            } catch (e) {
-                                if (!done) { done = true; clearTimeout(timer); return resolve(null); }
-                            }
-                        })();
-                    });
-                };
-
-                const candidates = [];
-                if (spotifyRecs && Array.isArray(spotifyRecs)) {
-                    for (const r of spotifyRecs.slice(0, 15)) {
-                        if (!r || containsBanned(r)) continue;
-                        const n = normalizeKey(r);
-                        if (seenLabels.has(n)) continue;
-                        candidates.push(r);
-                        seenLabels.add(n);
-                    }
-                }
-                if (youtubeRecs && Array.isArray(youtubeRecs)) {
-                    for (const r of youtubeRecs) {
-                        if (!r || containsBanned(r)) continue;
-                        const n = normalizeKey(r);
-                        if (seenLabels.has(n)) continue;
-                        candidates.push(r);
-                        seenLabels.add(n);
-                    }
-                }
-
-                const artistShort = ((track?.info?.author || '').split(/&|,|feat|ft| and /i)[0] || '').trim();
-                const textual = [];
-                
-                // TELUGU - 2 recommended
-                textual.push('telugu superhit songs');
-                textual.push('telugu movie songs');
-                textual.push('telugu hit songs');
-                textual.push('tollywood chartbusters');
-                if (artistShort) {
-                    textual.push(`${artistShort} telugu songs`);
-                }
-                
-                // HINDI - 2 recommended
-                textual.push('hindi superhit songs');
-                textual.push('hindi movie songs');
-                textual.push('bollywood romantic songs');
-                textual.push('hindi chartbusters');
-                if (artistShort) {
-                    textual.push(`${artistShort} hindi songs`);
-                }
-                
-                // GOD/DEVOTIONAL SONGS - 2 recommended
-                textual.push('bhajans');
-                textual.push('devotional songs');
-                textual.push('god songs');
-                textual.push('spiritual songs');
-                
-                // GENERAL VARIETY - 4+ more
-                textual.push('bollywood hit songs');
-                textual.push('south indian hit songs');
-                textual.push('trending songs');
-                textual.push('popular songs');
-                if (artistShort) {
-                    textual.push(`${artistShort} movie songs`);
-                    textual.push(`${artistShort} songs`);
-                }
-
-                for (const t of textual) {
-                    if (candidates.length >= 50) break; // Increase target candidates
-                    const n = normalizeKey(t);
-                    if (containsBanned(t) || seenLabels.has(n)) continue;
-                    candidates.push(t);
-                    seenLabels.add(n);
-                }
-
-                const promises = candidates.map(c => resolveWithTimeout(c, 1200));
-                const settled = await Promise.allSettled(promises);
-
-                for (let i = 0; i < settled.length && allRecs.length < 10; i++) {
-                    const res = settled[i];
-                    const cand = candidates[i];
-                    let label = null;
-                    let value = cand;
-                    if (res.status === 'fulfilled' && res.value && res.value.title) {
-                        label = res.value.title;
-                        value = res.value.query || cand;
-                    } else {
-                        label = cand;
-                        value = cand;
-                    }
-                    label = (label || '').substring(0, 80);
-                    const key = normalizeKey(label);
-                    if (!label) continue;
-
-                    // Additional check: filter out titles with banned words
-                    if (containsBanned(label)) continue;
-
-                    // Filter out currently playing song and similar tracks
-                    if (isSimilarToCurrentTrack(key)) continue;
-                    if (recentTitlesNorm.has(key)) continue;
-                    // Relaxed: Only filter out last 3 instead of last 8
-                    if (global.recentlyRecommended && global.recentlyRecommended.length > 0) {
-                        const lastThree = global.recentlyRecommended.slice(-3);
-                        if (lastThree.some(r => normalizeKey(r || '') === key)) continue;
-                    }
-                    if (allRecs.find(ar => normalizeKey(ar.label) === key)) continue;
-
-                    const emoji = spotifyRecs && spotifyRecs.includes(cand) ? '🎵' : (youtubeRecs && youtubeRecs.includes(cand) ? '<a:play:1475228960823705752> ' : '<a:play:1475228960823705752> ');
-                    allRecs.push({ label, value, emoji });
-                }
-
-                if (allRecs.length > 10) allRecs.length = 10;
-
-                if (allRecs.length > 0) {
-                    track.info.recommendations = allRecs;
-                    
-                    // Cache recommendations globally for exact playback
-                    if (!global.recommendationCache) global.recommendationCache = {};
-                    const cacheKey = `${track.info.identifier || track.info.title}_${Date.now()}`;
-                    global.recommendationCache[cacheKey] = {
-                        recs: allRecs,
-                        timestamp: Date.now(),
-                        trackIdentifier: track.info.identifier || track.info.title
-                    };
-                    track.info.recommendationCacheKey = cacheKey;
-                    
-                    if (!global.recentlyRecommended) global.recentlyRecommended = [];
-                    for (const rec of allRecs) {
-                        const recKey = normalizeKey(rec.label);
-                        if (!global.recentlyRecommended.find(r => normalizeKey(r) === recKey)) {
-                            global.recentlyRecommended.push(rec.label);
-                        }
-                    }
-                    if (global.recentlyRecommended.length > 12) {
-                        global.recentlyRecommended = global.recentlyRecommended.slice(-12);
-                    }
-                    console.log(`✅ Loaded ${allRecs.length} recommendations`);
-                }
-            }).catch(err => {
-                console.log('Failed to get recommendations:', err.message);
-            });
+                // Recommendation generation removed.
             
-            const initialTrackId = track.info.identifier || track.info.title;
-                
+                const initialTrackId = track.info.identifier || track.info.title;
+                    
                 const updateInterval = setInterval(async () => {
                     try {
                         let currentTrack = null;
@@ -998,37 +411,20 @@ module.exports = {
 
                         const currentPosition = typeof player.position === 'number' ? player.position : 0;
                         
-                        const newSelectMenuRow = new ActionRowBuilder();
-                        const newSelectMenu = new StringSelectMenuBuilder()
-                            .setCustomId('recommendation_select')
-                            .setPlaceholder('Pick a recommendation');
-                        
-                        if (currentTrack.info.recommendations && currentTrack.info.recommendations.length > 0 && 
-                            currentTrack.info.recommendations[0].emoji) {
-                            const options = currentTrack.info.recommendations
-                                .filter(rec => rec && rec.label && rec.value)
-                                .map((rec) => ({
-                                    label: rec.label.substring(0, 100),
-                                    value: rec.value,
-                                    emoji: rec.emoji
-                                })).slice(0, 25);
-                            
-                            newSelectMenu.addOptions(options);
-                        }
-                        
-                        newSelectMenuRow.addComponents(newSelectMenu);
-                        await msg.edit({ embeds: [buildEmbed(currentPosition, currentTrack)], components: [row, row2, newSelectMenuRow] });
+                        // Update only the embed and keep control buttons
+                        await msg.edit({ embeds: [buildEmbed(currentPosition, currentTrack)], components: [row, row2] }).catch(() => {});
                     } catch (err) {
                         clearInterval(updateInterval);
                     }
                 }, 3000);
 
                 return msg;
-            }).catch(err => {
-                console.error('Error updating progress:', err.message);
-            });
+            } catch (err) {
+                console.error('Error in nowPlaying function:', err.message);
+                return channel.send({ content: `❌ Error displaying now playing: ${err.message}` }).catch(() => {});
+            }
         } catch (err) {
-            console.error('Error in nowPlaying function:', err.message);
+            console.error('Error in nowPlaying outer:', err.message);
             return channel.send({ content: `❌ Error displaying now playing: ${err.message}` }).catch(() => {});
         }
     },
@@ -1274,13 +670,11 @@ module.exports = {
     // Helper exports
     formatDuration,
     getDurationString,
-    detectLanguage,
-    getSpotifyRecommendations,
-    getYouTubeRecommendations,
-    generateRecommendations,
     createHelpButton,
     createHelpButtons,
     isValidURL,
+    updateNowPlaying,
+    clearNowPlaying,
     // Button utilities
     createButton: buttonUtils.createButton,
     createButtonRow: buttonUtils.createButtonRow

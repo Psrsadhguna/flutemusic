@@ -31,4 +31,7 @@ module.exports = {
     // Bot owner(s) - keep these in your .env as OWNER_ID or OWNERS (comma-separated)
     ownerID: process.env.OWNER_ID || process.env.OWNER || '',
     owners: process.env.OWNERS ? process.env.OWNERS.split(',').map(s => s.trim()) : (process.env.OWNER_ID ? [process.env.OWNER_ID] : [])
+    ,
+    // When true, automatically add the top recommendation to the queue when recommendations load
+    autoAddRecommendation: false
 };

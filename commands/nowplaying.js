@@ -21,6 +21,6 @@ module.exports = {
         
         if (!currentTrack) return messages.error(message.channel, "No track is currently playing!");
 
-        messages.nowPlaying(message.channel, currentTrack, player);
+        messages.nowPlaying(message.channel, currentTrack, player, client);
     }
 };

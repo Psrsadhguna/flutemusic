@@ -5,20 +5,20 @@ module.exports = {
     info: "<a:info:1474068746686435551> ",
 
     // music / player
-    playing: "<a:playing:1473974241887256641> ",
-    pause: "<:pause:1350022763493982308>",
-    stop: "<:stop:1350022750940561500>",
-    skip: "<:skip:1350022757714493461>",
-    previous: "<:previous:1350022753922584576>",
-    next: "<:next:1350022750000000000>",
+    playing: "<a:playing:1473974241887256641>",
+    pause: "<:pause_fm:1476195439161381008>",
+    stop: "<:stop_fm:1476193538931818626> ",
+    skip: "<:skip_fm:1476195738965905579>",
+    previous: "<:previous_fm:1476192360961409084> ",
+    next: "<:next_fm:1476193138560340139> ",
 
     // queue / list
     queue: "<:queue:1350022777125736538>",
     loading: "<:loading:1350022748809723904>",
 
     // effects / filters
-    shuffle: "<:suffle:1350022745986957443>",
-    repeat: "<:repeat:1350022649048334407>",
+    shuffle: "<:shuffle_fm:1476198055161106483> ",
+    repeat: "<:loop_fm:1476197033776906301> ",
 
     // metadata / misc
     song: "<:song:1350022769118547968>",
