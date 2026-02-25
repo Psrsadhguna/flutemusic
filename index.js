@@ -5,6 +5,7 @@ const config = require("./config.js");
 const { Riffy } = require('riffy');
 const messages = require("./utils/messages.js");
 const emojis = require("./emojis.js");
+const statusRotator = require("./utils/statusRotator.js");
 const fs = require("fs");
 const path = require("path");
 const fsp = require('fs').promises;
@@ -933,6 +934,14 @@ if (config.webhookUrl && config.webhookUrl.length > 5) {
         }).catch(e => console.error('Webhook leave failed', e.message));
     });
 }
+
+// Initialize status rotator
+let statusInterval = null;
+client.on('ready', () => {
+    statusInterval = statusRotator.initializeStatusRotator(client);
+    activeIntervals.push(statusInterval);
+    console.log('✅ Status rotator initialized');
+});
 
 client.login(config.botToken);
 

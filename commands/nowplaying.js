@@ -2,9 +2,9 @@ const messages = require('../utils/messages.js');
 
 module.exports = {
     name: 'nowplaying',
-    aliases: ['np', 'fnp'],
+    aliases: ['np'],
     description: 'Show current track info',
-    usage: 'fnowplaying',
+    usage: 'fnp',
     execute: async (message, args, client) => {
         const player = client.riffy.players.get(message.guild.id);
         if (!player) return messages.error(message.channel, "Nothing is playing!");
