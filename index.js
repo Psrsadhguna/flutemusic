@@ -187,39 +187,7 @@ client.on("clientReady", () => {
         console.error(`${emojis.error} Failed to initialize Riffy:`, error.message);
     }
 
-    // Define statuses to rotate
-    const statuses = [
-        { 
-            name: 'Music Stream 🎵', 
-            type: ActivityType.Streaming, 
-              // <-- Replace with your Twitch channel URL
-        },
-        { 
-            name: 'f help | Music', 
-            type: ActivityType.Watching 
-        },
-        {
-            name: `Music on ${client.guilds.cache.size} servers`,
-            type: ActivityType.Playing
-        }
-    ];
-    let statusIndex = 0;
 
-    // Set initial presence
-    client.user.setPresence({
-        activities: [statuses[statusIndex]],
-        status: 'online'
-    });
-
-    // Rotate presence every 10 seconds
-    const statusInterval = setInterval(() => {
-        statusIndex = (statusIndex + 1) % statuses.length;
-        client.user.setPresence({
-            activities: [statuses[statusIndex]],
-            status: 'online'
-        });
-    }, 10000);
-    activeIntervals.push(statusInterval);
 
     // Write initial website status and schedule periodic updates
     async function updateWebsiteStatus() {
