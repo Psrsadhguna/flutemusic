@@ -487,33 +487,7 @@ client.riffy.on("nodeError", (node, error) => {
     console.log(`${emojis.error} Node "${node.name}" encountered an error: ${error.message}.`);
 });
 
-client.riffy.on("trackStart", async (player, track) => {
-    try {
-        await new Promise(r => setTimeout(r, 800));
 
-        const vc = client.channels.cache.get(player.voiceChannel);
-        if (!vc) return;
-
-        await setVoiceStatus(
-            vc,
-            `🎵 Playing: ${track.info.title}`
-        );
-
-        console.log(`🎧 Voice status updated → ${track.info.title}`);
-    } catch (err) {
-        console.error(err);
-    }
-});
-
-client.riffy.on("queueEnd", async (player) => {
-    const vc = client.channels.cache.get(player.voiceChannel);
-    if (vc) await setVoiceStatus(vc, null);
-});
-
-client.riffy.on("playerDestroy", async (player) => {
-    const vc = client.channels.cache.get(player.voiceChannel);
-    if (vc) await setVoiceStatus(vc, null);
-});
 
 // Helper: set voice channel "status"/topic to show now playing (if supported)
 // (Persistent now-playing message removed)
@@ -762,44 +736,6 @@ client.riffy.on("trackStart", async (player, track) => {
     }
 });
 
-client.riffy.on("queueEnd", async (player) => {
-    try {
-        const channel = client.channels.cache.get(player.voiceChannel);
-        if (!channel) return;
-
-        // Clear voice status
-        await setVoiceStatus(channel, null);
-
-        console.log("🧹 Voice status cleared (queue ended)");
-    } catch (err) {
-        console.error("Voice status clear failed:", err.message);
-    }
-});
-
-client.riffy.on("playerDestroy", async (player) => {
-    try {
-        const channel = client.channels.cache.get(player.voiceChannel);
-        if (!channel) return;
-
-        await setVoiceStatus(channel, null);
-
-        console.log("🧹 Voice status cleared (player destroyed)");
-    } catch (err) {
-        console.error(err);
-    }
-});
-
-
-client.riffy.on("queueEnd", async (player) => {
-    const vc = client.channels.cache.get(player.voiceChannel);
-    if (vc) await setVoiceStatus(vc, null);
-});
-
-client.riffy.on("playerDestroy", async (player) => {
-    const vc = client.channels.cache.get(player.voiceChannel);
-    if (vc) await setVoiceStatus(vc, null);
-});
-// LOGIN MUST BE LAST
 
 
 // ===============================
@@ -807,7 +743,47 @@ client.riffy.on("playerDestroy", async (player) => {
 // ===============================
 
 
+// ===============================
+// 🎵 VOICE STATUS SYSTEM (FINAL)
+// ===============================
 
+client.riffy.on("trackStart", async (player, track) => {
+    try {
+        await new Promise(r => setTimeout(r, 800));
+
+        const vc = client.channels.cache.get(player.voiceChannel);
+        if (!vc) return;
+
+        await setVoiceStatus(
+            vc,
+            `🎵 Playing: ${track.info.title}`
+        );
+
+        console.log(`🎧 Voice status updated → ${track.info.title}`);
+    } catch (err) {
+        console.error("Voice status update failed:", err.message);
+    }
+});
+
+client.riffy.on("queueEnd", async (player) => {
+    try {
+        const vc = client.channels.cache.get(player.voiceChannel);
+        if (!vc) return;
+
+        await setVoiceStatus(vc, null);
+        console.log("🧹 Voice status cleared (queue ended)");
+    } catch {}
+});
+
+client.riffy.on("playerDestroy", async (player) => {
+    try {
+        const vc = client.channels.cache.get(player.voiceChannel);
+        if (!vc) return;
+
+        await setVoiceStatus(vc, null);
+        console.log("🧹 Voice status cleared (player destroyed)");
+    } catch {}
+});
 // When queue finishes
 
 // ===============================
