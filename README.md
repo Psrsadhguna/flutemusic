@@ -108,8 +108,4 @@ https://discord.gg/A5R9HWGkfF
 
 <p align="center">
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0066FF,100:00FFA3&height=120&section=footer"/>
-<<<<<<< HEAD
 </p>
-=======
-</p>
->>>>>>> 0a7c4af2e78df14aab9445d9f597316d276f407c
