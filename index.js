@@ -851,21 +851,25 @@ client.on('ready', () => {
     activeIntervals.push(statusInterval);
     console.log('✅ Status rotator initialized');
 });
-
 client.riffy.on("trackStart", async (player, track) => {
     try {
-        const vc = client.channels.cache.get(player.voiceChannel);
-        if (!vc) return;
+        if (!player || !track) return;
 
-        const title = track.info.title || "Unknown";
+        // wait a little so Discord updates VC connection
+        await new Promise(r => setTimeout(r, 1500));
+
+        const channel = client.channels.cache.get(player.voiceChannel);
+        if (!channel) return;
 
         await setVoiceStatus(
-            vc,
-            `<a:playing:1473974241887256641> Playing: ${title}`
+            channel,
+            ` <a:playing:1473974241887256641> Playing: ${track.info.title}`
         );
 
+        console.log(`🎧 Voice status updated → ${track.info.title}`);
+
     } catch (err) {
-        console.log("trackStart status error:", err.message);
+        console.error("Voice status update failed:", err.message);
     }
 });
 
