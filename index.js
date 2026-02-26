@@ -760,22 +760,7 @@ client.riffy.on("queueEnd", async (player) => {
         await setVoiceStatus(vc, null);
         console.log("🧹 Voice status cleared (queue ended)");
 
-        // Only send leaving message if 24/7 mode is NOT enabled
-        if (!player.twentyFourSeven && player.textChannel) {
-            const textChannel = await client.channels.fetch(player.textChannel).catch(() => null);
-            if (textChannel && textChannel.isTextBased?.()) {
-                try {
-                    await messages.queueEnded(textChannel);
-                } catch (e) {
-                    console.error('Failed to send queue ended embed:', e.message);
-                }
-            }
-        }
-
-        // Only destroy player (leave VC) if 24/7 mode is NOT enabled
-        if (player && !player.twentyFourSeven) {
-            await player.destroy();
-        }
+        // Auto-disconnect disabled - bot stays in voice channel
     } catch {}
 });
 
