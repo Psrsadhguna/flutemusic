@@ -1,9 +1,41 @@
 {
-  "totalSongsPlayed": 497,
-  "totalPlaytime": 245120589,
-  "totalCommandsExecuted": 544,
+  "totalSongsPlayed": 501,
+  "totalPlaytime": 246012456,
+  "totalCommandsExecuted": 548,
   "twentyFourSevenServers": [],
   "recentlyPlayed": [
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772113855118,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
+      "author": "Brown Editz",
+      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
+      "requester": "744044949942829127",
+      "timestamp": 1772113839033,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
+      "author": "Brown Editz",
+      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
+      "requester": "744044949942829127",
+      "timestamp": 1772113832593,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
+      "author": "Brown Editz",
+      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
+      "requester": "744044949942829127",
+      "timestamp": 1772113806078,
+      "guildId": "1367087087005990962"
+    },
     {
       "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
       "author": "Brown Editz",
@@ -131,38 +163,6 @@
       "requester": "744044949942829127",
       "timestamp": 1772106748015,
       "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772106652673,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772101956867,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772101699950,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772101547781,
-      "guildId": "1367087087005990962"
     }
   ],
   "errorCount": 4,
@@ -171,7 +171,7 @@
     "1469974428908654818": 71,
     "1475011449834176543": 266,
     "1475911093330251990": 77,
-    "1367087087005990962": 31
+    "1367087087005990962": 35
   },
   "topArtists": {
     "AKASA": 3,
@@ -199,7 +199,7 @@
     "Yazin Nizar": 5,
     "Peter McPoland": 3,
     "Ezra Bell": 2,
-    "Devi Sri Prasad": 51,
+    "Devi Sri Prasad": 52,
     "Mohit Chauhan": 32,
     "A.R. Rahman": 7,
     "Mallu ai": 6,
@@ -274,7 +274,7 @@
     "Dilip Devgan - Topic": 1,
     "Swami": 1,
     "Sai Abhyankkar": 7,
-    "Brown Editz": 1
+    "Brown Editz": 4
   },
   "commandErrors": [
     {
@@ -306,5 +306,5 @@
       "timestamp": 1771801007273
     }
   ],
-  "lastUpdated": "2026-02-26T13:34:08.265Z"
+  "lastUpdated": "2026-02-26T13:50:56.040Z"
 }

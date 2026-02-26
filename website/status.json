@@ -5,7 +5,7 @@
   "totalPlaytime": 245120589,
   "totalCommandsExecuted": 544,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1779,
+  "uptimeSeconds": 1777,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
   "errorRate": 0.74,
@@ -160,5 +160,5 @@
       "count": 12
     }
   ],
-  "updated": "2026-02-26T13:37:21.649Z"
+  "updated": "2026-02-26T13:49:56.027Z"
 }

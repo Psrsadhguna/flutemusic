@@ -901,7 +901,12 @@ client.riffy.on("playerDestroy", async (player) => {
 });
 
 
+client.riffy.on("queueEnd", async (player) => {
+    const vc = client.channels.cache.get(player.voiceChannel);
 
+    if (vc)
+        await setVoiceStatus(vc, null);
+});
 // LOGIN MUST BE LAST
 
 
