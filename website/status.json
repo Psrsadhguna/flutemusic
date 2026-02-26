@@ -1,93 +1,93 @@
 {
   "servers": 4,
   "members": 2,
-  "totalSongsPlayed": 480,
-  "totalPlaytime": 240732296,
-  "totalCommandsExecuted": 521,
+  "totalSongsPlayed": 489,
+  "totalPlaytime": 243016759,
+  "totalCommandsExecuted": 530,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1593,
+  "uptimeSeconds": 1766,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
-  "errorRate": 0.77,
+  "errorRate": 0.75,
   "recentlyPlayed": [
+    {
+      "title": "Boom Boom",
+      "author": "Sai Abhyankkar",
+      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
+      "requester": "744044949942829127",
+      "timestamp": 1772108454238,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Boom Boom",
+      "author": "Sai Abhyankkar",
+      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
+      "requester": "744044949942829127",
+      "timestamp": 1772107849945,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Boom Boom",
+      "author": "Sai Abhyankkar",
+      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
+      "requester": "744044949942829127",
+      "timestamp": 1772107770090,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Boom Boom",
+      "author": "Sai Abhyankkar",
+      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
+      "requester": "744044949942829127",
+      "timestamp": 1772107585555,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772107478385,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772107291552,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772106819905,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772106748015,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772106652673,
+      "guildId": "1367087087005990962"
+    },
     {
       "title": "Viral Vayyari ( From \"Junior\")",
       "author": "Devi Sri Prasad",
       "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
       "requester": "744044949942829127",
       "timestamp": 1772101956867,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772101699950,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772101547781,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772101540494,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772101527238,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772101099404,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Ola Olaala Ala",
-      "author": "Karunya",
-      "uri": "https://open.spotify.com/track/2Z6PDgrkYCjASnRqWZxf4Y",
-      "requester": "744044949942829127",
-      "timestamp": 1772100414037,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772100350248,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772100343156,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772100325937,
       "guildId": "1367087087005990962"
     }
   ],
@@ -114,7 +114,7 @@
     },
     {
       "guildId": "1367087087005990962",
-      "songCount": 14,
+      "songCount": 23,
       "guildName": "assam gang"
     }
   ],
@@ -125,7 +125,7 @@
     },
     {
       "name": "Devi Sri Prasad",
-      "count": 44
+      "count": 49
     },
     {
       "name": "Mohit Chauhan",
@@ -160,5 +160,5 @@
       "count": 12
     }
   ],
-  "updated": "2026-02-26T10:33:47.970Z"
+  "updated": "2026-02-26T12:26:10.996Z"
 }

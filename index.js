@@ -879,7 +879,7 @@ client.riffy.on("queueEnd", async (player) => {
         if (!channel) return;
 
         // Clear voice status
-        await setVoiceStatus(channel, "");
+        await setVoiceStatus(channel, null);
 
         console.log("🧹 Voice status cleared (queue ended)");
     } catch (err) {
@@ -892,7 +892,7 @@ client.riffy.on("playerDestroy", async (player) => {
         const channel = client.channels.cache.get(player.voiceChannel);
         if (!channel) return;
 
-        await setVoiceStatus(channel, "");
+        await setVoiceStatus(channel, null);
 
         console.log("🧹 Voice status cleared (player destroyed)");
     } catch (err) {
@@ -909,28 +909,10 @@ client.riffy.on("playerDestroy", async (player) => {
 // 🎵 VOICE STATUS SYSTEM
 // ===============================
 
-// When song starts
-client.riffy.on("trackStart", async (player, track) => {
-    try {
-        const vc = client.channels.cache.get(player.voiceChannel);
-        if (!vc) return;
-
-        await setVoiceStatus(
-            vc,
-            `<a:playing:1473974241887256641> Playing: ${track.info.title}`
-        );
-
-        console.log(`🎧 Voice status updated → ${track.info.title}`);
-    } catch (err) {
-        console.error("Voice status update failed:", err.message);
-    }
-});
 
 
 // When queue finishes
-client.riffy.on("queueEnd", player => clearVoiceStatus(player, "queue ended"));
 
-client.riffy.on("playerDestroy", player => clearVoiceStatus(player, "player destroyed"));
 // ===============================
 // ✅ SAFE CLEAR FUNCTION
 // ===============================
@@ -950,14 +932,17 @@ async function clearVoiceStatus(player, reason) {
 }
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
-    if (!oldState.member?.user?.bot) return;
+    // only watch the bot itself
+    if (oldState.id !== client.user.id) return;
 
-    // bot disconnected from VC
+    // bot LEFT a voice channel
     if (oldState.channelId && !newState.channelId) {
         try {
             await setVoiceStatus(oldState.channel, null);
             console.log("🧹 Voice status cleared (bot disconnected)");
-        } catch {}
+        } catch (err) {
+            console.error("Failed to clear voice status:", err.message);
+        }
     }
 });
 // LOGIN MUST BE LAST
@@ -982,43 +967,47 @@ app.listen(port, () => {
 });
 
 
+
+
 async function shutdown() {
-    console.log("${emojis.success} Shutting down bot properly...");
+    console.log("🛑 Shutting down bot properly...");
 
     try {
-        // Clear all active intervals
-        activeIntervals.forEach(interval => {
-            try {
-                clearInterval(interval);
-            } catch (e) {
-                console.log("Interval clear error:", e.message);
+        // ✅ Clear voice status in ALL guilds
+        for (const guild of client.guilds.cache.values()) {
+            const vc = guild.members.me?.voice?.channel;
+            if (vc) {
+                await setVoiceStatus(vc, null);
+                console.log(`🧹 Cleared voice status in ${guild.name}`);
             }
-        });
-        activeIntervals.length = 0;
-        console.log("${emojis.success} All intervals cleared");
+        }
 
-        // Destroy all players
+        // ✅ Destroy players
         if (client.riffy) {
             client.riffy.players.forEach(player => {
-                try {
-                    player.destroy();
-                } catch (e) {
-                    console.log("Player destroy error:", e.message);
-                }
+                try { player.destroy(); } catch {}
             });
         }
 
-        await client.destroy(); // properly disconnect from Discord
-        console.log("${emojis.success} Bot disconnected from Discord");
+        // ✅ Clear intervals
+        activeIntervals.forEach(i => clearInterval(i));
+
+        // ✅ Disconnect bot
+        await client.destroy();
+
+        console.log("✅ Bot disconnected cleanly");
+
     } catch (err) {
-        console.error("${emojis.error} Shutdown error:", err);
+        console.error("Shutdown error:", err);
     }
 
     process.exit(0);
 }
-
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
+process.on("beforeExit", shutdown);
+process.on("uncaughtException", shutdown);
+process.on("unhandledRejection", shutdown);
 
 /////client.once('ready', async () => {
   ///console.log(`Logged in as ${client.user.tag}`);
