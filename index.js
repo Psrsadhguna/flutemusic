@@ -851,25 +851,21 @@ client.on('ready', () => {
     activeIntervals.push(statusInterval);
     console.log('✅ Status rotator initialized');
 });
+
 client.riffy.on("trackStart", async (player, track) => {
     try {
-        if (!player || !track) return;
+        const vc = client.channels.cache.get(player.voiceChannel);
+        if (!vc) return;
 
-        // wait a little so Discord updates VC connection
-        await new Promise(r => setTimeout(r, 1500));
-
-        const channel = client.channels.cache.get(player.voiceChannel);
-        if (!channel) return;
+        const title = track.info.title || "Unknown";
 
         await setVoiceStatus(
-            channel,
-            ` <a:playing:1473974241887256641> Playing: ${track.info.title}`
+            vc,
+            `<a:playing:1473974241887256641> Playing: ${title}`
         );
 
-        console.log(`🎧 Voice status updated → ${track.info.title}`);
-
     } catch (err) {
-        console.error("Voice status update failed:", err.message);
+        console.log("trackStart status error:", err.message);
     }
 });
 
@@ -903,9 +899,12 @@ client.riffy.on("playerDestroy", async (player) => {
 
 client.riffy.on("queueEnd", async (player) => {
     const vc = client.channels.cache.get(player.voiceChannel);
+    if (vc) await setVoiceStatus(vc, null);
+});
 
-    if (vc)
-        await setVoiceStatus(vc, null);
+client.riffy.on("playerDestroy", async (player) => {
+    const vc = client.channels.cache.get(player.voiceChannel);
+    if (vc) await setVoiceStatus(vc, null);
 });
 // LOGIN MUST BE LAST
 
