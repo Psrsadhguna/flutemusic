@@ -41,11 +41,46 @@ module.exports = {
                 player.twentyFourSeven = false; 
             }
 
+            // Detect language and improve search query
+            const detectedLang = detectLanguage(query);
+            let improvedQuery = query;
+
+            // If language is detected, reorder the search query to put language keyword first
+            // This helps YouTube's algorithm find better results
+            if (detectedLang !== 'english') {
+                const langKeywords = {
+                    telugu: 'telugu',
+                    tamil: 'tamil',
+                    kannada: 'kannada',
+                    malayalam: 'malayalam',
+                    hindi: 'hindi',
+                    marathi: 'marathi',
+                    gujarati: 'gujarati'
+                };
+
+                const langKeyword = langKeywords[detectedLang];
+                if (langKeyword) {
+                    // Remove language keyword and other words from original query
+                    const withoutLang = query
+                        .replace(new RegExp(langKeyword, 'i'), '')
+                        .replace(/\bin\b/i, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    
+                    // Reorder: put language keyword first for better search
+                    // E.g., "dj song in telugu" -> "telugu dj song"
+                    if (withoutLang) {
+                        improvedQuery = `${langKeyword} ${withoutLang}`;
+                        console.log(`🔄 Improved search: "${query}" → "${improvedQuery}"`);
+                    }
+                }
+            }
+
             // canonicalize YouTube URLs (including youtu.be short links).
             // Lavalink sometimes returns NO_MATCHES for the short form, so convert
             // to the standard watch URL and, if necessary, fall back to a search.
-            let searchQuery = query;
-            const ytMatch = query.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|embed\/|v\/))([A-Za-z0-9_-]{11})/);
+            let searchQuery = improvedQuery;
+            const ytMatch = improvedQuery.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|embed\/|v\/))([A-Za-z0-9_-]{11})/);
             if (ytMatch) {
                 searchQuery = `https://www.youtube.com/watch?v=${ytMatch[1]}`;
             }
@@ -68,7 +103,7 @@ module.exports = {
             // provide a Spotify URL we assume they wanted YouTube instead. this can
             // happen when the defaultSearchPlatform or lavalink plugin returns
             // Spotify results first. perform a second resolve forcing YouTube search.
-            const isSpotifyUrl = /^https?:\/\/(open\.)?spotify\.com/.test(query);
+            const isSpotifyUrl = /^https?:\/\/(open\.)?spotify\.com/.test(improvedQuery);
             if (!isSpotifyUrl) {
                 const firstTrack = resolve.tracks && resolve.tracks[0];
                 if (
@@ -77,10 +112,10 @@ module.exports = {
                     firstTrack.info.sourceName === 'spotify' &&
                     resolve.loadType !== 'playlist'
                 ) {
-                    console.log(`⚠️ play.js: spotify result detected for '${query}', retrying search on YouTube`);
+                    console.log(`⚠️ play.js: spotify result detected for '${improvedQuery}', retrying search on YouTube`);
                     // try again with a YouTube Music search prefix
                     resolve = await client.riffy.resolve({
-                        query: `ytmsearch:${query}`,
+                        query: `ytmsearch:${improvedQuery}`,
                         requester: message.author,
                     });
                 }
@@ -91,9 +126,9 @@ module.exports = {
                     resolve.tracks.length > 0 &&
                     resolve.tracks[0].info.sourceName === 'spotify'
                 ) {
-                    console.log(`⚠️ play.js: spotify playlist detected for '${query}', retrying search on YouTube`);
+                    console.log(`⚠️ play.js: spotify playlist detected for '${improvedQuery}', retrying search on YouTube`);
                     resolve = await client.riffy.resolve({
-                        query: `ytmsearch:${query}`,
+                        query: `ytmsearch:${improvedQuery}`,
                         requester: message.author,
                     });
                 }
