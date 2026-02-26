@@ -1,8 +1,6 @@
 const messages = require('../utils/messages.js');
 const applyFilters = require('../utils/applyFilters');
 const detectFilters = require('../utils/detectFilters');
-const { detectLanguage, filterByLanguage } = require('../utils/languageDetector.js');
-const { deduplicateTracks } = require('../utils/deduplicator.js');
 
 module.exports = {
     name: 'play',
@@ -41,118 +39,13 @@ module.exports = {
                 player.twentyFourSeven = false; 
             }
 
-            // Detect language and improve search query
-            const detectedLang = detectLanguage(query);
-            let improvedQuery = query;
-
-            // If language is detected, reorder the search query to put language keyword first
-            // This helps YouTube's algorithm find better results
-            if (detectedLang !== 'english') {
-                const langKeywords = {
-                    telugu: 'telugu',
-                    tamil: 'tamil',
-                    kannada: 'kannada',
-                    malayalam: 'malayalam',
-                    hindi: 'hindi',
-                    marathi: 'marathi',
-                    gujarati: 'gujarati'
-                };
-
-                const langKeyword = langKeywords[detectedLang];
-                if (langKeyword) {
-                    // Remove language keyword and other words from original query
-                    const withoutLang = query
-                        .replace(new RegExp(langKeyword, 'i'), '')
-                        .replace(/\bin\b/i, '')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                    
-                    // Reorder: put language keyword first for better search
-                    // E.g., "dj song in telugu" -> "telugu dj song"
-                    if (withoutLang) {
-                        improvedQuery = `${langKeyword} ${withoutLang}`;
-                        console.log(`🔄 Improved search: "${query}" → "${improvedQuery}"`);
-                    }
-                }
-            }
-
-            // canonicalize YouTube URLs (including youtu.be short links).
-            // Lavalink sometimes returns NO_MATCHES for the short form, so convert
-            // to the standard watch URL and, if necessary, fall back to a search.
-            let searchQuery = improvedQuery;
-            const ytMatch = improvedQuery.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|embed\/|v\/))([A-Za-z0-9_-]{11})/);
-            if (ytMatch) {
-                searchQuery = `https://www.youtube.com/watch?v=${ytMatch[1]}`;
-            }
-
+            // Fast search - use YouTube Music search with simple query
             let resolve = await client.riffy.resolve({
-                query: searchQuery,
+                query: `ytmsearch:${query}`,
                 requester: message.author,
             });
 
-            // try again with a search by ID if the direct URL failed
-            if ((resolve.loadType === "empty" || resolve.loadType === "NO_MATCHES") && ytMatch) {
-                console.log(`⚠️ play.js: direct YouTube URL failed, falling back to search for '${ytMatch[1]}'`);
-                resolve = await client.riffy.resolve({
-                    query: `ytmsearch:${ytMatch[1]}`,
-                    requester: message.author,
-                });
-            }
-
-            // if the resolution returns a Spotify track/playlist but the user didn't
-            // provide a Spotify URL we assume they wanted YouTube instead. this can
-            // happen when the defaultSearchPlatform or lavalink plugin returns
-            // Spotify results first. perform a second resolve forcing YouTube search.
-            const isSpotifyUrl = /^https?:\/\/(open\.)?spotify\.com/.test(improvedQuery);
-            if (!isSpotifyUrl) {
-                const firstTrack = resolve.tracks && resolve.tracks[0];
-                if (
-                    firstTrack &&
-                    firstTrack.info &&
-                    firstTrack.info.sourceName === 'spotify' &&
-                    resolve.loadType !== 'playlist'
-                ) {
-                    console.log(`⚠️ play.js: spotify result detected for '${improvedQuery}', retrying search on YouTube`);
-                    // try again with a YouTube Music search prefix
-                    resolve = await client.riffy.resolve({
-                        query: `ytmsearch:${improvedQuery}`,
-                        requester: message.author,
-                    });
-                }
-                // also handle case where a spotify playlist was returned but user
-                // wanted YouTube; fallback by treating the query as a search term
-                if (
-                    resolve.loadType === 'playlist' &&
-                    resolve.tracks.length > 0 &&
-                    resolve.tracks[0].info.sourceName === 'spotify'
-                ) {
-                    console.log(`⚠️ play.js: spotify playlist detected for '${improvedQuery}', retrying search on YouTube`);
-                    resolve = await client.riffy.resolve({
-                        query: `ytmsearch:${improvedQuery}`,
-                        requester: message.author,
-                    });
-                }
-            }
-
             const { loadType, tracks, playlistInfo } = resolve;
-
-            // Remove duplicate/near-duplicate songs from search results
-            let dedupedTracks = tracks;
-            if ((loadType === "search" || loadType === "track") && tracks.length > 0) {
-                dedupedTracks = deduplicateTracks(tracks);
-            }
-
-            // Filter by language using the detectedLang from earlier
-            let filteredTracks = dedupedTracks;
-            
-            if ((loadType === "search" || loadType === "track") && dedupedTracks.length > 0) {
-                filteredTracks = filterByLanguage(dedupedTracks, detectedLang, query);
-                
-                if (filteredTracks.length === 0) {
-                    // Fallback to deduped results if filtering removed everything
-                    filteredTracks = dedupedTracks;
-                }
-            }
 
             // ===============================
             // PLAYLIST
@@ -176,7 +69,11 @@ module.exports = {
             // ===============================
             else if (loadType === "search" || loadType === "track") {
 
-                const track = filteredTracks.shift();
+                if (tracks.length === 0) {
+                    return messages.error(message.channel, "No results found! Try with a different search term.");
+                }
+
+                const track = tracks[0];
                 track.info.requester = message.author;
 
                 const isFirstTrack = player.queue.length === 0 && !player.playing;
@@ -188,10 +85,6 @@ module.exports = {
                     if (!player.playing && !player.paused) {
                         player.play();
                     }
-
-                    // Now Playing is handled by trackStart event in index.js
-                    // messages.nowPlaying(message.channel, track, player);
-
                 } else {
                     messages.addedTrack(message.channel, track, position);
                 }
@@ -202,6 +95,7 @@ module.exports = {
 
         } catch (error) {
             console.error(error);
+            messages.error(message.channel, "An error occurred while playing the song!");
         }
     }
 };
