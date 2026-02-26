@@ -848,6 +848,35 @@ client.riffy.on("trackStart", async (player, track) => {
     }
 });
 
+client.riffy.on("queueEnd", async (player) => {
+    try {
+        const channel = client.channels.cache.get(player.voiceChannel);
+        if (!channel) return;
+
+        // Clear voice status
+        await setVoiceStatus(channel, "");
+
+        console.log("🧹 Voice status cleared (queue ended)");
+    } catch (err) {
+        console.error("Voice status clear failed:", err.message);
+    }
+});
+
+client.riffy.on("playerDestroy", async (player) => {
+    try {
+        const channel = client.channels.cache.get(player.voiceChannel);
+        if (!channel) return;
+
+        await setVoiceStatus(channel, "");
+
+        console.log("🧹 Voice status cleared (player destroyed)");
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+
+
 // LOGIN MUST BE LAST
 
 client.login(config.botToken);
