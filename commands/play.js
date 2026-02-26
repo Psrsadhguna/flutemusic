@@ -1,6 +1,7 @@
 const messages = require('../utils/messages.js');
 const applyFilters = require('../utils/applyFilters');
 const detectFilters = require('../utils/detectFilters');
+const { detectLanguage, filterByLanguage } = require('../utils/languageDetector.js');
 
 module.exports = {
     name: 'play',
@@ -99,6 +100,19 @@ module.exports = {
 
             const { loadType, tracks, playlistInfo } = resolve;
 
+            // Detect language from search query and filter results (for search/single track only)
+            const detectedLang = detectLanguage(query);
+            let filteredTracks = tracks;
+            
+            if ((loadType === "search" || loadType === "track") && tracks.length > 0) {
+                filteredTracks = filterByLanguage(tracks, detectedLang);
+                
+                if (filteredTracks.length === 0) {
+                    // Fallback to original results if filtering removed everything
+                    filteredTracks = tracks;
+                }
+            }
+
             // ===============================
             // PLAYLIST
             // ===============================
@@ -121,7 +135,7 @@ module.exports = {
             // ===============================
             else if (loadType === "search" || loadType === "track") {
 
-                const track = tracks.shift();
+                const track = filteredTracks.shift();
                 track.info.requester = message.author;
 
                 const isFirstTrack = player.queue.length === 0 && !player.playing;
