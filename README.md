@@ -22,7 +22,7 @@
 
 A powerful and lightweight Discord music bot with advanced filters, playlist system, and web dashboard.
 
-👤 Modified by **Flute Music Team**
+👤 code by **Flute Music Team**
 
 ---
 
