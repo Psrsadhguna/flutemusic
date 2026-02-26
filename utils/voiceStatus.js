@@ -3,9 +3,9 @@ async function setVoiceStatus(channel, text) {
 
     try {
         await channel.setStatus(text);
-        console.log("Voice status set:", text);
+        console.log("[VoiceStatus] Updated:", text);
     } catch (err) {
-        console.error("Voice status error:", err.message);
+        console.error("[VoiceStatus Error]", err.message);
     }
 }
 
