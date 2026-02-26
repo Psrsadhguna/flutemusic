@@ -47,7 +47,7 @@ function createHelpButtons() {
                 .setLabel('Vote')
                 .setStyle(ButtonStyle.Link)
                 .setURL(config.voteURL)
-                .setEmoji('⭐')
+                .setEmoji('<:vote_fm:1476442039972401213>')
         );
     }
 
@@ -58,7 +58,7 @@ function createHelpButtons() {
                 .setLabel('Website')
                 .setStyle(ButtonStyle.Link)
                 .setURL(config.websiteURL)
-                .setEmoji('🌐')
+                .setEmoji('<:website:1475873526522056746>')
         );
     }
 
@@ -201,8 +201,8 @@ module.exports = {
                 const filledLength = Math.round((position / length) * barLength);
                 const emptyLength = barLength - filledLength;
                 
-                const filled = '🟩'.repeat(filledLength);
-                const empty = '🟥'.repeat(emptyLength);
+                const filled = '<:green_fm:1476443631350055015>'.repeat(filledLength);
+                const empty = '<a:red_fm:1476444450258682131>'.repeat(emptyLength);
                 const percentage = Math.round((position / length) * 100);
                 
                 return `${filled}${empty} **${percentage}%**`;
