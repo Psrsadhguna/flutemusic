@@ -752,6 +752,10 @@ client.riffy.on("queueEnd", async (player) => {
 
         await setVoiceStatus(vc, null);
         console.log("🧹 Voice status cleared (queue ended)");
+        // Destroy player to leave the voice channel when queue ends
+        if (player) {
+            await player.destroy();
+        }
     } catch {}
 });
 
