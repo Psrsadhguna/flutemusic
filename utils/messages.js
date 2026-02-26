@@ -505,7 +505,7 @@ module.exports = {
         let description = '';
 
         if (currentTrack) {
-            description = `**🎵 Now Playing:**\n[${currentTrack.info.title}](${currentTrack.info.uri})\n⏱️ ${getDurationString(currentTrack)}\n\n`;
+            description = `** <a:playing:1473974241887256641> Now Playing:**\n[${currentTrack.info.title}](${currentTrack.info.uri})\n⏱️ ${getDurationString(currentTrack)}\n\n`;
 
             if (currentTrack.info.thumbnail) {
                 embed.setThumbnail(currentTrack.info.thumbnail);
