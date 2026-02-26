@@ -3,12 +3,12 @@
   "members": 2,
   "totalSongsPlayed": 501,
   "totalPlaytime": 246012456,
-  "totalCommandsExecuted": 550,
+  "totalCommandsExecuted": 570,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1525,
+  "uptimeSeconds": 1727,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
-  "errorRate": 0.73,
+  "errorRate": 0.7,
   "recentlyPlayed": [
     {
       "title": "Viral Vayyari ( From \"Junior\")",
@@ -160,5 +160,5 @@
       "count": 12
     }
   ],
-  "updated": "2026-02-26T14:55:25.294Z"
+  "updated": "2026-02-26T15:46:50.249Z"
 }
