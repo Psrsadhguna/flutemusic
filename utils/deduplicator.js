@@ -63,40 +63,74 @@ function calculateSimilarity(str1, str2) {
 /**
  * Remove duplicate or near-duplicate tracks from results
  * @param {array} tracks - Array of track objects
- * @param {number} threshold - Similarity threshold (0-1, default 0.8)
+ * @param {number} threshold - Similarity threshold (0-1, default 0.75)
  * @returns {array} - Deduplicated tracks
  */
-function deduplicateTracks(tracks, threshold = 0.85) {
+function deduplicateTracks(tracks, threshold = 0.75) {
     if (!Array.isArray(tracks) || tracks.length === 0) {
         return tracks;
     }
 
     const seen = [];
     const result = [];
+    const duplicates = [];
 
     for (const track of tracks) {
         if (!track || !track.info) continue;
 
-        const trackTitle = track.info.title || '';
+        const trackTitle = normalizeTitle(track.info.title || '');
+        const trackArtist = normalizeTitle(track.info.author || '');
+        
         let isDuplicate = false;
+        let duplicateOf = null;
 
         // Check against all previously seen tracks
-        for (const seenTitle of seen) {
-            const similarity = calculateSimilarity(trackTitle, seenTitle);
-            if (similarity >= threshold) {
+        for (let i = 0; i < seen.length; i++) {
+            const seenTitle = seen[i].title;
+            const seenArtist = seen[i].artist;
+            
+            // Compare title
+            const titleSimilarity = calculateSimilarity(trackTitle, seenTitle);
+            
+            // If titles are very similar, it's a duplicate
+            if (titleSimilarity >= threshold) {
                 isDuplicate = true;
+                duplicateOf = seenTitle;
                 break;
+            }
+            
+            // Also check if artist+title combo is duplicate (for remix versions)
+            if (seenArtist && trackArtist) {
+                const fullSimilarity = calculateSimilarity(
+                    `${trackArtist} ${trackTitle}`,
+                    `${seenArtist} ${seenTitle}`
+                );
+                if (fullSimilarity >= 0.85) {
+                    isDuplicate = true;
+                    duplicateOf = `${seenArtist} - ${seenTitle}`;
+                    break;
+                }
             }
         }
 
         if (!isDuplicate) {
-            seen.push(trackTitle);
+            seen.push({ 
+                title: trackTitle, 
+                artist: trackArtist,
+                fullTitle: track.info.title
+            });
             result.push(track);
+        } else {
+            duplicates.push({ original: duplicateOf, duplicate: track.info.title });
         }
     }
 
-    if (result.length < tracks.length) {
-        console.log(`🧹 Deduplicated: Removed ${tracks.length - result.length} duplicate(s)`);
+    if (duplicates.length > 0) {
+        console.log(`🧹 Deduplicated: Removed ${duplicates.length} duplicate(s)`);
+        duplicates.slice(0, 3).forEach(d => {
+            console.log(`   ❌ Duplicate of "${d.original}"`);
+            console.log(`      ${d.duplicate.substring(0, 60)}`);
+        });
     }
 
     return result;

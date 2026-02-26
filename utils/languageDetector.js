@@ -150,54 +150,62 @@ function filterByLanguage(tracks, detectedLang, query) {
         return tracks;
     }
 
-    // STRATEGY 1: Strict filtering - Find songs with language script OR language keyword
-    const matched = tracks.filter(track => matchesLanguage(track, detectedLang));
+    // STRATEGY 1: Find songs with language keyword
+    const langKeyword = detectedLang === 'telugu' ? 'telugu|andhra|telangana' 
+                      : detectedLang === 'tamil' ? 'tamil|tamilnadu|gana'
+                      : detectedLang === 'kannada' ? 'kannada|karnataka'
+                      : detectedLang === 'malayalam' ? 'malayalam|kerala|mallu'
+                      : detectedLang === 'hindi' ? 'hindi|bolly'
+                      : detectedLang === 'marathi' ? 'marathi|maharashtra'
+                      : detectedLang === 'gujarati' ? 'gujarati|gujrat'
+                      : null;
 
-    console.log(`🔍 Language Filter: Detected "${detectedLang}" from query "${query}"`);
-    
-    // STRATEGY 2: If strict filtering found good matches (50%+ coverage), use them
-    if (matched.length > 0 && matched.length >= Math.ceil(tracks.length * 0.3)) {
-        console.log(`   ✅ Found ${matched.length} matching tracks out of ${tracks.length}`);
-        matched.slice(0, 3).forEach((track, i) => {
-            console.log(`   ${i + 1}. ${track.info.title.substring(0, 60)}`);
+    if (langKeyword) {
+        const keywordMatches = tracks.filter(track => {
+            const title = (track.info.title || '').toLowerCase();
+            const artist = (track.info.author || '').toLowerCase();
+            const regex = new RegExp(langKeyword, 'i');
+            return regex.test(title) || regex.test(artist);
         });
-        return matched;
-    }
 
-    // STRATEGY 3: Very few or no matches - try a looser filter (just look for language name in ANY field)
-    if (matched.length < 2) {
-        const langKeyword = detectedLang === 'telugu' ? 'telugu' 
-                          : detectedLang === 'tamil' ? 'tamil'
-                          : detectedLang === 'kannada' ? 'kannada'
-                          : detectedLang === 'malayalam' ? 'malayalam'
-                          : detectedLang === 'hindi' ? 'hindi'
-                          : detectedLang === 'marathi' ? 'marathi'
-                          : detectedLang === 'gujarati' ? 'gujarati'
-                          : null;
-
-        if (langKeyword) {
-            const keywordMatches = tracks.filter(track => {
-                const title = (track.info.title || '').toLowerCase();
-                const artist = (track.info.author || '').toLowerCase();
-                return title.includes(langKeyword) || artist.includes(langKeyword);
-            });
-
-            if (keywordMatches.length > 0) {
-                console.log(`   ⚠️ Fallback: Found ${keywordMatches.length} songs with language keyword`);
-                keywordMatches.slice(0, 3).forEach((track, i) => {
-                    console.log(`   ${i + 1}. ${track.info.title.substring(0, 60)}`);
-                });
-                return keywordMatches;
-            }
+        // If we found keyword matches, prefer them but also include some script matches
+        if (keywordMatches.length > 0) {
+            console.log(`🔍 Language: "${detectedLang}" detected from "${query}"`);
+            console.log(`   ✅ Found ${keywordMatches.length} songs with language keyword`);
+            return keywordMatches;
         }
-    } else {
-        console.log(`   ✅ Found ${matched.length} matching tracks`);
-        return matched;
     }
 
-    // FALLBACK: Return top result if nothing matches (better than "No results")
-    console.log(`   ⚠️ No clear matches found, returning top ${Math.min(3, tracks.length)} results as fallback`);
-    return tracks.slice(0, Math.min(3, tracks.length));
+    // STRATEGY 2: Find songs with language script characters
+    const scriptPattern = {
+        telugu: /[\u0C00-\u0C7F]/,
+        hindi: /[\u0900-\u097F]/,
+        tamil: /[\u0B80-\u0BFF]/,
+        kannada: /[\u0C80-\u0CFF]/,
+        malayalam: /[\u0D00-\u0D7F]/,
+        marathi: /[\u0900-\u097F]/,
+        gujarati: /[\u0A80-\u0AFF]/
+    };
+
+    if (scriptPattern[detectedLang]) {
+        const scriptMatches = tracks.filter(track => {
+            const title = (track.info.title || '').toLowerCase();
+            const artist = (track.info.author || '').toLowerCase();
+            const combined = `${title} ${artist}`;
+            return scriptPattern[detectedLang].test(combined);
+        });
+
+        if (scriptMatches.length > 0) {
+            console.log(`🔍 Language: "${detectedLang}" detected from "${query}"`);
+            console.log(`   ✅ Found ${scriptMatches.length} songs with language script`);
+            return scriptMatches;
+        }
+    }
+
+    // FALLBACK: Return all tracks if no language matches
+    console.log(`🔍 Language: "${detectedLang}" detected, but no specific matches found`);
+    console.log(`   ⚠️ Returning all results`);
+    return tracks;
 }
 
 module.exports = {
