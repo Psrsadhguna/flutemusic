@@ -196,10 +196,11 @@ module.exports = {
 
             const createProgressBar = (position, length, isStream) => {
     try {
-        if (!position || !length || isStream) return '';
+        // don't bail out just because we're at the very start; position may be 0
+        if (length == null || isStream) return '';
 
         // safety checks
-        position = Number(position);
+        position = Number(position) || 0;
         length = Number(length);
 
         if (!isFinite(position) || !isFinite(length) || length <= 0)
@@ -246,7 +247,7 @@ const buildEmbed = (position, currentTrack) => {
 
         const embed = new EmbedBuilder()
             .setColor(config.embedColor)
-            .setTitle("🎵 Flute Music Live Session")
+            .setTitle("<a:playing:1473974241887256641> Now Playing")
             .setTimestamp();
 
         // ✅ duration values
@@ -264,14 +265,22 @@ const buildEmbed = (position, currentTrack) => {
         // ✅ CLEAN DESCRIPTION (YOUR DESIGN)
         let description =
             trackUrl && trackUrl.startsWith("http")
-                ? `▶ Playing: [${trackTitle}](${trackUrl})`
+                ? ` [${trackTitle}](${trackUrl})`
                 : `▶ Playing: ${trackTitle}`;
+
+        // Build progress bar if we have position data
+        const progressBar = createProgressBar(position, trackToUse.info.length, trackToUse.info.isStream);
+        const durationText = progressBar
+            ? `${currentTime} / ${totalDuration} ${progressBar}`
+            : `${currentTime} / ${totalDuration}`;
 
         description +=
 `\n
-👤 Listener: ${listenerName}
-🔗 Source: ${source}
-⏱️ Duration: \`${currentTime} / ${totalDuration}\``;
+**<a:users:1474075424765247780> Listener:** ${listenerName}
+\n
+**<a:Link:1476571707073630430> Source:** ${source}
+\n
+**<a:Duration:1476572013366874123> Duration:** ${durationText}`;
 
         embed.setDescription(description);
 

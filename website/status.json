@@ -1,15 +1,71 @@
 {
   "servers": 4,
   "members": 2,
-  "totalSongsPlayed": 489,
-  "totalPlaytime": 243016759,
-  "totalCommandsExecuted": 530,
+  "totalSongsPlayed": 496,
+  "totalPlaytime": 244911589,
+  "totalCommandsExecuted": 543,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1766,
+  "uptimeSeconds": 1321,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
-  "errorRate": 0.75,
+  "errorRate": 0.74,
   "recentlyPlayed": [
+    {
+      "title": "Humnava | (Slowed + Reverb) by SLOWED-ERA",
+      "author": "SLOWED-ERA",
+      "uri": "https://www.youtube.com/watch?v=0fPWYNbBQCk",
+      "requester": "744044949942829127",
+      "timestamp": 1772112272425,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772111958598,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772111806047,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Ya lili[ slowed+reverb ] || Sohail Musics || Feel The Music",
+      "author": "Feel The Music",
+      "uri": "https://www.youtube.com/watch?v=qrCao5Hn6nY",
+      "requester": "744044949942829127",
+      "timestamp": 1772111617020,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Boom Boom",
+      "author": "Sai Abhyankkar",
+      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
+      "requester": "744044949942829127",
+      "timestamp": 1772109743796,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Boom Boom",
+      "author": "Sai Abhyankkar",
+      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
+      "requester": "744044949942829127",
+      "timestamp": 1772109570367,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Boom Boom",
+      "author": "Sai Abhyankkar",
+      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
+      "requester": "744044949942829127",
+      "timestamp": 1772109348772,
+      "guildId": "1367087087005990962"
+    },
     {
       "title": "Boom Boom",
       "author": "Sai Abhyankkar",
@@ -32,62 +88,6 @@
       "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
       "requester": "744044949942829127",
       "timestamp": 1772107770090,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772107585555,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772107478385,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772107291552,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772106819905,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772106748015,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772106652673,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772101956867,
       "guildId": "1367087087005990962"
     }
   ],
@@ -114,7 +114,7 @@
     },
     {
       "guildId": "1367087087005990962",
-      "songCount": 23,
+      "songCount": 30,
       "guildName": "assam gang"
     }
   ],
@@ -125,7 +125,7 @@
     },
     {
       "name": "Devi Sri Prasad",
-      "count": 49
+      "count": 51
     },
     {
       "name": "Mohit Chauhan",
@@ -145,7 +145,7 @@
     },
     {
       "name": "Feel The Music",
-      "count": 15
+      "count": 16
     },
     {
       "name": "Nakash Aziz",
@@ -160,5 +160,5 @@
       "count": 12
     }
   ],
-  "updated": "2026-02-26T12:26:10.996Z"
+  "updated": "2026-02-26T13:31:08.250Z"
 }
