@@ -181,6 +181,29 @@ module.exports = {
             }
         };
 
+        // Handle on/off toggle
+        if (preset === 'off') {
+            try {
+                await player.node.rest.updatePlayer({
+                    guildId: message.guild.id,
+                    data: {
+                        filters: {
+                            equalizer: []
+                        }
+                    }
+                });
+
+                messages.success(
+                    message.channel,
+                    '❌ Equalizer **Disabled**!'
+                );
+            } catch (error) {
+                console.error(error);
+                messages.error(message.channel, '❌ Failed to disable equalizer!');
+            }
+            return;
+        }
+
         if (!preset) {
             const embed = new EmbedBuilder()
                 .setColor('#0061ff')
@@ -195,6 +218,11 @@ module.exports = {
                     {
                         name: 'Presets',
                         value: Object.keys(presets).map(p => `\`${p}\``).join(' • '),
+                        inline: false
+                    },
+                    {
+                        name: 'Toggle',
+                        value: '`feq off` - Disable all equalizer effects',
                         inline: false
                     }
                 ])
