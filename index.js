@@ -5,6 +5,7 @@ const config = require("./config.js");
 const { Riffy } = require('riffy');
 const messages = require("./utils/messages.js");
 const emojis = require("./emojis.js");
+const setVoiceStatus = require('./utils/voiceStatus');
 const statusRotator = require("./utils/statusRotator.js");
 const fs = require("fs");
 const path = require("path");
