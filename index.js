@@ -714,27 +714,7 @@ client.on('ready', () => {
     activeIntervals.push(statusInterval);
     console.log('✅ Status rotator initialized');
 });
-client.riffy.on("trackStart", async (player, track) => {
-    try {
-        if (!player || !track) return;
 
-        // wait a little so Discord updates VC connection
-        await new Promise(r => setTimeout(r, 800));
-
-        const channel = client.channels.cache.get(player.voiceChannel);
-        if (!channel) return;
-
-        await setVoiceStatus(
-            channel,
-            ` <a:playing:1473974241887256641> Playing: ${track.info.title}`
-        );
-
-        console.log(`🎧 Voice status updated → ${track.info.title}`);
-
-    } catch (err) {
-        console.error("Voice status update failed:", err.message);
-    }
-});
 
 
 
@@ -756,7 +736,7 @@ client.riffy.on("trackStart", async (player, track) => {
 
         await setVoiceStatus(
             vc,
-            `🎵 Playing: ${track.info.title}`
+            `<a:playing:1473974241887256641> Playing: ${track.info.title}`
         );
 
         console.log(`🎧 Voice status updated → ${track.info.title}`);
@@ -789,20 +769,7 @@ client.riffy.on("playerDestroy", async (player) => {
 // ===============================
 // ✅ SAFE CLEAR FUNCTION
 // ===============================
-async function clearVoiceStatus(player, reason) {
-    try {
-        if (!player || !player.voiceChannel) return;
 
-        const vc = client.channels.cache.get(player.voiceChannel);
-        if (!vc) return;
-
-        await setVoiceStatus(vc, null); // ← IMPORTANT (not "")
-
-        console.log(`🧹 Voice status cleared (${reason})`);
-    } catch (err) {
-        console.error("Voice status clear failed:", err.message);
-    }
-}
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
     // only watch the bot itself
