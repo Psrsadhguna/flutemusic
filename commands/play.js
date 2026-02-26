@@ -142,8 +142,7 @@ module.exports = {
                 dedupedTracks = deduplicateTracks(tracks);
             }
 
-            // Detect language from search query and filter results (for search/single track only)
-            const detectedLang = detectLanguage(query);
+            // Filter by language using the detectedLang from earlier
             let filteredTracks = dedupedTracks;
             
             if ((loadType === "search" || loadType === "track") && dedupedTracks.length > 0) {
