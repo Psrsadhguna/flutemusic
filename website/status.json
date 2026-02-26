@@ -1,15 +1,23 @@
 {
   "servers": 4,
-  "members": 2,
-  "totalSongsPlayed": 496,
-  "totalPlaytime": 244911589,
-  "totalCommandsExecuted": 543,
+  "members": 1,
+  "totalSongsPlayed": 497,
+  "totalPlaytime": 245120589,
+  "totalCommandsExecuted": 544,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1321,
+  "uptimeSeconds": 1779,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
   "errorRate": 0.74,
   "recentlyPlayed": [
+    {
+      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
+      "author": "Brown Editz",
+      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
+      "requester": "744044949942829127",
+      "timestamp": 1772112683536,
+      "guildId": "1367087087005990962"
+    },
     {
       "title": "Humnava | (Slowed + Reverb) by SLOWED-ERA",
       "author": "SLOWED-ERA",
@@ -81,14 +89,6 @@
       "requester": "744044949942829127",
       "timestamp": 1772107849945,
       "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772107770090,
-      "guildId": "1367087087005990962"
     }
   ],
   "topGuilds": [
@@ -114,7 +114,7 @@
     },
     {
       "guildId": "1367087087005990962",
-      "songCount": 30,
+      "songCount": 31,
       "guildName": "assam gang"
     }
   ],
@@ -160,5 +160,5 @@
       "count": 12
     }
   ],
-  "updated": "2026-02-26T13:31:08.250Z"
+  "updated": "2026-02-26T13:37:21.649Z"
 }

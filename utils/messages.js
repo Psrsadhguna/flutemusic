@@ -271,17 +271,14 @@ const buildEmbed = (position, currentTrack) => {
         // Build progress bar if we have position data
         const progressBar = createProgressBar(position, trackToUse.info.length, trackToUse.info.isStream);
         const durationText = progressBar
-            ? `${currentTime} / ${totalDuration} ${progressBar}`
+            ? `${currentTime} / ${totalDuration}\n${progressBar}`
             : `${currentTime} / ${totalDuration}`;
 
         description +=
 `\n
-**<a:users:1474075424765247780> Listener:** ${listenerName}
-\n
-**<a:Link:1476571707073630430> Source:** ${source}
-\n
+**<a:users:1474075424765247780> Listener:** ${listenerName}\n
+**<a:Link:1476571707073630430> Source:** ${source}\n
 **<a:Duration:1476572013366874123> Duration:** ${durationText}`;
-
         embed.setDescription(description);
 
         // ======================
