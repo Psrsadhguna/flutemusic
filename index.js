@@ -737,16 +737,36 @@ client.on('interactionCreate', async (interaction) => {
             await interaction.reply({ content: '❌ Failed to toggle loop: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_stop') {
-        try {
-            // delete now-playing message first if present
-            try { await messages.clearNowPlaying(client, player); } catch (e) {}
-            await player.destroy();
-            await interaction.reply({ content: '⏹️ Stopped playback and left channel.', flags: 64 });
-        } catch (err) {
-            console.error('Stop error:', err);
-            await interaction.reply({ content: '❌ Failed to stop: ' + err.message, flags: 64 });
+    try {
+
+        // ✅ CLEAR VOICE CHANNEL STATUS FIRST
+        const vc = client.channels.cache.get(player.voiceChannel);
+        if (vc) {
+            await setVoiceStatus(vc, null); // clear status
+            console.log("🧹 Voice status cleared (stop button)");
         }
-    } else if (interaction.customId === 'music_replay') {
+
+        // delete now-playing message
+        try {
+            await messages.clearNowPlaying(client, player);
+        } catch (e) {}
+
+        // destroy player
+        await player.destroy();
+
+        await interaction.reply({
+            content: '⏹️ Stopped playback and left channel.',
+            flags: 64
+        });
+
+    } catch (err) {
+        console.error('Stop error:', err);
+        await interaction.reply({
+            content: '❌ Failed to stop: ' + err.message,
+            flags: 64
+        });
+    }
+} else if (interaction.customId === 'music_replay') {
         try {
             // Get current track with fallbacks
             let currentTrack = null;
@@ -831,51 +851,59 @@ client.on('ready', () => {
     activeIntervals.push(statusInterval);
     console.log('✅ Status rotator initialized');
 });
+
+
+// ===============================
+// 🎵 VOICE STATUS SYSTEM
+// ===============================
+
+// When song starts
 client.riffy.on("trackStart", async (player, track) => {
     try {
-        const channel = client.channels.cache.get(player.voiceChannel);
-        if (!channel) return;
+        const vc = client.channels.cache.get(player.voiceChannel);
+        if (!vc) return;
 
         await setVoiceStatus(
-            channel,
-            ` <a:playing:1473974241887256641> Playing: ${track.info.title}`
+            vc,
+            `<a:playing:1473974241887256641> Playing: ${track.info.title}`
         );
 
         console.log(`🎧 Voice status updated → ${track.info.title}`);
-
     } catch (err) {
         console.error("Voice status update failed:", err.message);
     }
 });
 
+
+// When queue finishes
 client.riffy.on("queueEnd", async (player) => {
+    clearVoiceStatus(player, "queue ended");
+});
+
+
+// When player destroyed (stop command / disconnect)
+client.riffy.on("playerDestroy", async (player) => {
+    clearVoiceStatus(player, "player destroyed");
+});
+
+
+// ===============================
+// ✅ SAFE CLEAR FUNCTION
+// ===============================
+async function clearVoiceStatus(player, reason) {
     try {
-        const channel = client.channels.cache.get(player.voiceChannel);
-        if (!channel) return;
+        if (!player || !player.voiceChannel) return;
 
-        // Clear voice status
-        await setVoiceStatus(channel, "");
+        const vc = client.channels.cache.get(player.voiceChannel);
+        if (!vc) return;
 
-        console.log("🧹 Voice status cleared (queue ended)");
+        await setVoiceStatus(vc, null); // ← IMPORTANT (not "")
+
+        console.log(`🧹 Voice status cleared (${reason})`);
     } catch (err) {
         console.error("Voice status clear failed:", err.message);
     }
-});
-
-client.riffy.on("playerDestroy", async (player) => {
-    try {
-        const channel = client.channels.cache.get(player.voiceChannel);
-        if (!channel) return;
-
-        await setVoiceStatus(channel, "");
-
-        console.log("🧹 Voice status cleared (player destroyed)");
-    } catch (err) {
-        console.error(err);
-    }
-});
-
-
+}
 
 // LOGIN MUST BE LAST
 

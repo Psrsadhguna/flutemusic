@@ -1,4 +1,4 @@
-// @ts-nocheck - file uses dynamic JS patterns; disable TS checks here
+
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const emojis = require('../emojis.js');
 const config = require('../config.js');
@@ -47,7 +47,7 @@ function createHelpButtons() {
                 .setLabel('Vote')
                 .setStyle(ButtonStyle.Link)
                 .setURL(config.voteURL)
-                .setEmoji('⭐')
+                .setEmoji('<:vote_fm:1476442039972401213>')
         );
     }
 
@@ -58,7 +58,7 @@ function createHelpButtons() {
                 .setLabel('Website')
                 .setStyle(ButtonStyle.Link)
                 .setURL(config.websiteURL)
-                .setEmoji('🌐')
+                .setEmoji('<:website:1475873526522056746>')
         );
     }
 
@@ -201,8 +201,8 @@ module.exports = {
                 const filledLength = Math.round((position / length) * barLength);
                 const emptyLength = barLength - filledLength;
                 
-                const filled = '🟩'.repeat(filledLength);
-                const empty = '🟥'.repeat(emptyLength);
+                const filled = '<a:green_fm:1476445115005534230>'.repeat(filledLength);
+                const empty = '<a:red_fm:1476444450258682131>'.repeat(emptyLength);
                 const percentage = Math.round((position / length) * 100);
                 
                 return `${filled}${empty} **${percentage}%**`;
@@ -362,7 +362,7 @@ module.exports = {
                 );
 
             const playerPosition = player && typeof player.position === 'number' ? player.position : 0;
-            
+
             // Recommendation dropdown has been removed.
             
             // Use provided client or fallback to channel.client
@@ -505,7 +505,7 @@ module.exports = {
         let description = '';
 
         if (currentTrack) {
-            description = `**🎵 Now Playing:**\n[${currentTrack.info.title}](${currentTrack.info.uri})\n⏱️ ${getDurationString(currentTrack)}\n\n`;
+            description = `** <a:playing:1473974241887256641> Now Playing:**\n[${currentTrack.info.title}](${currentTrack.info.uri})\n⏱️ ${getDurationString(currentTrack)}\n\n`;
 
             if (currentTrack.info.thumbnail) {
                 embed.setThumbnail(currentTrack.info.thumbnail);
@@ -679,5 +679,3 @@ module.exports = {
     createButton: buttonUtils.createButton,
     createButtonRow: buttonUtils.createButtonRow
 };
-
-
