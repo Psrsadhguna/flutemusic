@@ -487,148 +487,37 @@ client.riffy.on("nodeError", (node, error) => {
     console.log(`${emojis.error} Node "${node.name}" encountered an error: ${error.message}.`);
 });
 
-client.riffy.on("nodeDisconnect", (node) => {
-    console.log(`${emojis.error} Node "${node.name}" disconnected. Attempting to reconnect...`);
-});
-
 client.riffy.on("trackStart", async (player, track) => {
     try {
-        if (!player || !track) {
-            console.error(`${emojis.error} Invalid player or track in trackStart event`);
-            return;
-        }
-        
-        const channel = client.channels.cache.get(player.textChannel);
-        if (!channel) {
-            console.error(`${emojis.error} Text channel not found for track start event`);
-            return;
-        }
-        
-        // Send now playing message for every track (not just first)
-        try {
-            await messages.nowPlaying(channel, track, player, client).catch(err => {
-                console.error(`${emojis.error} Failed to send now playing message:`, err.message);
-            });
-        } catch (err) {
-            console.error(`${emojis.error} Exception in nowPlaying:`, err.message);
-        }
-    } catch (error) {
-        console.error(`${emojis.error} Error in trackStart event:`, error.message);
-        return;
+        await new Promise(r => setTimeout(r, 800));
+
+        const vc = client.channels.cache.get(player.voiceChannel);
+        if (!vc) return;
+
+        await setVoiceStatus(
+            vc,
+            `🎵 Playing: ${track.info.title}`
+        );
+
+        console.log(`🎧 Voice status updated → ${track.info.title}`);
+    } catch (err) {
+        console.error(err);
     }
-    
-    // Add current track to song history (keep last 50 songs)
-    if (!songHistory[player.guildId]) {
-        songHistory[player.guildId] = [];
-    }
-    songHistory[player.guildId].push(track);
-    if (songHistory[player.guildId].length > 50) {
-        songHistory[player.guildId].shift();
-    }
-    
-    // Track song play and playtime
-    stats.totalSongsPlayed++;
-    if (track.info.length) {
-        stats.totalPlaytime += track.info.length;
-    }
-    
-    // Track recently played (keep last 20)
-    stats.recentlyPlayed.unshift({
-        title: track.info.title,
-        author: track.info.author,
-        uri: track.info.uri,
-        requester: track.info.requester?.id || 'Unknown',
-        timestamp: Date.now(),
-        guildId: player.guildId
-    });
-    if (stats.recentlyPlayed.length > 20) {
-        stats.recentlyPlayed.pop();
-    }
-    
-    // Track guild activity
-    stats.guildActivity[player.guildId] = (stats.guildActivity[player.guildId] || 0) + 1;
-    
-    // Track top artists
-    const artist = track.info.author || 'Unknown';
-    stats.topArtists[artist] = (stats.topArtists[artist] || 0) + 1;
-    
-    // Track user history
-    const requesterID = track.info.requester?.id;
-    if (requesterID) {
-        if (!userData[requesterID]) {
-            userData[requesterID] = { favorites: [], history: [] };
-        }
-        userData[requesterID].history.unshift({
-            title: track.info.title,
-            author: track.info.author,
-            uri: track.info.uri,
-            timestamp: Date.now()
-        });
-        // Keep last 100 songs in history
-        if (userData[requesterID].history.length > 100) {
-            userData[requesterID].history.pop();
-        }
-    }
-    
-    // Clear any previous queueEnd handling flag so future queueEnd can be processed
-    try { player._handledQueueEnd = false; } catch (e) { /* ignore */ }
-    // Update the text channel topic/status to show current playing track
-    try {
-        if (channel && typeof channel.setTopic === 'function') {
-            const requester = track.info.requester?.tag || 'Unknown';
-            const title = track.info.title || 'Unknown';
-            const author = track.info.author ? ` - ${track.info.author}` : '';
-            const topic = `Now Playing: ${title}${author} | Requested by: ${requester}`;
-            channel.setTopic(topic.slice(0, 1024)).catch(() => {});
-        }
-    } catch (e) { /* ignore topic set errors */ }
-    
-    // Update bot presence to show currently playing song
-    try {
-        const songTitle = (track.info.title || 'Unknown').slice(0, 100);
-        client.user.setPresence({
-            activities: [{
-                name: `🎵 ${songTitle}`,
-                type: 2  // Listening activity
-            }],
-            status: "online"
-        }).catch(err => {
-            console.log('Failed to update presence:', err.message);
-        });
-    } catch (e) { /* ignore presence errors */ }
+});
+
+client.riffy.on("queueEnd", async (player) => {
+    const vc = client.channels.cache.get(player.voiceChannel);
+    if (vc) await setVoiceStatus(vc, null);
+});
+
+client.riffy.on("playerDestroy", async (player) => {
+    const vc = client.channels.cache.get(player.voiceChannel);
+    if (vc) await setVoiceStatus(vc, null);
 });
 
 // Helper: set voice channel "status"/topic to show now playing (if supported)
 // (Persistent now-playing message removed)
 
-client.riffy.on("queueEnd", async (player) => {
-    const channel = client.channels.cache.get(player.textChannel);
-    // Prevent destruction if bot just joined
-    if (player._justJoined) {
-        console.log("Bot just joined - ignoring queueEnd");
-        return;
-    }
-    // Prevent duplicate handling when multiple rapid events (skip/stop) fire
-    if (player._handledQueueEnd) return;
-    player._handledQueueEnd = true;
-    
-    // Handle 24/7 mode - keeps the bot in VC but doesn't add songs
-    if (player.twentyFourSeven) {
-        console.log("24/7 mode active - bot staying in voice channel");
-        return;
-    }
-    
-    // Clear bot presence when queue ends
-    try {
-        client.user.setPresence({
-            activities: [],
-            status: "idle"
-        }).catch(() => {});
-    } catch (e) { /* ignore */ }
-    
-    player.destroy();
-    messages.queueEnded(channel);
-});
 
 client.on("raw", (d) => {
     if (![GatewayDispatchEvents.VoiceStateUpdate, GatewayDispatchEvents.VoiceServerUpdate].includes(d.t)) return;
@@ -856,7 +745,7 @@ client.riffy.on("trackStart", async (player, track) => {
         if (!player || !track) return;
 
         // wait a little so Discord updates VC connection
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 800));
 
         const channel = client.channels.cache.get(player.voiceChannel);
         if (!channel) return;
