@@ -1,42 +1,49 @@
 // utils/voiceStatus.js
 
+// store last status per channel
+const lastVoiceStatus = new Map();
+
+/**
+ * Set Discord Voice Channel Status
+ * @param {VoiceChannel} channel
+ * @param {string|null} text
+ */
 async function setVoiceStatus(channel, text) {
-    if (!channel || !channel.client) return;
-
     try {
-        // Check if bot has SetVoiceChannelStatus permission
-        const guild = channel.guild;
-        if (!guild) return;
+        if (!channel || !channel.client) return;
 
-        const botMember = await guild.members.fetch(channel.client.user.id).catch(() => null);
-        if (!botMember) {
-            console.warn(`[VoiceStatus] Bot not found in guild ${guild.id}`);
-            return;
+        const client = channel.client;
+
+        // normalize value
+        const newStatus = text || null;
+
+        // ✅ prevent duplicate updates
+        const previousStatus = lastVoiceStatus.get(channel.id);
+
+        if (previousStatus === newStatus) {
+            return; // skip same status
         }
 
-        if (!botMember.permissions.has('SetVoiceChannelStatus')) {
-            console.warn(`[VoiceStatus] Bot missing SET_VOICE_CHANNEL_STATUS permission in ${guild.name}`);
-            return;
-        }
-
-        // Convert null to empty string to clear the status
-        const statusText = text === null || text === undefined ? "" : text;
-
-        await channel.client.rest.put(
+        // send REST request
+        await client.rest.put(
             `/channels/${channel.id}/voice-status`,
             {
                 body: {
-                    status: statusText
+                    status: newStatus
                 }
             }
         );
 
-        console.log(`✅ Voice status ${statusText ? 'set' : 'cleared'}: ${statusText || '(empty)'}`);
+        // save last status
+        lastVoiceStatus.set(channel.id, newStatus);
+
+        if (newStatus)
+            console.log(`🎧 Voice status updated → ${newStatus}`);
+        else
+            console.log(`🧹 Voice status cleared`);
+
     } catch (err) {
         console.error("[VoiceStatus Error]", err.message);
-        if (err.status === 403) {
-            console.error("  → Bot is missing SET_VOICE_CHANNEL_STATUS permission");
-        }
     }
 }
 
