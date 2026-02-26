@@ -24,7 +24,7 @@ module.exports = {
 
         // Build categorized lists from the loaded commands (fallback to sensible defaults)
         const normalList = ['botinfo', 'feedback', 'help', 'ping', 'invite', 'uptime'];
-        const musicList = ['play', 'pause', 'resume', 'skip', 'stop', 'queue', 'volume', 'loop', 'shuffle', 'seek', 'clearqueue', 'join', 'move', 'remove', 'nowplaying', 'lyrics', '247'];
+        const musicList = ['play', 'pause', 'resume', 'skip', 'stop', 'queue', 'volume', 'loop', 'shuffle', 'seek', 'clearqueue', 'join', 'move', 'remove', 'nowplaying', '247'];
         const playlistList = ['saveplaylist', 'loadplaylist', 'myplaylists', 'deleteplaylist'];
         const userList = ['favorite', 'history', 'topac'];
         const filterList = ['bassboost', 'nightcore', 'vaporwave', '8d', 'karaoke', 'tremolo', 'vibrato', 'slowmode', 'daycore', 'darthvader', 'doubletime', 'pop', 'soft', 'treblebass', 'chipmunkfilter', 'clearfilters'];
