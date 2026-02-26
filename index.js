@@ -770,7 +770,7 @@ client.riffy.on("queueEnd", async (player) => {
                     const { EmbedBuilder } = require('discord.js');
                     const embed = new EmbedBuilder()
                         .setColor('#FF0000')
-                        .setTitle(':bye_bye: im leaving voice channel...')
+                        .setTitle('<a:bye_bye:1475217491759206421>  im leaving voice channel...')
                         .setDescription('songs completed, queue ended ... see you next time boi boiiiiii...')
                         .setTimestamp();
                     
