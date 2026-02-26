@@ -70,41 +70,52 @@ function matchesLanguage(track, detectedLang) {
     const artist = (track.info.author || '').toLowerCase();
     const combined = `${title} ${artist}`;
 
-    // Map language codes to their script ranges
-    const scriptRanges = {
-        telugu: /[\u0C00-\u0C7F]/,
-        hindi: /[\u0900-\u097F]/,
-        tamil: /[\u0B80-\u0BFF]/,
-        kannada: /[\u0C80-\u0CFF]/,
-        malayalam: /[\u0D00-\u0D7F]/,
-        marathi: /[\u0900-\u097F]/,
-        gujarati: /[\u0A80-\u0AFF]/,
-        english: /[a-z]/
-    };
-
-    // Keywords to exclude for specific languages (to avoid Bollywood mixing with regional languages)
-    const excludeKeywords = {
-        telugu: /bollywood|non-stop|remix|hindi|marathi|punjabi/i,
-        tamil: /bollywood|non-stop|remix|hindi|marathi|punjabi/i,
-        kannada: /bollywood|non-stop|remix|hindi|marathi|punjabi/i,
-        malayalam: /bollywood|non-stop|remix|hindi|marathi|punjabi/i
-    };
-
-    // Check if track contains excluded keywords
-    const excludePattern = excludeKeywords[detectedLang];
-    if (excludePattern && excludePattern.test(combined)) {
-        // Only exclude if it doesn't contain the target language script
-        const scriptPattern = scriptRanges[detectedLang];
-        if (scriptPattern && !scriptPattern.test(combined)) {
-            return false; // Exclude this track
+    // Map language codes to their script ranges AND keyword patterns
+    const languagePatterns = {
+        telugu: {
+            script: /[\u0C00-\u0C7F]/,
+            keywords: /\btelugu\b|andhra|telangana/i
+        },
+        hindi: {
+            script: /[\u0900-\u097F]/,
+            keywords: /\bhindi\b|bollywood|hindi remix|non-stop.*hindi/i
+        },
+        tamil: {
+            script: /[\u0B80-\u0BFF]/,
+            keywords: /\btamil\b|tamilnadu|gana|tamizhisai/i
+        },
+        kannada: {
+            script: /[\u0C80-\u0CFF]/,
+            keywords: /\bkannada\b|karnataka|kannada remix/i
+        },
+        malayalam: {
+            script: /[\u0D00-\u0D7F]/,
+            keywords: /\bmalayalam\b|kerala|mallu/i
+        },
+        marathi: {
+            script: /[\u0900-\u097F]/,
+            keywords: /\bmarathi\b|maharashtra/i
+        },
+        gujarati: {
+            script: /[\u0A80-\u0AFF]/,
+            keywords: /\bgujarati\b|gujarat/i
         }
-    }
+    };
 
-    const scriptPattern = scriptRanges[detectedLang];
-    if (!scriptPattern) return true; // Default to true if unknown language
+    const pattern = languagePatterns[detectedLang];
+    if (!pattern) return true; // Default to true if unknown language
 
     // Check if the track contains the script of the detected language
-    return scriptPattern.test(combined);
+    if (pattern.script.test(combined)) {
+        return true;
+    }
+
+    // Check if the track contains language keywords
+    if (pattern.keywords.test(combined)) {
+        return true;
+    }
+
+    return false;
 }
 
 /**
@@ -127,13 +138,23 @@ function filterByLanguage(tracks, detectedLang, query) {
     // Filter tracks that match the detected language
     const matched = tracks.filter(track => matchesLanguage(track, detectedLang));
 
-    // If we found matches (at least 1-2 songs), return them
-    if (matched.length >= 1) {
+    console.log(`🔍 Language Filter: Detected "${detectedLang}" from query "${query}"`);
+    console.log(`   Found ${matched.length} matching tracks out of ${tracks.length}`);
+    
+    if (matched.length > 0) {
+        matched.forEach((track, i) => {
+            console.log(`   ✓ ${i + 1}. ${track.info.title.substring(0, 50)}`);
+        });
         return matched;
     }
 
-    // If no matches found, log and return all (fallback)
-    console.log(`⚠️ No ${detectedLang} language results found for "${query}", returning all results`);
+    // If no matches found, log all results for debugging
+    console.log(`⚠️ No ${detectedLang} language results found for "${query}"`);
+    console.log(`   Available results:`);
+    tracks.slice(0, 3).forEach((track, i) => {
+        console.log(`   ${i + 1}. ${track.info.title.substring(0, 50)}`);
+    });
+    
     return tracks;
 }
 
