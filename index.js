@@ -5,6 +5,7 @@ const config = require("./config.js");
 const { Riffy } = require('riffy');
 const messages = require("./utils/messages.js");
 const emojis = require("./emojis.js");
+const setVoiceStatus = require('./utils/voiceStatus');
 const statusRotator = require("./utils/statusRotator.js");
 const fs = require("fs");
 const path = require("path");
@@ -830,8 +831,56 @@ client.on('ready', () => {
     activeIntervals.push(statusInterval);
     console.log('✅ Status rotator initialized');
 });
+client.riffy.on("trackStart", async (player, track) => {
+    try {
+        const channel = client.channels.cache.get(player.voiceChannel);
+        if (!channel) return;
+
+        await setVoiceStatus(
+            channel,
+            ` <a:playing:1473974241887256641> Playing: ${track.info.title}`
+        );
+
+        console.log(`🎧 Voice status updated → ${track.info.title}`);
+
+    } catch (err) {
+        console.error("Voice status update failed:", err.message);
+    }
+});
+
+client.riffy.on("queueEnd", async (player) => {
+    try {
+        const channel = client.channels.cache.get(player.voiceChannel);
+        if (!channel) return;
+
+        // Clear voice status
+        await setVoiceStatus(channel, "");
+
+        console.log("🧹 Voice status cleared (queue ended)");
+    } catch (err) {
+        console.error("Voice status clear failed:", err.message);
+    }
+});
+
+client.riffy.on("playerDestroy", async (player) => {
+    try {
+        const channel = client.channels.cache.get(player.voiceChannel);
+        if (!channel) return;
+
+        await setVoiceStatus(channel, "");
+
+        console.log("🧹 Voice status cleared (player destroyed)");
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+
+
+// LOGIN MUST BE LAST
 
 client.login(config.botToken);
+
 
 // Initialize Express server for website
 const app = express();
