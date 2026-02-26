@@ -1,4 +1,4 @@
-// @ts-nocheck - file uses dynamic JS patterns; disable TS checks here
+
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const emojis = require('../emojis.js');
 const config = require('../config.js');
