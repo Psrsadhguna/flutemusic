@@ -234,88 +234,81 @@ const buildEmbed = (position, currentTrack) => {
     try {
         const trackToUse = currentTrack || track;
 
-        // listener/requester name (used in description below)
-        const listenerName = (trackToUse.info.requester && trackToUse.info.requester.tag)
-            ? trackToUse.info.requester.tag
-            : (trackToUse.requestedBy?.tag || 'Unknown');
+        const listenerName =
+            (trackToUse.info.requester?.tag) ||
+            (trackToUse.requestedBy?.tag) ||
+            "Unknown";
 
-        const trackTitle = (trackToUse.info.title || 'Unknown').substring(0, 256);
-        const trackUrl = trackToUse.info.uri || '';
-            const embed = new EmbedBuilder()
+        const trackTitle =
+            (trackToUse.info.title || "Unknown").substring(0, 256);
+
+        const trackUrl = trackToUse.info.uri || "";
+
+        const embed = new EmbedBuilder()
             .setColor(config.embedColor)
-            .setTitle('🎵 Flute Music Live Session')
+            .setTitle("🎵 Flute Music Live Session")
             .setTimestamp();
-        // description with the two lines you asked to keep
-        let description = `<a:playing:1473974241887256641>  Playing: ${trackTitle}`;
-        if (trackUrl && trackUrl.startsWith('http')) {
-            description = `▶ Playing: [${trackTitle}](${trackUrl})`;
-        }
-        description += `\n\n👤 Listener: ${listenerName}`;
+
+        // ✅ duration values
+        const totalDuration =
+            formatDuration(trackToUse.info.length) || "N/A";
+
+        const currentTime =
+            player && typeof position === "number"
+                ? formatDuration(position)
+                : "0:00";
+
+        const source =
+            (trackToUse.info.sourceName || "Unknown");
+
+        // ✅ CLEAN DESCRIPTION (YOUR DESIGN)
+        let description =
+            trackUrl && trackUrl.startsWith("http")
+                ? `▶ Playing: [${trackTitle}](${trackUrl})`
+                : `▶ Playing: ${trackTitle}`;
+
+        description +=
+`\n
+👤 Listener: ${listenerName}
+🔗 Source: ${source}
+⏱️ Duration: \`${currentTime} / ${totalDuration}\``;
+
         embed.setDescription(description);
-        // …the existing thumbnail‑lookup / author‑setting / field‑adding
-        // logic remains unchanged from your snippet…
+
+        // ======================
+        // Thumbnail logic (keep)
+        // ======================
+
         let thumbnail = null;
 
-        if (typeof trackToUse.info.thumbnail === 'string' && trackToUse.info.thumbnail.trim()) {
+        if (trackToUse.info.thumbnail)
             thumbnail = trackToUse.info.thumbnail;
-        } else if (typeof trackToUse.info.artworkUrl === 'string' && trackToUse.info.artworkUrl.trim()) {
+        else if (trackToUse.info.artworkUrl)
             thumbnail = trackToUse.info.artworkUrl;
-        } else if (typeof trackToUse.info.image === 'string' && trackToUse.info.image.trim()) {
+        else if (trackToUse.info.image)
             thumbnail = trackToUse.info.image;
-        }
 
         if (!thumbnail && trackToUse.info.uri) {
             try {
-
                 const uri = trackToUse.info.uri;
                 let videoId = null;
-                if (uri.includes('v=')) {
-                    const startIdx = uri.indexOf('v=') + 2;
-                    videoId = uri.substring(startIdx, startIdx + 11);
-                } else if (uri.includes('youtu.be/')) {
-                    const startIdx = uri.indexOf('youtu.be/') + 9;
-                    videoId = uri.substring(startIdx, startIdx + 11);
-                }
-                if (videoId && videoId.length === 11) {
+
+                if (uri.includes("v="))
+                    videoId = uri.split("v=")[1]?.substring(0, 11);
+                else if (uri.includes("youtu.be/"))
+                    videoId = uri.split("youtu.be/")[1]?.substring(0, 11);
+
+                if (videoId)
                     thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                }
-            } catch (e) {
-                console.error('Exception during video ID extraction:', e.message);
-            }
+
+            } catch {}
         }
 
-        if (thumbnail && typeof thumbnail === 'string' && thumbnail.trim()) {
-            try {
-                embed.setThumbnail(thumbnail);
-            } catch (e) {
-                console.error('Failed to set thumbnail:', e.message);
-            }
-        }
+        if (thumbnail)
+            embed.setThumbnail(thumbnail);
 
-        if (trackToUse.info.requester && trackToUse.info.requester.tag) {
-            embed.setAuthor({ name: `Requested by ${trackToUse.info.requester.tag}` });
-        }
+        // ❌ REMOVE author + fields (clean UI)
 
-        const source = (trackToUse.info.sourceName || 'Unknown').substring(0, 1024);
-
-        embed.addFields([
-
-            { name: '🔗 Source', value: source, inline: false },
-        ]);
-
-        const duration = formatDuration(trackToUse.info.length) || 'N/A';
-        if (player && typeof player.position === 'number') {
-            const currentTime = formatDuration(position) || '0:00';
-            const progressBar = createProgressBar(position, trackToUse.info.length, trackToUse.info.isStream);
-            const durationText = progressBar ? `${currentTime} / ${duration}\n${progressBar}` : `${currentTime} / ${duration}`;
-            embed.addFields([
-                { name: '⏱️ Duration', value: durationText, inline: false }
-            ]);
-        } else {
-            embed.addFields([
-                { name: '⏱️ Duration', value: duration, inline: false }
-            ]);
-        }
 
             // …rest of the function…
  
