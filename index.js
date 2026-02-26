@@ -831,8 +831,27 @@ client.on('ready', () => {
     activeIntervals.push(statusInterval);
     console.log('✅ Status rotator initialized');
 });
+client.riffy.on("trackStart", async (player, track) => {
+    try {
+        const channel = client.channels.cache.get(player.voiceChannel);
+        if (!channel) return;
+
+        await setVoiceStatus(
+            channel,
+            `🎵 Playing: ${track.info.title}`
+        );
+
+        console.log(`🎧 Voice status updated → ${track.info.title}`);
+
+    } catch (err) {
+        console.error("Voice status update failed:", err.message);
+    }
+});
+
+// LOGIN MUST BE LAST
 
 client.login(config.botToken);
+
 
 // Initialize Express server for website
 const app = express();
