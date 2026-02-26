@@ -2,6 +2,7 @@ const messages = require('../utils/messages.js');
 const applyFilters = require('../utils/applyFilters');
 const detectFilters = require('../utils/detectFilters');
 const { detectLanguage, filterByLanguage } = require('../utils/languageDetector.js');
+const { deduplicateTracks } = require('../utils/deduplicator.js');
 
 module.exports = {
     name: 'play',
@@ -100,16 +101,22 @@ module.exports = {
 
             const { loadType, tracks, playlistInfo } = resolve;
 
+            // Remove duplicate/near-duplicate songs from search results
+            let dedupedTracks = tracks;
+            if ((loadType === "search" || loadType === "track") && tracks.length > 0) {
+                dedupedTracks = deduplicateTracks(tracks);
+            }
+
             // Detect language from search query and filter results (for search/single track only)
             const detectedLang = detectLanguage(query);
-            let filteredTracks = tracks;
+            let filteredTracks = dedupedTracks;
             
-            if ((loadType === "search" || loadType === "track") && tracks.length > 0) {
-                filteredTracks = filterByLanguage(tracks, detectedLang, query);
+            if ((loadType === "search" || loadType === "track") && dedupedTracks.length > 0) {
+                filteredTracks = filterByLanguage(dedupedTracks, detectedLang, query);
                 
                 if (filteredTracks.length === 0) {
-                    // Fallback to original results if filtering removed everything
-                    filteredTracks = tracks;
+                    // Fallback to deduped results if filtering removed everything
+                    filteredTracks = dedupedTracks;
                 }
             }
 
