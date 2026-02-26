@@ -764,6 +764,12 @@ client.riffy.on("queueEnd", async (player) => {
         if (!player.twentyFourSeven) {
             // 24/7 disabled - leave voice channel
             try {
+                // Send goodbye message to text channel
+                const textChannel = client.channels.cache.get(player.textChannel);
+                if (textChannel) {
+                    await textChannel.send(":bye_bye: im leaving voice channel...\nsongs completed, queue ended ... see you next time boi boiiiiii...");
+                }
+                
                 await player.destroy();
                 console.log("👋 Bot left voice channel (queue ended, 24/7 disabled)");
             } catch (e) {
