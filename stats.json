@@ -1,9 +1,57 @@
 {
-  "totalSongsPlayed": 474,
-  "totalPlaytime": 239143094,
-  "totalCommandsExecuted": 514,
+  "totalSongsPlayed": 480,
+  "totalPlaytime": 240732296,
+  "totalCommandsExecuted": 521,
   "twentyFourSevenServers": [],
   "recentlyPlayed": [
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101956867,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101699950,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101547781,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101540494,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101527238,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101099404,
+      "guildId": "1367087087005990962"
+    },
     {
       "title": "Ola Olaala Ala",
       "author": "Karunya",
@@ -115,54 +163,6 @@
       "requester": "744044949942829127",
       "timestamp": 1772039013150,
       "guildId": "1475911093330251990"
-    },
-    {
-      "title": "Nuvvunte Naa Jathagaa",
-      "author": "Sid Sriram",
-      "uri": "https://www.youtube.com/watch?v=8BtSoNMdQqQ",
-      "requester": "744044949942829127",
-      "timestamp": 1772038990634,
-      "guildId": "1475911093330251990"
-    },
-    {
-      "title": "Nuvvunte Naa Jathagaa",
-      "author": "Sid Sriram",
-      "uri": "https://www.youtube.com/watch?v=8BtSoNMdQqQ",
-      "requester": "744044949942829127",
-      "timestamp": 1772038447696,
-      "guildId": "1475911093330251990"
-    },
-    {
-      "title": "Nuvvunte Naa Jathagaa",
-      "author": "Sid Sriram",
-      "uri": "https://www.youtube.com/watch?v=8BtSoNMdQqQ",
-      "requester": "744044949942829127",
-      "timestamp": 1772038241251,
-      "guildId": "1475911093330251990"
-    },
-    {
-      "title": "KOTADATI RAVE SILAKAMMA",
-      "author": "Dilip Devgan - Topic",
-      "uri": "https://www.youtube.com/watch?v=GSX2MBj1DqE",
-      "requester": "744044949942829127",
-      "timestamp": 1772038034945,
-      "guildId": "1475911093330251990"
-    },
-    {
-      "title": "Maruvake Viduvake",
-      "author": "DILIP DEVAGAN",
-      "uri": "https://open.spotify.com/track/0m2jDS313PotphW7V1Xh8l",
-      "requester": "744044949942829127",
-      "timestamp": 1772037985367,
-      "guildId": "1475911093330251990"
-    },
-    {
-      "title": "Nuvvunte Naa Jathagaa",
-      "author": "Sid Sriram",
-      "uri": "https://www.youtube.com/watch?v=8BtSoNMdQqQ",
-      "requester": "744044949942829127",
-      "timestamp": 1772037964110,
-      "guildId": "1475911093330251990"
     }
   ],
   "errorCount": 4,
@@ -171,7 +171,7 @@
     "1469974428908654818": 71,
     "1475011449834176543": 266,
     "1475911093330251990": 77,
-    "1367087087005990962": 8
+    "1367087087005990962": 14
   },
   "topArtists": {
     "AKASA": 3,
@@ -199,7 +199,7 @@
     "Yazin Nizar": 5,
     "Peter McPoland": 3,
     "Ezra Bell": 2,
-    "Devi Sri Prasad": 38,
+    "Devi Sri Prasad": 44,
     "Mohit Chauhan": 32,
     "A.R. Rahman": 7,
     "Mallu ai": 6,
@@ -304,5 +304,5 @@
       "timestamp": 1771801007273
     }
   ],
-  "lastUpdated": "2026-02-26T10:07:38.029Z"
+  "lastUpdated": "2026-02-26T10:33:30.145Z"
 }

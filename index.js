@@ -739,20 +739,19 @@ client.on('interactionCreate', async (interaction) => {
     } else if (interaction.customId === 'music_stop') {
     try {
 
-        // ✅ CLEAR VOICE CHANNEL STATUS FIRST
+        // ✅ Get voice channel safely
         const vc = client.channels.cache.get(player.voiceChannel);
+
+        // ✅ Clear voice status FIRST
         if (vc) {
-            await setVoiceStatus(vc, null); // clear status
+            await setVoiceStatus(vc, null);
             console.log("🧹 Voice status cleared (stop button)");
         }
 
-        // delete now-playing message
-        try {
-            await messages.clearNowPlaying(client, player);
-        } catch (e) {}
-
-        // destroy player
-        await player.destroy();
+        // ✅ Destroy player AFTER clearing
+        if (player) {
+            await player.destroy();
+        }
 
         await interaction.reply({
             content: '⏹️ Stopped playback and left channel.',
@@ -760,12 +759,13 @@ client.on('interactionCreate', async (interaction) => {
         });
 
     } catch (err) {
-        console.error('Stop error:', err);
+        console.error("Stop button error:", err);
         await interaction.reply({
-            content: '❌ Failed to stop: ' + err.message,
+            content: '❌ Failed to stop player.',
             flags: 64
         });
     }
+
 } else if (interaction.customId === 'music_replay') {
         try {
             // Get current track with fallbacks
@@ -853,6 +853,11 @@ client.on('ready', () => {
 });
 client.riffy.on("trackStart", async (player, track) => {
     try {
+        if (!player || !track) return;
+
+        // wait a little so Discord updates VC connection
+        await new Promise(r => setTimeout(r, 1500));
+
         const channel = client.channels.cache.get(player.voiceChannel);
         if (!channel) return;
 
@@ -923,17 +928,9 @@ client.riffy.on("trackStart", async (player, track) => {
 
 
 // When queue finishes
-client.riffy.on("queueEnd", async (player) => {
-    clearVoiceStatus(player, "queue ended");
-});
+client.riffy.on("queueEnd", player => clearVoiceStatus(player, "queue ended"));
 
-
-// When player destroyed (stop command / disconnect)
-client.riffy.on("playerDestroy", async (player) => {
-    clearVoiceStatus(player, "player destroyed");
-});
-
-
+client.riffy.on("playerDestroy", player => clearVoiceStatus(player, "player destroyed"));
 // ===============================
 // ✅ SAFE CLEAR FUNCTION
 // ===============================
@@ -952,6 +949,17 @@ async function clearVoiceStatus(player, reason) {
     }
 }
 
+client.on("voiceStateUpdate", async (oldState, newState) => {
+    if (!oldState.member?.user?.bot) return;
+
+    // bot disconnected from VC
+    if (oldState.channelId && !newState.channelId) {
+        try {
+            await setVoiceStatus(oldState.channel, null);
+            console.log("🧹 Voice status cleared (bot disconnected)");
+        } catch {}
+    }
+});
 // LOGIN MUST BE LAST
 
 client.login(config.botToken);

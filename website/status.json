@@ -1,15 +1,87 @@
 {
   "servers": 4,
   "members": 2,
-  "totalSongsPlayed": 471,
-  "totalPlaytime": 238278672,
-  "totalCommandsExecuted": 511,
+  "totalSongsPlayed": 480,
+  "totalPlaytime": 240732296,
+  "totalCommandsExecuted": 521,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1292,
+  "uptimeSeconds": 1593,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
-  "errorRate": 0.78,
+  "errorRate": 0.77,
   "recentlyPlayed": [
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101956867,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101699950,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101547781,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101540494,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101527238,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772101099404,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Ola Olaala Ala",
+      "author": "Karunya",
+      "uri": "https://open.spotify.com/track/2Z6PDgrkYCjASnRqWZxf4Y",
+      "requester": "744044949942829127",
+      "timestamp": 1772100414037,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772100350248,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772100343156,
+      "guildId": "1367087087005990962"
+    },
     {
       "title": "Viral Vayyari ( From \"Junior\")",
       "author": "Devi Sri Prasad",
@@ -17,78 +89,6 @@
       "requester": "744044949942829127",
       "timestamp": 1772100325937,
       "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772100036572,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772099762676,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772099530239,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Hio",
-      "author": "Swami",
-      "uri": "https://www.youtube.com/watch?v=GXcmb7i6khs",
-      "requester": "744044949942829127",
-      "timestamp": 1772099501475,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772099184726,
-      "guildId": "1475911093330251990"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "1182319870914854923",
-      "timestamp": 1772098453758,
-      "guildId": "1475911093330251990"
-    },
-    {
-      "title": "Maruvake Viduvake",
-      "author": "DILIP DEVAGAN",
-      "uri": "https://open.spotify.com/track/0m2jDS313PotphW7V1Xh8l",
-      "requester": "744044949942829127",
-      "timestamp": 1772039892236,
-      "guildId": "1475911093330251990"
-    },
-    {
-      "title": "Maruvake Viduvake",
-      "author": "DILIP DEVAGAN",
-      "uri": "https://open.spotify.com/track/0m2jDS313PotphW7V1Xh8l",
-      "requester": "744044949942829127",
-      "timestamp": 1772039873237,
-      "guildId": "1475911093330251990"
-    },
-    {
-      "title": "Maruvake Viduvake",
-      "author": "DILIP DEVAGAN",
-      "uri": "https://open.spotify.com/track/0m2jDS313PotphW7V1Xh8l",
-      "requester": "744044949942829127",
-      "timestamp": 1772039502616,
-      "guildId": "1475911093330251990"
     }
   ],
   "topGuilds": [
@@ -114,7 +114,7 @@
     },
     {
       "guildId": "1367087087005990962",
-      "songCount": 5,
+      "songCount": 14,
       "guildName": "assam gang"
     }
   ],
@@ -125,7 +125,7 @@
     },
     {
       "name": "Devi Sri Prasad",
-      "count": 36
+      "count": 44
     },
     {
       "name": "Mohit Chauhan",
@@ -160,5 +160,5 @@
       "count": 12
     }
   ],
-  "updated": "2026-02-26T10:05:38.025Z"
+  "updated": "2026-02-26T10:33:47.970Z"
 }
