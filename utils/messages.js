@@ -201,7 +201,7 @@ module.exports = {
                 const filledLength = Math.round((position / length) * barLength);
                 const emptyLength = barLength - filledLength;
                 
-                const filled = '<:green_fm:1476443631350055015>'.repeat(filledLength);
+                const filled = '<a:green_fm:1476445115005534230>'.repeat(filledLength);
                 const empty = '<a:red_fm:1476444450258682131>'.repeat(emptyLength);
                 const percentage = Math.round((position / length) * 100);
                 
