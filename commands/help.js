@@ -27,7 +27,7 @@ module.exports = {
         const musicList = ['play', 'pause', 'resume', 'skip', 'stop', 'queue', 'volume', 'loop', 'shuffle', 'seek', 'clearqueue', 'join', 'move', 'remove', 'nowplaying', '247'];
         const playlistList = ['saveplaylist', 'loadplaylist', 'myplaylists', 'deleteplaylist'];
         const userList = ['favorite', 'history', 'topac'];
-        const filterList = ['bassboost', 'nightcore', 'vaporwave', '8d', 'karaoke', 'tremolo', 'vibrato', 'slowmode', 'daycore', 'darthvader', 'doubletime', 'pop', 'soft', 'treblebass', 'chipmunkfilter', 'clearfilters'];
+        const filterList = ['nightcore', 'vaporwave', '8d', 'karaoke', 'tremolo', 'vibrato', 'slowmode', 'daycore', 'darthvader', 'doubletime', 'pop', 'soft', 'treblebass', 'chipmunkfilter', 'equalizer', 'clearfilters'];
         const effectList = ['lofi', 'underwater', 'telephone', 'party', 'radio', 'cinema', 'vocalboost', 'echo', 'earrape', 'cleareffects'];
 
         const helpData = {
