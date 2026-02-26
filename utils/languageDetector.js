@@ -45,6 +45,15 @@ function detectLanguage(query) {
         return 'gujarati';
     }
 
+    // Check for language keywords in text (for mixed queries like "dj song in telugu")
+    if (/telugu|తెలుగు/.test(text)) return 'telugu';
+    if (/hindi|हिंदी/.test(text)) return 'hindi';
+    if (/tamil|தமிழ்/.test(text)) return 'tamil';
+    if (/kannada|ಕನ್ನಡ/.test(text)) return 'kannada';
+    if (/malayalam|മലയാളം/.test(text)) return 'malayalam';
+    if (/marathi|मराठी/.test(text)) return 'marathi';
+    if (/gujarati|ગુજરાતી/.test(text)) return 'gujarati';
+
     return 'english';
 }
 
@@ -73,6 +82,24 @@ function matchesLanguage(track, detectedLang) {
         english: /[a-z]/
     };
 
+    // Keywords to exclude for specific languages (to avoid Bollywood mixing with regional languages)
+    const excludeKeywords = {
+        telugu: /bollywood|non-stop|remix|hindi|marathi|punjabi/i,
+        tamil: /bollywood|non-stop|remix|hindi|marathi|punjabi/i,
+        kannada: /bollywood|non-stop|remix|hindi|marathi|punjabi/i,
+        malayalam: /bollywood|non-stop|remix|hindi|marathi|punjabi/i
+    };
+
+    // Check if track contains excluded keywords
+    const excludePattern = excludeKeywords[detectedLang];
+    if (excludePattern && excludePattern.test(combined)) {
+        // Only exclude if it doesn't contain the target language script
+        const scriptPattern = scriptRanges[detectedLang];
+        if (scriptPattern && !scriptPattern.test(combined)) {
+            return false; // Exclude this track
+        }
+    }
+
     const scriptPattern = scriptRanges[detectedLang];
     if (!scriptPattern) return true; // Default to true if unknown language
 
@@ -84,9 +111,10 @@ function matchesLanguage(track, detectedLang) {
  * Filter search results to match the detected language
  * @param {array} tracks - Array of track objects
  * @param {string} detectedLang - Detected language from query
+ * @param {string} query - Original search query for context
  * @returns {array} - Filtered tracks matching the language
  */
-function filterByLanguage(tracks, detectedLang) {
+function filterByLanguage(tracks, detectedLang, query) {
     if (!Array.isArray(tracks) || tracks.length === 0) {
         return tracks;
     }
@@ -99,8 +127,14 @@ function filterByLanguage(tracks, detectedLang) {
     // Filter tracks that match the detected language
     const matched = tracks.filter(track => matchesLanguage(track, detectedLang));
 
-    // If we found matches, return them; otherwise return all (fallback)
-    return matched.length > 0 ? matched : tracks;
+    // If we found matches (at least 1-2 songs), return them
+    if (matched.length >= 1) {
+        return matched;
+    }
+
+    // If no matches found, log and return all (fallback)
+    console.log(`⚠️ No ${detectedLang} language results found for "${query}", returning all results`);
+    return tracks;
 }
 
 module.exports = {

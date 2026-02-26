@@ -12,6 +12,7 @@ module.exports = {
             return messages.error(message.channel, '❌ Nothing is playing!');
 
         const preset = args[0]?.toLowerCase();
+        const toggle = args[1]?.toLowerCase(); // Check for second argument like "off"
 
         // Equalizer presets with 15 bands
         const presets = {
@@ -181,8 +182,8 @@ module.exports = {
             }
         };
 
-        // Handle on/off toggle
-        if (preset === 'off') {
+        // Handle off/disable commands: "feq off" or "feq bass off"
+        if (preset === 'off' || toggle === 'off') {
             try {
                 await player.node.rest.updatePlayer({
                     guildId: message.guild.id,
@@ -193,9 +194,10 @@ module.exports = {
                     }
                 });
 
+                const presetName = preset === 'off' ? 'Equalizer' : `${preset} Equalizer`;
                 messages.success(
                     message.channel,
-                    '❌ Equalizer **Disabled**!'
+                    `✅ ${presetName} **Disabled**!`
                 );
             } catch (error) {
                 console.error(error);
@@ -212,7 +214,7 @@ module.exports = {
                 .addFields([
                     {
                         name: 'Usage',
-                        value: '`feq <preset>`',
+                        value: '`feq <preset>` or `feq <preset> off`',
                         inline: false
                     },
                     {
@@ -221,8 +223,8 @@ module.exports = {
                         inline: false
                     },
                     {
-                        name: 'Toggle',
-                        value: '`feq off` - Disable all equalizer effects',
+                        name: 'Disable',
+                        value: '`feq off` - Disable all equalizer\n`feq bass off` - Disable bass preset',
                         inline: false
                     }
                 ])

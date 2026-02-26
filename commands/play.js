@@ -105,7 +105,7 @@ module.exports = {
             let filteredTracks = tracks;
             
             if ((loadType === "search" || loadType === "track") && tracks.length > 0) {
-                filteredTracks = filterByLanguage(tracks, detectedLang);
+                filteredTracks = filterByLanguage(tracks, detectedLang, query);
                 
                 if (filteredTracks.length === 0) {
                     // Fallback to original results if filtering removed everything
