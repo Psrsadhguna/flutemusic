@@ -56,7 +56,7 @@ function createHelpCommandButtons(config) {
     return createButtonRow(
         {
             label: 'Support',
-            url: config.supportURL || 'https://discord.gg/A5R9HWGkfF',
+            url: config.supportURL || 'https://discord.gg/mnXgb5bAUP',
             emoji: '🔗',
             style: ButtonStyle.Link
         },
