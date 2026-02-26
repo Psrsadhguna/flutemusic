@@ -760,7 +760,18 @@ client.riffy.on("queueEnd", async (player) => {
         await setVoiceStatus(vc, null);
         console.log("🧹 Voice status cleared (queue ended)");
 
-        // Auto-disconnect disabled - bot stays in voice channel
+        // Check if 24/7 mode is enabled
+        if (!player.twentyFourSeven) {
+            // 24/7 disabled - leave voice channel
+            try {
+                await player.destroy();
+                console.log("👋 Bot left voice channel (queue ended, 24/7 disabled)");
+            } catch (e) {
+                console.error("Error destroying player on queue end:", e.message);
+            }
+        } else {
+            console.log("⏱️ 24/7 mode enabled - bot staying in voice channel");
+        }
     } catch {}
 });
 
