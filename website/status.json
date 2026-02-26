@@ -1,15 +1,47 @@
 {
   "servers": 4,
-  "members": 1,
-  "totalSongsPlayed": 497,
-  "totalPlaytime": 245120589,
-  "totalCommandsExecuted": 544,
+  "members": 2,
+  "totalSongsPlayed": 501,
+  "totalPlaytime": 246012456,
+  "totalCommandsExecuted": 550,
   "botUptime": "0h 0m",
-  "uptimeSeconds": 1777,
+  "uptimeSeconds": 1525,
   "twentyFourSevenServers": 0,
   "errorCount": 4,
-  "errorRate": 0.74,
+  "errorRate": 0.73,
   "recentlyPlayed": [
+    {
+      "title": "Viral Vayyari ( From \"Junior\")",
+      "author": "Devi Sri Prasad",
+      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
+      "requester": "744044949942829127",
+      "timestamp": 1772113855118,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
+      "author": "Brown Editz",
+      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
+      "requester": "744044949942829127",
+      "timestamp": 1772113839033,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
+      "author": "Brown Editz",
+      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
+      "requester": "744044949942829127",
+      "timestamp": 1772113832593,
+      "guildId": "1367087087005990962"
+    },
+    {
+      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
+      "author": "Brown Editz",
+      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
+      "requester": "744044949942829127",
+      "timestamp": 1772113806078,
+      "guildId": "1367087087005990962"
+    },
     {
       "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
       "author": "Brown Editz",
@@ -57,38 +89,6 @@
       "requester": "744044949942829127",
       "timestamp": 1772109743796,
       "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772109570367,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772109348772,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772108454238,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772107849945,
-      "guildId": "1367087087005990962"
     }
   ],
   "topGuilds": [
@@ -114,7 +114,7 @@
     },
     {
       "guildId": "1367087087005990962",
-      "songCount": 31,
+      "songCount": 35,
       "guildName": "assam gang"
     }
   ],
@@ -125,7 +125,7 @@
     },
     {
       "name": "Devi Sri Prasad",
-      "count": 51
+      "count": 52
     },
     {
       "name": "Mohit Chauhan",
@@ -160,5 +160,5 @@
       "count": 12
     }
   ],
-  "updated": "2026-02-26T13:49:56.027Z"
+  "updated": "2026-02-26T14:55:25.294Z"
 }

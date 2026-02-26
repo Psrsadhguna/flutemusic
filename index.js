@@ -719,11 +719,6 @@ client.on('ready', () => {
 
 
 // ===============================
-// 🎵 VOICE STATUS SYSTEM
-// ===============================
-
-
-// ===============================
 // 🎵 VOICE STATUS SYSTEM (FINAL)
 // ===============================
 
@@ -738,6 +733,18 @@ client.riffy.on("trackStart", async (player, track) => {
             vc,
             `<a:playing:1473974241887256641> Playing: ${track.info.title}`
         );
+
+        // Send Now Playing embed to the text channel
+        if (player.textChannel) {
+            const textChannel = await client.channels.fetch(player.textChannel).catch(() => null);
+            if (textChannel && textChannel.isTextBased?.()) {
+                try {
+                    await messages.nowPlaying(textChannel, track, player, client);
+                } catch (e) {
+                    console.error('Failed to send Now Playing embed:', e.message);
+                }
+            }
+        }
 
         console.log(`🎧 Voice status updated → ${track.info.title}`);
     } catch (err) {
