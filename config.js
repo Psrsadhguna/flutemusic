@@ -25,7 +25,7 @@ module.exports = {
     // Webhook URL to receive bug/feedback reports. Leave empty to disable.
     feedbackWebhookUrl: process.env.FEEDBACK_WEBHOOK_URL || '',
     // Help command buttons
-    supportURL: 'https://discord.gg/A5R9HWGkfF', // Support server invite
+    supportURL: 'https://discord.gg/v7StyEvCCC', // Support server invite
     voteURL: 'https://top.gg/bot/1474068114373525544/vote', // top.gg vote link
     websiteURL: 'https://flute-music-bot.com', // Your website
     // Bot owner(s) - keep these in your .env as OWNER_ID or OWNERS (comma-separated)
