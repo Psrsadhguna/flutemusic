@@ -140,3 +140,7 @@ Pull requests are welcome. For small edits (typos, readme improvements) open a P
 
 If you want, I can also generate a full commands list from the `commands/` folder and add example `config.js` instructions. Tell me which you'd prefer next.
 
+
+## Invite Bot
+https://discord.com/oauth2/authorize?client_id=1466777461680373820&permissions=281474980236544&integration_type=0&scope=bot+applications.commands
+
