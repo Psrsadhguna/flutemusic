@@ -20,9 +20,7 @@ async function setVoiceStatus(channel, text) {
         // ✅ prevent duplicate updates
         const previousStatus = lastVoiceStatus.get(channel.id);
 
-        if (previousStatus === newStatus) {
-            return; // skip same status
-        }
+        if (previousStatus === newStatus) return;
 
         // send REST request
         await client.rest.put(
@@ -43,7 +41,9 @@ async function setVoiceStatus(channel, text) {
             console.log(`🧹 Voice status cleared`);
 
     } catch (err) {
-        console.error("[VoiceStatus Error]", err.message);
+        console.log("VOICE STATUS FAILED");
+        console.log("Code:", err?.status);
+        console.log("Message:", err?.message);
     }
 }
 
