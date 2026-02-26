@@ -838,7 +838,7 @@ client.riffy.on("trackStart", async (player, track) => {
 
         await setVoiceStatus(
             channel,
-            `🎵 Playing: ${track.info.title}`
+            ` <a:playing:1473974241887256641> Playing: ${track.info.title}`
         );
 
         console.log(`🎧 Voice status updated → ${track.info.title}`);
