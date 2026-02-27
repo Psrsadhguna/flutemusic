@@ -1,10 +1,13 @@
 const messages = require('../utils/messages.js');
+const { requirePremium } = require('../utils/requirePremium');
 
 module.exports = {
     name: '8d',
-    description: 'Apply 8D surround sound filter',
+    description: 'Apply 8D surround sound filter (Premium Only)',
     usage: 'f8d',
     execute: async (message, args, client) => {
+        if (!await requirePremium(message)) return;
+        
         const player = client.riffy.players.get(message.guild.id);
         if (!player)
             return messages.error(message.channel, '❌ Nothing is playing!');

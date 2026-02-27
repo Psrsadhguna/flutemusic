@@ -1,381 +1,208 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Flute Music bot —</title>
-  <link rel="stylesheet" href="style.css">
-  <meta name="description" content="Flute Music — A high-quality Discord music bot with 50+ filters, effects, unlimited queue, and multi-source support. Free, fast, and feature-rich.">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flute Music Bot</title>
+
+<link rel="stylesheet" href="style.css">
+
+<meta name="description"
+content="Flute Music — High-quality Discord music bot with filters, effects, unlimited queue and multi-source support.">
 </head>
+
 <body>
-  <!-- Navigation -->
-  <header class="navbar">
-    <div class="container navbar-content">
-      <div class="logo">
-        <img src="image.png" alt="Flute Music Logo" class="logo-img">
-        <span class="logo-text">Flute Music</span>
-      </div>
-      <nav class="nav-menu">
-        <a href="#commands" class="nav-link">Commands</a>
-        <a href="#features" class="nav-link">Features</a>
-        <a href="#premium" class="nav-link">Premium</a>
-        <a href="https://discord.gg/A5R9HWGkfF" target="_blank" class="nav-link">Support</a>
-        <a href="https://discord.com/oauth2/authorize?client_id=1350045852698435686&scope=bot&permissions=36700160" class="btn btn-primary" target="_blank">Login</a>
-      </nav>
-    </div>
-  </header>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="container">
-      <div class="hero-content">
-        <h1 class="hero-title">Flute Music Music Bot<br>for Discord</h1>
-        <p class="hero-subtitle">High-quality audio streaming with 50+ filters, effects, unlimited queue, and support for YouTube, Spotify, Apple Music, and more. Completely free forever.</p>
-        <div class="hero-buttons">
-          <a href="https://discord.com/oauth2/authorize?client_id=1350045852698435686&scope=bot&permissions=36700160" class="btn btn-large btn-primary" target="_blank">Add to Your Server</a>
-          <a href="https://discord.gg/A5R9HWGkfF" class="btn btn-large btn-secondary" target="_blank">Support Server →</a>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- ================= NAVBAR ================= -->
+<header class="navbar">
+<div class="container navbar-content">
 
-  <main class="main-content">
-    <!-- Key Features -->
-    <section id="features" class="key-features">
-      <div class="container">
-        <h2 class="section-title">Why Choose Flute Music?</h2>
-        <div class="features-grid">
-          <div class="feature-item">
-            <div class="feature-icon">🎵</div>
-            <h3>High Quality Audio</h3>
-            <p>Crystal clear audio streaming with advanced codec support for the best listening experience.</p>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🎚️</div>
-            <h3>50+ Filters & Effects</h3>
-            <p>Bassboost, nightcore, 8D, karaoke, lofi, treble, reverb, and much more to customize your sound.</p>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🔄</div>
-            <h3>Unlimited Queue Size</h3>
-            <p>Queue as many songs as you want with no limits. Manage, shuffle, and loop with ease.</p>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🎶</div>
-            <h3>Free Volume Control</h3>
-            <p>Full control over volume levels. Normalize audio, adjust equalizer presets, and more.</p>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🌐</div>
-            <h3>Multi-Source Support</h3>
-            <p>Play from YouTube, Spotify, SoundCloud, Apple Music, and dozens of other sources.</p>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">⚡</div>
-            <h3>Lightning Fast</h3>
-            <p>Instant song loading, zero lag, and responsive controls for seamless music experience.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+<div class="logo">
+<img src="image.png" class="logo-img">
+<span class="logo-text">Flute Music</span>
+</div>
 
-    <!-- Highlights Section -->
-    <section class="highlights">
-      <div class="container">
-        <div class="highlight-cards">
-          <div class="highlight-card">
-            <div class="card-number">50+</div>
-            <div class="card-label">Audio Effects</div>
-          </div>
-          <div class="highlight-card">
-            <div class="card-number">∞</div>
-            <div class="card-label">Queue Size</div>
-          </div>
-          <div class="highlight-card">
-            <div class="card-number">8+</div>
-            <div class="card-label">Music Sources</div>
-          </div>
-          <div class="highlight-card">
-            <div class="card-number">100%</div>
-            <div class="card-label">Free Forever</div>
-          </div>
-        </div>
-      </div>
-    </section>
+<nav class="nav-menu">
+<a href="#commands" class="nav-link">Commands</a>
+<a href="#features" class="nav-link">Features</a>
 
-    <!-- Advanced Features -->
-    
-    <!-- Platform Metrics (dynamic) -->
-    <section class="platform-metrics">
-      <div class="container">
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-icon" aria-hidden="true">
-              <!-- users icon -->
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M16 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM8 11c1.657 0 3-1.343 3-3S9.657 5 8 5 5 6.343 5 8s1.343 3 3 3zM8 13c-2.667 0-8 1.333-8 4v2h16v-2c0-2.667-5.333-4-8-4zm8 0c-.29 0-.576.01-.857.03C16.517 13.4 18 14.7 18 16v2h6v-2c0-2.667-5.333-4-8-4z"/></svg>
-            </div>
-            <div class="metric-value" id="total-members-served" data-target="0">0</div>
-            <div class="metric-label">Total Members Served</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon" aria-hidden="true">
-              <!-- server icon -->
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2C7.589 2 4 3.79 4 6v3c0 2.21 3.589 4 8 4s8-1.79 8-4V6c0-2.21-3.589-4-8-4zm-8 11v3c0 2.21 3.589 4 8 4s8-1.79 8-4v-3c0 2.21-3.589 4-8 4s-8-1.79-8-4z"/></svg>
-            </div>
-            <div class="metric-value" id="active-servers-count" data-target="0">0</div>
-            <div class="metric-label">Active Servers</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon" aria-hidden="true">
-              <!-- uptime icon (shield/clock) -->
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 1l9 4v6c0 5-3.806 9.847-9 11-5.194-1.153-9-6-9-11V5l9-4zm1 7h-2v6l5 3 1-1-4-2V8z"/></svg>
-            </div>
-            <div class="metric-value" id="uptime-percentage" data-target="0">N/A</div>
-            <div class="metric-label">Uptime</div>
-          </div>
-        </div>
-      </div>
-    </section>
+<!-- ✅ Separate premium page -->
+<a href="premium.html" class="nav-link">Premium</a>
 
-    <section class="advanced-features">
-      <div class="container">
-        <h2 class="section-title">Advanced Features</h2>
-        <div class="advanced-grid">
-          <div class="advanced-card">
-            <h3>🤖 Smart Autoplay</h3>
-            <p>Automatically continues playing similar songs. Detects language and queues matching-language tracks.</p>
-          </div>
-          <div class="advanced-card">
-            <h3>📝 Rich Embeds</h3>
-            <p>Beautiful embed layouts with track info, requester avatar, source detection, and language tags.</p>
-          </div>
-          <div class="advanced-card">
-            <h3>🎭 Live Status Updates</h3>
-            <p>Voice channel names and text topics update automatically to show what's currently playing.</p>
-          </div>
-          <div class="advanced-card">
-            <h3>🌍 Multi-Language Support</h3>
-            <p>Automatically detects Hindi, Telugu, Tamil, Kannada, Malayalam, and other language songs.</p>
-          </div>
-          <div class="advanced-card">
-            <h3>❤️ Favorites & History</h3>
-            <p>Save favorite songs and track your complete play history with analytics and statistics.</p>
-          </div>
-          <div class="advanced-card">
-            <h3>📊 Real-Time Analytics</h3>
-            <p>Live bot statistics showing total songs played, uptime, error rates, and top artists.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+<a href="https://discord.gg/A5R9HWGkfF" target="_blank" class="nav-link">
+Support
+</a>
 
-    <!-- Commands Section -->
-    <section id="commands" class="commands-section">
-      <div class="container">
-        <h2 class="section-title">50+ Commands</h2>
-        <div class="commands-grid">
-          <div class="command-category">
-            <h3>🎵 Music (19)</h3>
-            <p>play • p • pause • resume • skip • stop • queue • volume • loop • shuffle • seek • clearqueue • join • nowplaying • lyrics • 24/7 • favorite • history • autoplay</p>
-          </div>
-          <div class="command-category">
-            <h3>🎚️ Filters (16)</h3>
-            <p>bassboost • nightcore • vaporwave • 8d • karaoke • tremolo • vibrato • slowmode • daycore • darthvader • doubletime • pop • soft • treblebass • chipmunkfilter • clearfilters</p>
-          </div>
-          <div class="command-category">
-            <h3>✨ Effects (10)</h3>
-            <p>lofi • underwater • telephone • party • radio • cinema • vocalboost • echo • earrape • cleareffects</p>
-          </div>
-          <div class="command-category">
-            <h3>ℹ️ Info (6)</h3>
-            <p>help • botinfo • ping • invite • bug • status</p>
-          </div>
-        </div>
-      </div>
-    </section>
+<a href="https://discord.com/oauth2/authorize?client_id=1350045852698435686&scope=bot&permissions=36700160"
+class="btn btn-primary" target="_blank">
+Invite
+</a>
+</nav>
 
-    <!-- Statistics -->
-    <section class="statistics">
-      <div class="container">
-        <h2 class="section-title">Bot Statistics</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">🎵</div>
-            <div class="stat-value" id="total-songs">0</div>
-            <div class="stat-label">Songs Played</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">⏱️</div>
-            <div class="stat-value" id="bot-uptime">Calculating</div>
-            <div class="stat-label">Server Uptime</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">⚙️</div>
-            <div class="stat-value" id="total-commands">0</div>
-            <div class="stat-label">Commands Executed</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">🎶</div>
-            <div class="stat-value" id="24-7-servers">0</div>
-            <div class="stat-label">24/7 Servers</div>
-          </div>
-        </div>
-      </div>
-    </section>
+</div>
+</header>
 
-    <!-- Getting Started -->
-    <section class="getting-started">
-      <div class="container">
-        <h2 class="section-title">Getting Started</h2>
-        <div class="steps-grid">
-          <div class="step">
-            <div class="step-number">1</div>
-            <h3>Add to Server</h3>
-            <p>Click "Add to Your Server" and authorize the required permissions</p>
-          </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <h3>Join Voice Channel</h3>
-            <p>You must be in a voice channel to play music</p>
-          </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <h3>Play Music</h3>
-            <p>Use <code>fplay song name</code> to start playing</p>
-          </div>
-          <div class="step">
-            <div class="step-number">4</div>
-            <h3>Enjoy</h3>
-            <p>Use buttons or commands to control playback</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+<!-- ================= HERO ================= -->
+<section class="hero">
+<div class="container hero-content">
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h4>Flute Music</h4>
-          <p>Premium Discord music bot with 50+ filters and effects</p>
-        </div>
-        <div class="footer-section">
-          <h4>Links</h4>
-          <ul>
-            <li><a href="https://discord.gg/A5R9HWGkfF" target="_blank">Support Server</a></li>
-            <li><a href="https://discord.com/oauth2/authorize?client_id=1350045852698435686&scope=bot&permissions=36700160" target="_blank">Invite Bot</a></li>
-            <li><a href="terms.html">Terms of Service</a></li>
-            <li><a href="privacy.html">Privacy Policy</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Info</h4>
-          <ul>
-            <li><a href="#commands">Commands</a></li>
-            <li><a href="#features">Features</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; 2026 Flute Music. All rights reserved. | Made with ❤️</p>
-      </div>
-    </div>
-  </footer>
+<h1 class="hero-title">
+Flute Music Bot<br>for Discord
+</h1>
 
-  <script>
-    // Load statistics from status.json
-    (function() {
-      const statsFile = 'status.json';
-      
-      function formatTime(ms) {
-        if (!ms) return '0m';
-        const seconds = Math.floor(ms / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const hours = Math.floor(minutes / 60);
-        const days = Math.floor(hours / 24);
-        
-        if (days > 0) return `${days}d ${hours % 24}h`;
-        if (hours > 0) return `${hours}h ${minutes % 60}m`;
-        if (minutes > 0) return `${minutes}m`;
-        return `${seconds}s`;
-      }
+<p class="hero-subtitle">
+High-quality audio streaming with filters, effects, unlimited queue
+and multi-source playback.
+</p>
 
-      // Try to load stats
-      fetch(statsFile, {cache: 'no-store'})
-        .then(r => r.json())
-        .catch(() => ({}))
-        .then(data => {
-          document.getElementById('total-songs').textContent = (data.totalSongsPlayed || 0).toLocaleString();
-          document.getElementById('total-commands').textContent = (data.totalCommandsExecuted || 0).toLocaleString();
-          document.getElementById('24-7-servers').textContent = (Array.isArray(data.twentyFourSevenServers) ? data.twentyFourSevenServers.length : (data.twentyFourSevenServers || 0)) || 0;
+<div class="hero-buttons">
 
-          // New platform metrics
-          const members = (typeof data.members === 'number') ? data.members : (data.members || data.totalMembers || 0);
-          const servers = (typeof data.servers === 'number') ? data.servers : (data.servers || 0);
-          // set targets for animated count-up
-          const membersEl = document.getElementById('total-members-served');
-          const serversEl = document.getElementById('active-servers-count');
-          membersEl.setAttribute('data-target', String(members || 0));
-          serversEl.setAttribute('data-target', String(servers || 0));
+<a href="https://discord.com/oauth2/authorize?client_id=1350045852698435686&scope=bot&permissions=36700160"
+class="btn btn-large btn-primary" target="_blank">
+Add To Server
+</a>
 
-          // show initial zero while animating
-          membersEl.textContent = '0';
-          serversEl.textContent = '0';
+<a href="https://discord.gg/A5R9HWGkfF"
+class="btn btn-large btn-secondary" target="_blank">
+Support Server →
+</a>
 
-          // Uptime percentage: prefer explicit errorRate -> uptime%, otherwise show botUptime
-          let uptimeDisplay = 'N/A';
-          const uptimeEl = document.getElementById('uptime-percentage');
-          if (typeof data.errorRate === 'number') {
-            const pct = Math.max(0, Math.min(100, 100 - (data.errorRate * 100)));
-            uptimeDisplay = `${pct.toFixed(1)}%`;
-            // animate percent value
-            uptimeEl.setAttribute('data-target', String(pct.toFixed(1)));
-            uptimeEl.textContent = '0%';
-          } else if (data.botUptime) {
-            uptimeDisplay = data.botUptime;
-            uptimeEl.textContent = uptimeDisplay;
-          } else {
-            uptimeEl.textContent = 'N/A';
-          }
+<!-- ✅ PREMIUM BUTTON -->
+<a href="premium.html"
+class="btn btn-large btn-secondary">
+💎 Get Premium
+</a>
 
-          // run number animations (members, servers, uptime percent)
-          animateNumber(membersEl, parseInt(membersEl.getAttribute('data-target') || '0'), 900);
-          animateNumber(serversEl, parseInt(serversEl.getAttribute('data-target') || '0'), 900);
-          // if uptimeEl has numeric target (percent), animate to show percent
-          const uptimeTarget = parseFloat(uptimeEl.getAttribute('data-target') || 'NaN');
-          if (!Number.isNaN(uptimeTarget)) animateNumber(uptimeEl, uptimeTarget, 900, true);
+</div>
+</div>
+</section>
 
-          if (data.startTime) {
-            const uptime = Date.now() - data.startTime;
-            document.getElementById('bot-uptime').textContent = formatTime(uptime);
-          }
-        });
+<!-- ================= FEATURES ================= -->
+<section id="features" class="key-features">
+<div class="container">
 
-        // animate numbers helper
-        function animateNumber(el, end, duration = 800, isPercent = false) {
-          if (!el) return;
-          const start = 0;
-          const range = end - start;
-          const startTime = performance.now();
+<h2 class="section-title">Why Choose Flute Music?</h2>
 
-          function step(now) {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const current = start + Math.floor(range * progress);
-            if (isPercent) {
-              el.textContent = `${(start + (range * progress)).toFixed(1)}%`;
-            } else {
-              el.textContent = current.toLocaleString();
-            }
+<div class="features-grid">
 
-            if (progress < 1) requestAnimationFrame(step);
-          }
+<div class="feature-item">
+<div class="feature-icon">🎵</div>
+<h3>High Quality Audio</h3>
+<p>Crystal clear playback powered by Lavalink nodes.</p>
+</div>
 
-          requestAnimationFrame(step);
-        }
-    })();
-  </script>
+<div class="feature-item">
+<div class="feature-icon">🎚️</div>
+<h3>50+ Filters</h3>
+<p>Bassboost, nightcore, 8D, karaoke, reverb and more.</p>
+</div>
+
+<div class="feature-item">
+<div class="feature-icon">∞</div>
+<h3>Unlimited Queue</h3>
+<p>Add unlimited songs with smooth playback.</p>
+</div>
+
+<div class="feature-item">
+<div class="feature-icon">⚡</div>
+<h3>Fast & Stable</h3>
+<p>Optimized performance with instant loading.</p>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- ================= COMMANDS ================= -->
+<section id="commands" class="commands-section">
+<div class="container">
+
+<h2 class="section-title">Commands</h2>
+
+<div class="commands-grid">
+
+<div class="command-category">
+<h3>🎵 Music</h3>
+<p>play • pause • skip • queue • loop • shuffle • volume</p>
+</div>
+
+<div class="command-category">
+<h3>🎚 Filters</h3>
+<p>bassboost • nightcore • vaporwave • 8d • karaoke</p>
+</div>
+
+<div class="command-category">
+<h3>✨ Effects</h3>
+<p>lofi • echo • radio • cinema • vocalboost</p>
+</div>
+
+<div class="command-category">
+<h3>ℹ Info</h3>
+<p>help • ping • invite • status</p>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="statistics">
+<div class="container">
+
+<h2 class="section-title">Bot Statistics</h2>
+
+<div class="stats-grid">
+
+<div class="stat-card">
+<div class="stat-icon">🎵</div>
+<div class="stat-value" id="total-songs">0</div>
+<div class="stat-label">Songs Played</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-icon">⚙️</div>
+<div class="stat-value" id="total-commands">0</div>
+<div class="stat-label">Commands Used</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-icon">🎶</div>
+<div class="stat-value" id="24-7-servers">0</div>
+<div class="stat-label">24/7 Servers</div>
+</div>
+
+</div>
+
+</div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+<div class="container">
+
+<p>© 2026 Flute Music — Made with ❤️</p>
+
+</div>
+</footer>
+
+<!-- ================= LIVE STATS SCRIPT ================= -->
+<script>
+fetch("status.json",{cache:"no-store"})
+.then(r=>r.json())
+.then(data=>{
+
+document.getElementById("total-songs").textContent =
+(data.totalSongsPlayed||0).toLocaleString();
+
+document.getElementById("total-commands").textContent =
+(data.totalCommandsExecuted||0).toLocaleString();
+
+document.getElementById("24-7-servers").textContent =
+data.twentyFourSevenServers||0;
+
+})
+.catch(()=>{});
+</script>
+
 </body>
 </html>

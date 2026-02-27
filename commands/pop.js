@@ -1,10 +1,13 @@
 const messages = require('../utils/messages.js');
+const { requirePremium } = require('../utils/requirePremium');
 
 module.exports = {
     name: 'pop',
-    description: 'Apply pop filter',
+    description: 'Apply pop filter (Premium Only)',
     usage: 'fpop',
     execute: async (message, args, client) => {
+        if (!await requirePremium(message)) return;
+        
         const player = client.riffy.players.get(message.guild.id);
         if (!player)
             return messages.error(message.channel, '❌ Nothing is playing!');

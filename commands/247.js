@@ -1,10 +1,13 @@
 const messages = require('../utils/messages.js');
+const { requirePremium } = require('../utils/requirePremium');
 
 module.exports = {
     name: '247',
-    description: 'Toggle 24/7 mode - bot stays in voice channel',
+    description: 'Toggle 24/7 mode - bot stays in voice channel (Premium Only)',
     usage: 'f247',
     execute: async (message, args, client) => {
+        if (!await requirePremium(message)) return;
+        
         const player = client.riffy.players.get(message.guild.id);
         if (!player) return messages.error(message.channel, '❌ Nothing is playing!');
 

@@ -1,10 +1,13 @@
 const applyFilters = require('../utils/applyFilters');
 const messages = require('../utils/messages');
+const { requirePremium } = require('../utils/requirePremium');
 
 module.exports = {
     name: 'nightcore',
-    description: 'Apply nightcore filter',
+    description: 'Apply nightcore filter (Premium Only)',
     execute: async (message, args, client) => {
+        if (!await requirePremium(message)) return;
+        
         const player = client.riffy.players.get(message.guild.id);
         if (!player) return messages.error(message.channel, '❌ Nothing is playing!');
 

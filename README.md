@@ -48,6 +48,39 @@ A powerful and lightweight Discord music bot with advanced filters, playlist sys
 
 ---
 
+## 💎 Premium Features
+
+Flute Music now supports premium subscriptions through **Razorpay**!
+
+### Plans Available
+
+| Feature | Basic Premium (₹99) | Lifetime Premium |
+|---------|---|---|
+| All Filters | ✅ | ✅ |
+| Advanced Effects | ✅ | ✅ |
+| Premium Audio Quality | ✅ | ✅ |
+| Priority Support | ✅ | ✅ |
+| Lifetime Access | ❌ | ✅ |
+| Future Updates | ❌ | ✅ |
+
+### Get Premium
+
+Visit the premium page to purchase:  
+👉 **Visit `/premium` on your website**
+
+Or use the Discord command:  
+```
+/premium buy
+```
+
+### Payment Integration Docs
+
+For setup instructions, see:
+- [Razorpay Setup Guide](./RAZORPAY_SETUP.md)
+- [Payment Integration Guide](./PAYMENT_INTEGRATION_GUIDE.md)
+
+---
+
 ## 🚀 Invite Bot
 
 Click below to add the bot to your server:

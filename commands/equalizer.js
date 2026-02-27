@@ -1,12 +1,15 @@
 const messages = require('../utils/messages.js');
 const { EmbedBuilder } = require('discord.js');
+const { requirePremium } = require('../utils/requirePremium');
 
 module.exports = {
     name: 'equalizer',
     aliases: ['eq'],
-    description: 'Apply equalizer presets (rock, pop, hip-hop, classical, jazz, metal)',
+    description: 'Apply equalizer presets (Premium Only)',
     usage: 'fequalizer <preset>',
     execute: async (message, args, client) => {
+        if (!await requirePremium(message)) return;
+        
         const player = client.riffy.players.get(message.guild.id);
         if (!player)
             return messages.error(message.channel, '❌ Nothing is playing!');

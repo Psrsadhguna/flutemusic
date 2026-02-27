@@ -45,7 +45,24 @@ module.exports = {
                 requester: message.author,
             });
 
-            const { loadType, tracks, playlistInfo } = resolve;
+            let { loadType, tracks, playlistInfo } = resolve;
+
+            // if the first result does not look like the query, retry using plain YouTube search
+            if ((loadType === 'search' || loadType === 'track') && tracks && tracks.length > 0) {
+                const firstTitle = (tracks[0].info.title || '').toLowerCase();
+                const queryWords = query.toLowerCase().split(/\s+/).filter(Boolean);
+                const allWords = queryWords.every(w => firstTitle.includes(w));
+                if (!allWords) {
+                    // fallback to regular YouTube search for better relevance
+                    resolve = await client.riffy.resolve({
+                        query: `ytsearch:${query}`,
+                        requester: message.author,
+                    });
+                    loadType = resolve.loadType;
+                    tracks = resolve.tracks;
+                    playlistInfo = resolve.playlistInfo;
+                }
+            }
 
             // ===============================
             // PLAYLIST

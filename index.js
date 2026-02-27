@@ -1,21 +1,22 @@
 const { Client, GatewayDispatchEvents, Collection, ActivityType } = require("discord.js");
 const express = require('express');
-
+require("./server/webhook");
 const config = require("./config.js");
 const { Riffy } = require('riffy');
 const messages = require("./utils/messages.js");
 const emojis = require("./emojis.js");
 const setVoiceStatus = require('./utils/voiceStatus');
 const statusRotator = require("./utils/statusRotator.js");
+const requirePremium = require("./utils/requirePremium");
 const fs = require("fs");
 const path = require("path");
 const fsp = require('fs').promises;
 const axios = require('axios');
-
+const { startPremiumExpiryChecker } =
+require("./premium/premiumScheduler");
 // Startup performance monitoring
 const startupTime = Date.now();
 console.log('🚀 Bot startup started...');
-
 // Store interval IDs for cleanup on shutdown
 const activeIntervals = [];
 
@@ -463,6 +464,11 @@ client.on("messageCreate", async (message) => {
     if (!command) return;
 
     try {
+        if (command.premium) {
+            const premiumAllowed = await requirePremium(message);
+            if (!premiumAllowed) return;
+        }
+
         stats.totalCommandsExecuted++;
         await command.execute(message, args, client);
     } catch (error) {
@@ -821,8 +827,17 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 // LOGIN MUST BE LAST
 
 client.login(config.botToken);
+global.discordClient = client;
 
+client.on("clientReady", () => {
 
+    const readyTime = Date.now() - startupTime;
+
+    client.riffy.init(client.user.id);
+
+    // ⭐ START PREMIUM EXPIRY SYSTEM
+    startPremiumExpiryChecker(client);
+});
 // Initialize Express server for website
 const app = express();
 const port = process.env.PORT || 10000;

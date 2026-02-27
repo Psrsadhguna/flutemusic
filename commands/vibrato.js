@@ -1,11 +1,14 @@
 const applyFilters = require('../utils/applyFilters');
 const messages = require('../utils/messages');
+const { requirePremium } = require('../utils/requirePremium');
 
 module.exports = {
     name: 'vibrato',
-    description: 'Apply vibrato filter',
+    description: 'Apply vibrato filter (Premium Only)',
     usage: 'fvibrato',
     execute: async (message, args, client) => {
+        if (!await requirePremium(message)) return;
+        
         const player = client.riffy.players.get(message.guild.id);
         if (!player) return messages.error(message.channel, '❌ Nothing is playing!');
 
