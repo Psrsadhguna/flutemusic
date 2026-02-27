@@ -182,82 +182,6 @@ client.riffy = new Riffy(client, config.nodes, {
     plugins: []
 });
 
-client.on("clientReady", () => {
-    const readyTime = Date.now() - startupTime;
-    try {
-        client.riffy.init(client.user.id);
-        console.log(`${emojis.success} Logged in as ${client.user.tag}`);
-        console.log(`⚡ Bot ready in ${readyTime}ms`);
-    } catch (error) {
-        console.error(`${emojis.error} Failed to initialize Riffy:`, error.message);
-    }
-
-
-
-    // Write initial website status and schedule periodic updates
-    async function updateWebsiteStatus() {
-        try {
-            const statusPath = path.join(__dirname, 'website', 'status.json');
-            const uptime = Date.now() - stats.startTime;
-            const uptimeHours = Math.floor(uptime / 3600000);
-            const uptimeMinutes = Math.floor((uptime % 3600000) / 60000);
-            
-            // Calculate error rate
-            const errorRate = stats.totalCommandsExecuted > 0 
-                ? (stats.errorCount / stats.totalCommandsExecuted * 100).toFixed(2) 
-                : 0;
-            
-            // Get top 5 guilds by activity
-            const topGuilds = Object.entries(stats.guildActivity)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5)
-                .map(([guildId, count]) => ({
-                    guildId,
-                    songCount: count,
-                    guildName: client.guilds.cache.get(guildId)?.name || 'Unknown'
-                }));
-            
-            // Get top 10 artists
-            const topArtists = Object.entries(stats.topArtists)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10)
-                .map(([artist, count]) => ({ name: artist, count }));
-            
-            const data = {
-                servers: client.guilds.cache.size,
-                members: client.users.cache.size,
-                totalSongsPlayed: stats.totalSongsPlayed,
-                totalPlaytime: stats.totalPlaytime,
-                totalCommandsExecuted: stats.totalCommandsExecuted,
-                botUptime: `${uptimeHours}h ${uptimeMinutes}m`,
-                uptimeSeconds: uptime,
-                twentyFourSevenServers: stats.twentyFourSevenServers.size,
-                errorCount: stats.errorCount,
-                errorRate: parseFloat(errorRate),
-                recentlyPlayed: stats.recentlyPlayed.slice(0, 10),
-                topGuilds: topGuilds,
-                topArtists: topArtists,
-                updated: new Date().toISOString()
-            };
-            await fsp.writeFile(statusPath, JSON.stringify(data, null, 2), 'utf8');
-        } catch (err) {
-            console.error('Failed to write website/status.json', err);
-        }
-    }
-
-    // Defer website status update to avoid blocking startup
-    setImmediate(() => updateWebsiteStatus().catch(() => { }));
-    const websiteInterval = setInterval(() => updateWebsiteStatus().catch(() => { }), 5 * 60 * 1000);
-    activeIntervals.push(websiteInterval);
-
-    // Save stats and user data every minute (fire and forget, non-blocking)
-    const statsInterval = setInterval(() => {
-        saveStats().catch(() => { });
-        saveUserData().catch(() => { });
-    }, 60 * 1000);
-    activeIntervals.push(statsInterval);
-});
-
 
 
 // update on guild add/remove so site is more responsive
@@ -716,13 +640,6 @@ if (config.webhookUrl && config.webhookUrl.length > 5) {
     });
 }
 
-// Initialize status rotator
-let statusInterval = null;
-client.on('ready', () => {
-    statusInterval = statusRotator.initializeStatusRotator(client);
-    activeIntervals.push(statusInterval);
-    console.log('✅ Status rotator initialized');
-});
 
 
 
@@ -832,15 +749,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
 global.discordClient = client;
 
-client.on("clientReady", () => {
 
-    const readyTime = Date.now() - startupTime;
-
-    client.riffy.init(client.user.id);
-
-    // ⭐ START PREMIUM EXPIRY SYSTEM
-    startPremiumExpiryChecker(client);
-});
 // Initialize Express server for website
 // Initialize Express server for website
 const app = express();
@@ -861,14 +770,7 @@ app.listen(port, () => {
   console.log(`🌐 Website server listening on port ${port}`);
 });
 
-client.once("ready", async ()=>{
 
-  global.discordClient = client;
-
-  startPremiumExpiryChecker(client);
-  startupPremiumSync(client);
-
-});
 async function shutdown() {
     console.log("🛑 Shutting down bot properly...");
 
@@ -903,7 +805,33 @@ async function shutdown() {
 
     process.exit(0);
 }
+
 client.login(config.botToken);
+
+client.once("clientReady", async () => {
+
+    const readyTime = Date.now() - startupTime;
+
+    console.log(`✅ Logged in as ${client.user.tag}`);
+    console.log(`⚡ Bot ready in ${readyTime}ms`);
+
+    // Global access for webhook
+    global.discordClient = client;
+
+    // Start Lavalink
+    client.riffy.init(client.user.id);
+
+    // Status rotator
+    const statusInterval = statusRotator.initializeStatusRotator(client);
+    activeIntervals.push(statusInterval);
+
+    // Premium systems
+    startPremiumExpiryChecker(client);
+    startupPremiumSync(client);
+
+    console.log("⭐ Premium systems initialized");
+
+});
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 /////client.once('ready', async () => {
