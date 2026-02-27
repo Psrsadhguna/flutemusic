@@ -26,22 +26,14 @@ const razorpay = new Razorpay({
 // Plans
 // =======================
 
-const plans = {
-  test: {
-    name: "Test Premium",
-    amount: 1, // ✅ ₹1 = 100 paise
+const order = await razorpay.orders.create({
+    amount: 1, // ₹1 test
     currency: "INR",
-    description: "Testing payment"
-  },
 
-  monthly: {
-    name: "Monthly Premium",
-    amount: 29900,
-    currency: "INR",
-    description: "1 month premium"
-  }
-};
-
+    notes: {
+        discord_id: message.author.id
+    }
+});
 // =======================
 // Pages
 // =======================

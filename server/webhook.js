@@ -1,58 +1,46 @@
-require("dotenv").config();
-
 const express = require("express");
-const crypto = require("crypto");
-const db = require("../premium/premiumDB");
-const { syncPremiumRoleForUser } =
-require("../premium/premiumRoleSync");
-
 const router = express.Router();
 
-router.use(express.json({
-  verify:(req,res,buf)=> req.rawBody = buf
-}));
+const {
+    getDB,
+    saveDB,
+    syncPremiumRoleForUser
+} = require("../premium/syncPremiumRole");
 
-router.post("/razorpay", async (req,res)=>{
+router.post("/", express.json(), async (req, res) => {
 
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    console.log("Webhook received");
 
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(req.rawBody)
-    .digest("hex");
+    const event = req.body.event;
+    console.log("Event:", event);
 
-  if(expected !== req.headers["x-razorpay-signature"])
-      return res.sendStatus(400);
+    if (event !== "payment.captured") return res.sendStatus(200);
 
-  const event = req.body.event;
+    const payment = req.body.payload.payment.entity;
 
-  if(event === "payment.captured"){
+    const discordId = payment.notes?.discord_id;
 
-      const payment = req.body.payload.payment.entity;
-      const userId = payment.notes?.discord_id;
+    if (!discordId) {
+        console.log("❌ No discord_id in payment notes");
+        return res.sendStatus(200);
+    }
 
-      if(!userId) return res.sendStatus(200);
+    const client = global.discordClient;
 
-      const expiry =
-        Date.now() + 30*24*60*60*1000;
+    const db = getDB();
 
-      db.run(
-        `INSERT OR REPLACE INTO premium_users VALUES (?,?)`,
-        [userId, expiry],
-        async ()=>{
+    // ⭐ 30 days premium
+    const expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000);
 
-          console.log(`⭐ Premium activated ${userId}`);
+    db[discordId] = { expiresAt };
 
-          await syncPremiumRoleForUser(
-            global.discordClient,
-            userId,
-            true
-          );
-        }
-      );
-  }
+    saveDB(db);
 
-  res.sendStatus(200);
+    await syncPremiumRoleForUser(client, discordId, true);
+
+    console.log("⭐ Premium activated for", discordId);
+
+    res.sendStatus(200);
 });
 
 module.exports = router;

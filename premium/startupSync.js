@@ -1,30 +1,15 @@
-const db = require("./premiumDB");
-const { syncPremiumRoleForUser } =
-require("./premiumRoleSync");
+const { getDB, syncPremiumRoleForUser } =
+require("./syncPremiumRole");
 
-async function startupPremiumSync(client){
+async function startupPremiumSync(client) {
 
- db.all(
-   "SELECT * FROM premium_users",
-   [],
-   async (err,rows)=>{
+    const db = getDB();
 
-     if(!rows) return;
+    for (const userId in db) {
+        await syncPremiumRoleForUser(client, userId, true);
+    }
 
-     for(const user of rows){
-
-        const active = user.expiry > Date.now();
-
-        await syncPremiumRoleForUser(
-          client,
-          user.userId,
-          active
-        );
-     }
-
-     console.log("✅ Premium startup sync done");
-   }
- );
+    console.log("✅ Premium startup sync done");
 }
 
 module.exports = { startupPremiumSync };

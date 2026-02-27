@@ -1,37 +1,28 @@
-const db = require("./premiumDB");
-const { syncPremiumRoleForUser } =
-require("./premiumRoleSync");
+const { getDB, saveDB, syncPremiumRoleForUser } =
+require("./syncPremiumRole");
 
-function startPremiumExpiryChecker(client){
+function startPremiumExpiryChecker(client) {
 
- setInterval(()=>{
+    setInterval(async () => {
 
-   db.all(
-     "SELECT * FROM premium_users WHERE expiry < ?",
-     [Date.now()],
-     async (err,rows)=>{
+        const db = getDB();
+        const now = Date.now();
 
-        if(!rows) return;
+        for (const userId in db) {
 
-        for(const user of rows){
+            if (db[userId].expiresAt <= now) {
 
-           await syncPremiumRoleForUser(
-             client,
-             user.userId,
-             false
-           );
+                console.log("⌛ Premium expired:", userId);
 
-           db.run(
-             "DELETE FROM premium_users WHERE userId=?",
-             [user.userId]
-           );
+                await syncPremiumRoleForUser(client, userId, false);
 
-           console.log(`❌ Premium expired ${user.userId}`);
+                delete db[userId];
+            }
         }
-     }
-   );
 
- },60000);
+        saveDB(db);
+
+    }, 60000); // every 1 min
 }
 
-module.exports={ startPremiumExpiryChecker };
+module.exports = { startPremiumExpiryChecker };
