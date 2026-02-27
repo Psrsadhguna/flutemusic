@@ -62,9 +62,6 @@ module.exports = {
             // =============================
             let resolve;
 
-<<<<<<< HEAD
-            let { loadType, tracks, playlistInfo } = resolve;
-
             // if the first result does not look like the query, retry using plain YouTube search
             if ((loadType === 'search' || loadType === 'track') && tracks && tracks.length > 0) {
                 const firstTitle = (tracks[0].info.title || '').toLowerCase();
@@ -81,7 +78,7 @@ module.exports = {
                     playlistInfo = resolve.playlistInfo;
                 }
             }
-=======
+
             // 🎵 SPOTIFY LINK
             if (query.includes("open.spotify.com")) {
 
@@ -126,13 +123,11 @@ module.exports = {
 
             }
 
-            // =============================
-            // RESULT HANDLING
-            // =============================
-            const { loadType, tracks, playlistInfo } = resolve;
->>>>>>> 75c326fd682c3461c5459fb60a2738d930ebe14b
+// =============================
+// RESULT HANDLING
+const { loadType, tracks, playlistInfo } = resolve;
 
-            // ---------- PLAYLIST ----------
+// ---------- PLAYLIST ----------
             if (loadType === "playlist") {
 
                 for (const track of tracks) {
