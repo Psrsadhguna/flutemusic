@@ -27,15 +27,18 @@ const razorpay = new Razorpay({
 // =======================
 
 const plans = {
-  monthly: {
-    name: 'Monthly Premium',
-    amount: 29900,
-    currency: 'INR'
+  test: {
+    name: "Test Premium",
+    amount: 1, // ✅ ₹1 = 100 paise
+    currency: "INR",
+    description: "Testing payment"
   },
-  lifetime: {
-    name: 'Lifetime Premium',
-    amount: 99900,
-    currency: 'INR'
+
+  monthly: {
+    name: "Monthly Premium",
+    amount: 29900,
+    currency: "INR",
+    description: "1 month premium"
   }
 };
 
