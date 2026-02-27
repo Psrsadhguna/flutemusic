@@ -1,36 +1,38 @@
-function parseGuildIds() {
-    const single =
-        process.env.PREMIUM_GUILD_ID ||
-        process.env.GUILD_ID;
+// premium/syncPremiumRole.js
 
-    return single ? [single] : [];
-}
+async function syncPremiumRoleForUser(client, userId, add = true) {
 
-async function syncPremiumRoleForUser(client, userId, shouldHaveRole) {
+    try {
+        const guild = await client.guilds.fetch(
+            process.env.PREMIUM_GUILD_ID
+        );
 
-    const roleId = process.env.PREMIUM_ROLE_ID;
-    const guildIds = parseGuildIds();
+        if (!guild) return "guild_not_found";
 
-    for (const guildId of guildIds) {
+        const member = await guild.members.fetch(userId)
+            .catch(() => null);
 
-        const guild = client.guilds.cache.get(guildId);
-        if (!guild) continue;
+        if (!member) return "user_not_in_server";
 
-        try {
-            const member = await guild.members.fetch(userId).catch(()=>null);
-            if (!member) continue;
+        const roleId = process.env.PREMIUM_ROLE_ID;
 
-            const hasRole = member.roles.cache.has(roleId);
-
-            if (shouldHaveRole && !hasRole)
-                await member.roles.add(roleId, "Premium Activated");
-
-            if (!shouldHaveRole && hasRole)
-                await member.roles.remove(roleId, "Premium Expired");
-
-        } catch(e){
-            console.log("Role sync error:", e.message);
+        if (add) {
+            if (!member.roles.cache.has(roleId)) {
+                await member.roles.add(roleId);
+                return "added";
+            }
+            return "already_has_role";
+        } else {
+            if (member.roles.cache.has(roleId)) {
+                await member.roles.remove(roleId);
+                return "removed";
+            }
+            return "no_role";
         }
+
+    } catch (err) {
+        console.error("Role sync error:", err);
+        return "error";
     }
 }
 
