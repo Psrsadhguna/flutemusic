@@ -14,6 +14,10 @@ const fsp = require('fs').promises;
 const axios = require('axios');
 const { startPremiumExpiryChecker } =
 require("./premium/premiumScheduler");
+const { startupPremiumSync } =
+require("./premium/startupSync");
+
+// Start Express server for webhooks    
 // Startup performance monitoring
 const startupTime = Date.now();
 console.log('🚀 Bot startup started...');
@@ -857,7 +861,14 @@ app.listen(port, () => {
   console.log(`🌐 Website server listening on port ${port}`);
 });
 
+client.once("ready", async ()=>{
 
+  global.discordClient = client;
+
+  startPremiumExpiryChecker(client);
+  startupPremiumSync(client);
+
+});
 async function shutdown() {
     console.log("🛑 Shutting down bot properly...");
 
