@@ -10,7 +10,7 @@ module.exports = {
     const isPremium = paymentUtils.isPremium(userId);
     const premiumUser = paymentUtils.getPremiumUser(userId);
 
-    const webURL = process.env.WEBSITE_URL || 'https://rzp.io/rzp/2fYQPgs';
+    const webURL = process.env.WEBSITE_URL || 'https://rzp.io/rzp/ijWIaDK3';
 
     const embed = new EmbedBuilder()
       .setTitle('💎 Flute Music Premium')
@@ -37,8 +37,7 @@ module.exports = {
       );
     } else {
       embed.addFields(
-        { name: 'Monthly Premium - ₹299', value: '1 month of all features' },
-        { name: 'Lifetime Premium - ₹999', value: 'Permanent access + all future updates' },
+        { name: 'Monthly Premium - ₹50', value: '1 month of all features' },
         { name: '🔗 Purchase', value: `[Click here to buy premium](${webURL})` }
       );
     }
