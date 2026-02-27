@@ -25,15 +25,19 @@ const razorpay = new Razorpay({
 // =======================
 // Plans
 // =======================
+const plans = {
+  monthly: {
+    name: "Monthly Premium",
+    amount: 100, // ₹1 test
+    currency: "INR"
+  },
+  lifetime: {
+    name: "Lifetime Premium",
+    amount: 100,
+    currency: "INR"
+  }
+};
 
-const order = await razorpay.orders.create({
-    amount: 1, // ₹1 test
-    currency: "INR",
-
-    notes: {
-        discord_id: message.author.id
-    }
-});
 // =======================
 // Pages
 // =======================
@@ -56,13 +60,14 @@ app.get('/dashboard', (req, res) => {
 
 app.post('/api/create-order', async (req, res) => {
   try {
-    const { plan, userEmail, userId } = req.body;
 
-    if (!plan || !plans[plan])
-      return res.status(400).json({ error: 'Invalid plan' });
+    const { plan, userId, userEmail } = req.body;
 
     if (!userId)
-      return res.status(400).json({ error: 'Discord ID required' });
+      return res.status(400).json({ error: "Discord ID missing" });
+
+    if (!plans[plan])
+      return res.status(400).json({ error: "Invalid plan" });
 
     const planData = plans[plan];
 
@@ -71,20 +76,21 @@ app.post('/api/create-order', async (req, res) => {
       currency: planData.currency,
       receipt: `receipt_${Date.now()}`,
 
-      // ⭐ IMPORTANT FOR BOT WEBHOOK
       notes: {
-        discord_id: userId,
+        discord_id: String(userId), // ⭐ REQUIRED
         email: userEmail || "unknown",
         plan: plan
       }
     });
 
+    console.log("✅ Order created for:", userId);
+
     res.json({
       success: true,
       orderId: order.id,
+      key: process.env.RAZORPAY_KEY_ID,
       amount: order.amount,
-      currency: order.currency,
-      key: process.env.RAZORPAY_KEY_ID
+      currency: order.currency
     });
 
   } catch (err) {
@@ -92,7 +98,6 @@ app.post('/api/create-order', async (req, res) => {
     res.status(500).json({ error: "Order creation failed" });
   }
 });
-
 // =======================
 // Premium Stats Webhook
 // =======================
