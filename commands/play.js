@@ -7,16 +7,33 @@ module.exports = {
     aliases: ['p'],
     description: 'Play a song or playlist',
     usage: 'fplay <query>',
+
     execute: async (message, args, client) => {
 
-        const query = args.join(" ");
-        if (!query) return messages.error(message.channel, "Please provide a search query!");
+        const query = args.join(" ").trim();
+        if (!query)
+            return messages.error(message.channel, "Please provide a search query!");
 
-        if (!message.member.voice.channel) {
+        if (!message.member.voice.channel)
             return messages.error(message.channel, "You must be connected to a voice channel to play music!");
-        }
+
+        // ----------------------------
+        // URL CHECKER
+        // ----------------------------
+        const isURL = (str) => {
+            try {
+                new URL(str);
+                return true;
+            } catch {
+                return false;
+            }
+        };
 
         try {
+
+            // =============================
+            // CREATE PLAYER CONNECTION
+            // =============================
             const player = client.riffy.createConnection({
                 guildId: message.guild.id,
                 voiceChannel: message.member.voice.channel.id,
@@ -24,32 +41,77 @@ module.exports = {
                 deaf: true,
             });
 
-            try { 
-                player.autoplay = false; 
-                player.setLoop("none"); 
-            } catch (e) {}
+            // Safe settings
+            try {
+                player.autoplay = false;
+                player.setLoop("none");
+            } catch {}
 
-            try { 
+            try {
                 player.twentyFourSeven = Boolean(
                     global.stats &&
                     global.stats.twentyFourSevenServers &&
                     global.stats.twentyFourSevenServers.has(message.guild.id)
-                ); 
-            } catch (e) { 
-                player.twentyFourSeven = false; 
+                );
+            } catch {
+                player.twentyFourSeven = false;
             }
 
-            // Fast search - use YouTube Music search with simple query
-            let resolve = await client.riffy.resolve({
-                query: `ytmsearch:${query}`,
-                requester: message.author,
-            });
+            // =============================
+            // SMART RESOLVE SYSTEM (FIXED)
+            // =============================
+            let resolve;
 
+            // 🎵 SPOTIFY LINK
+            if (query.includes("open.spotify.com")) {
+
+                resolve = await client.riffy.resolve({
+                    query: query,
+                    requester: message.author,
+                });
+
+            }
+
+            // ▶️ YOUTUBE DIRECT LINK (IMPORTANT FIX)
+            else if (
+                query.includes("youtube.com") ||
+                query.includes("youtu.be")
+            ) {
+
+                // DIRECT LOAD — NO SEARCH PREFIX
+                resolve = await client.riffy.resolve({
+                    query: query,
+                    requester: message.author,
+                });
+
+            }
+
+            // 🌐 OTHER URL
+            else if (isURL(query)) {
+
+                resolve = await client.riffy.resolve({
+                    query: query,
+                    requester: message.author,
+                });
+
+            }
+
+            // 🔎 NORMAL SEARCH
+            else {
+
+                resolve = await client.riffy.resolve({
+                    query: `ytmsearch:${query}`,
+                    requester: message.author,
+                });
+
+            }
+
+            // =============================
+            // RESULT HANDLING
+            // =============================
             const { loadType, tracks, playlistInfo } = resolve;
 
-            // ===============================
-            // PLAYLIST
-            // ===============================
+            // ---------- PLAYLIST ----------
             if (loadType === "playlist") {
 
                 for (const track of tracks) {
@@ -59,43 +121,48 @@ module.exports = {
 
                 messages.addedPlaylist(message.channel, playlistInfo, tracks);
 
-                if (!player.playing && !player.paused) {
+                if (!player.playing && !player.paused)
                     player.play();
-                }
-
             }
-            // ===============================
-            // SINGLE TRACK
-            // ===============================
+
+            // ---------- SINGLE TRACK ----------
             else if (loadType === "search" || loadType === "track") {
 
-                if (tracks.length === 0) {
-                    return messages.error(message.channel, "No results found! Try with a different search term.");
-                }
+                if (!tracks.length)
+                    return messages.error(message.channel, "No results found!");
 
                 const track = tracks[0];
                 track.info.requester = message.author;
 
-                const isFirstTrack = player.queue.length === 0 && !player.playing;
+                const isFirstTrack =
+                    player.queue.length === 0 && !player.playing;
+
                 const position = player.queue.length + 1;
 
                 player.queue.add(track);
 
                 if (isFirstTrack) {
-                    if (!player.playing && !player.paused) {
+                    if (!player.playing && !player.paused)
                         player.play();
-                    }
                 } else {
                     messages.addedTrack(message.channel, track, position);
                 }
+            }
 
-            } else {
-                return messages.error(message.channel, "No results found! Try with a different search term.");
+            // ---------- ERROR ----------
+            else {
+                return messages.error(
+                    message.channel,
+                    "No results found! Try a different search."
+                );
             }
 
         } catch (error) {
-            console.error(error);
-            messages.error(message.channel, "An error occurred while playing the song!");
+            console.error("Play Command Error:", error);
+            messages.error(
+                message.channel,
+                "An error occurred while playing the song!"
+            );
         }
     }
 };
