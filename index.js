@@ -826,7 +826,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 });
 // LOGIN MUST BE LAST
 
-client.login(config.botToken);
+
 global.discordClient = client;
 
 client.on("clientReady", () => {
@@ -855,7 +855,7 @@ app.listen(port, () => {
 });
 
 
-
+client.login(config.botToken);
 
 async function shutdown() {
     console.log("🛑 Shutting down bot properly...");
@@ -893,10 +893,6 @@ async function shutdown() {
 }
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
-process.on("beforeExit", shutdown);
-process.on("uncaughtException", shutdown);
-process.on("unhandledRejection", shutdown);
-
 /////client.once('ready', async () => {
   ///console.log(`Logged in as ${client.user.tag}`);
 
