@@ -2,6 +2,12 @@ const { EmbedBuilder } = require("discord.js");
 const paymentUtils = require('./paymentUtils');
 
 async function requirePremium(message) {
+    // if the bot is running in "free" mode we don't enforce premium restrictions
+    // set the ENFORCE_PREMIUM env var to 'true' when you want to toggle premium checks on
+    if (process.env.ENFORCE_PREMIUM !== 'true') {
+        return true; // premium disabled, allow everything
+    }
+
     // Check if user is premium using new Razorpay system
     const isPremiumUser = paymentUtils.isPremium(message.author.id);
 

@@ -33,5 +33,9 @@ module.exports = {
     owners: process.env.OWNERS ? process.env.OWNERS.split(',').map(s => s.trim()) : (process.env.OWNER_ID ? [process.env.OWNER_ID] : [])
     ,
     // When true, automatically add the top recommendation to the queue when recommendations load
-    autoAddRecommendation: false
+    autoAddRecommendation: false,
+    // Premium enforcement toggle (false by default). Set ENFORCE_PREMIUM=true in
+    // your .env file to make premium-only commands require a paid user. When
+    // false the bot behaves as if every user has premium access.
+    enforcePremium: process.env.ENFORCE_PREMIUM === 'true'
 };

@@ -161,6 +161,11 @@ function loadCommands() {
             const filePath = path.join(commandsPath, file);
             const command = require(filePath);
             if (command.name) {
+                // if premium enforcement is disabled, clean up any "(Premium Only)"
+                // text in the description so the help output doesn't look misleading.
+                if (!config.enforcePremium && typeof command.description === 'string') {
+                    command.description = command.description.replace("(Premium Only)", "(currently free)");
+                }
                 client.commands.set(command.name, command);
             }
         }
