@@ -4,13 +4,13 @@ const express = require("express");
 const crypto = require("crypto");
 const db = require("../premium/premiumDB");
 
-const app = express();
+const router = express.Router();
 
 /*
 IMPORTANT:
 Razorpay requires RAW body for signature validation
 */
-app.use(
+router.use(
   express.json({
     verify: (req, res, buf) => {
       req.rawBody = buf;
@@ -18,15 +18,12 @@ app.use(
   })
 );
 
-const PORT = process.env.PORT || 3000;
-
 /* ===============================
    WEBHOOK ENDPOINT
 =================================*/
-app.post("/webhook/razorpay", (req, res) => {
+router.post("/razorpay", (req, res) => {
   try {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-
     const signature = req.headers["x-razorpay-signature"];
 
     const expectedSignature = crypto
@@ -40,17 +37,10 @@ app.post("/webhook/razorpay", (req, res) => {
     }
 
     const event = req.body.event;
-
     console.log("✅ Webhook Event:", event);
 
-    /* ===============================
-       PAYMENT SUCCESS
-    =================================*/
     if (event === "payment.captured") {
       const payment = req.body.payload.payment.entity;
-
-      // IMPORTANT:
-      // Put Discord ID in Razorpay notes
       const discordId = payment.notes.discord_id;
 
       if (!discordId) {
@@ -58,8 +48,7 @@ app.post("/webhook/razorpay", (req, res) => {
         return res.sendStatus(200);
       }
 
-      const expiry =
-        Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+      const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
 
       db.run(
         `INSERT OR REPLACE INTO premium_users (userId, expiry)
@@ -67,10 +56,7 @@ app.post("/webhook/razorpay", (req, res) => {
         [discordId, expiry],
         (err) => {
           if (err) console.log(err);
-          else
-            console.log(
-              `⭐ Premium activated for ${discordId}`
-            );
+          else console.log(`⭐ Premium activated for ${discordId}`);
         }
       );
     }
@@ -82,8 +68,4 @@ app.post("/webhook/razorpay", (req, res) => {
   }
 });
 
-/* =============================== */
-
-app.listen(PORT, () => {
-  console.log(`🚀 Razorpay webhook running on ${PORT}`);
-});
+module.exports = router;

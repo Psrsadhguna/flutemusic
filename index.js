@@ -1,6 +1,6 @@
 const { Client, GatewayDispatchEvents, Collection, ActivityType } = require("discord.js");
 const express = require('express');
-require("./server/webhook");
+const webhookRoutes = require("./server/webhook");
 const config = require("./config.js");
 const { Riffy } = require('riffy');
 const messages = require("./utils/messages.js");
@@ -19,7 +19,6 @@ const startupTime = Date.now();
 console.log('🚀 Bot startup started...');
 // Store interval IDs for cleanup on shutdown
 const activeIntervals = [];
-
 // Bot stats tracking
 const stats = {
     totalSongsPlayed: 0,
@@ -839,23 +838,25 @@ client.on("clientReady", () => {
     startPremiumExpiryChecker(client);
 });
 // Initialize Express server for website
+// Initialize Express server for website
 const app = express();
 const port = process.env.PORT || 10000;
 
-// Serve static files from the website directory
+// ✅ Mount Razorpay webhook routes
+app.use("/webhook", webhookRoutes);
+
+// Serve static files from website
 app.use(express.static(path.join(__dirname, 'website')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'website', 'index.html'));
 });
 
-// Start the Express server
+// Start Express server (ONLY ONE listen)
 app.listen(port, () => {
   console.log(`🌐 Website server listening on port ${port}`);
 });
 
-
-client.login(config.botToken);
 
 async function shutdown() {
     console.log("🛑 Shutting down bot properly...");
@@ -891,6 +892,7 @@ async function shutdown() {
 
     process.exit(0);
 }
+client.login(config.botToken);
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 /////client.once('ready', async () => {
