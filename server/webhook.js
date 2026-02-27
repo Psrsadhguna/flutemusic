@@ -6,49 +6,47 @@ const db = require("../premium/premiumDB");
 
 const router = express.Router();
 
-/*
-IMPORTANT:
-Razorpay requires RAW body for signature validation
-*/
-router.use(
-  express.json({
-    verify: (req, res, buf) => {
-      req.rawBody = buf;
-    },
-  })
-);
+router.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
-/* ===============================
-   WEBHOOK ENDPOINT
-=================================*/
 router.post("/razorpay", (req, res) => {
   try {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
     const signature = req.headers["x-razorpay-signature"];
 
-    const expectedSignature = crypto
+    const expected = crypto
       .createHmac("sha256", secret)
       .update(req.rawBody)
       .digest("hex");
 
-    if (signature !== expectedSignature) {
-      console.log("❌ Invalid webhook signature");
-      return res.status(400).send("Invalid signature");
+    if (signature !== expected) {
+      console.log("❌ Invalid signature");
+      return res.sendStatus(400);
     }
 
     const event = req.body.event;
     console.log("✅ Webhook Event:", event);
 
     if (event === "payment.captured") {
+
       const payment = req.body.payload.payment.entity;
-      const discordId = payment.notes.discord_id;
+
+      // ⭐ read discord id
+      const discordId =
+        payment.notes?.discord_id ||
+        payment.notes?.userId;
 
       if (!discordId) {
-        console.log("No discord_id found");
+        console.log("❌ No discord_id found");
         return res.sendStatus(200);
       }
 
-      const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      const expiry =
+        Date.now() + 30 * 24 * 60 * 60 * 1000;
 
       db.run(
         `INSERT OR REPLACE INTO premium_users (userId, expiry)
@@ -62,6 +60,7 @@ router.post("/razorpay", (req, res) => {
     }
 
     res.sendStatus(200);
+
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
