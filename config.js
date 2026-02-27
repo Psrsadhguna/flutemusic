@@ -26,7 +26,7 @@ module.exports = {
     feedbackWebhookUrl: process.env.FEEDBACK_WEBHOOK_URL || '',
     // Help command buttons
     supportURL: 'https://discord.gg/v7StyEvCCC', // Support server invite
-    voteURL: 'https://top.gg/bot/1474068114373525544/vote', // top.gg vote link
+    voteURL: 'https://top.gg/bot/1466777461680373820/vote', // top.gg vote link
     websiteURL: 'https://flute-music-bot.com', // Your website
     // Bot owner(s) - keep these in your .env as OWNER_ID or OWNERS (comma-separated)
     ownerID: process.env.OWNER_ID || process.env.OWNER || '',

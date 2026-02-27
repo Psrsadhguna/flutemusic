@@ -1,113 +1,92 @@
-<!-- Animated Header -->
-<p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&size=30&duration=3000&color=00FFA3&center=true&vCenter=true&width=800&lines=🎵+Flute+Music+Bot;Powerful+Discord+Music+Experience;Filters+%7C+Queue+%7C+Playlists+%7C+Effects" />
-</p>
+# Flute Music Bot
 
-<p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:00FFA3,100:0066FF&height=160&section=header&text=Flute%20Music%20Bot&fontSize=40&fontColor=ffffff"/>
-</p>
+A Discord music bot with YouTube + Spotify support, filters/effects, playlists, and a live now-playing panel.
 
-<p align="center">
-  <a href="https://discord.com/oauth2/authorize?client_id=1466777461680373820&permissions=281474980236544&scope=bot%20applications.commands">
-    <img src="https://img.shields.io/badge/Invite-Bot-00FFA3?style=for-the-badge&logo=discord&logoColor=black">
-  </a>
-  <a href="https://discord.gg/A5R9HWGkfF">
-    <img src="https://img.shields.io/badge/Support-Server-5865F2?style=for-the-badge&logo=discord&logoColor=white">
-  </a>
-</p>
+## Invite
+- Bot: https://discord.com/oauth2/authorize?client_id=1466777461680373820&permissions=281474980236544&scope=bot%20applications.commands
+- Support: https://discord.gg/v7StyEvCCC
+- Top.gg: https://top.gg/bot/1466777461680373820
 
----
+## Demo
+Short GIF demo:
 
-# 🎵 Flute Music Bot
+![Flute Music Bot Demo](./images/demo-preview.gif)
 
-A powerful and lightweight Discord music bot with advanced filters, playlist system, and web dashboard.
+## Features
+- Play music from YouTube, Spotify tracks, and SoundCloud
+- Smart search + manual top result picker
+- Queue controls, seek, shuffle, loop, replay
+- 20+ filters/effects
+- User favorites/history and saved playlists
+- Website status page + premium modules
 
-👤 code by **Flute Music Team**
+## Core Access Policy
+Core commands are free by default and not vote-locked:
+- `play`, `pause`, `resume`, `skip`, `stop`, `queue`, `nowplaying`, `volume`, `loop`, `shuffle`, `seek`
 
----
+## Setup
+### 1. Prerequisites
+- Node.js 18+
+- A Lavalink v4 node
+- Discord bot token
 
-## 📸 Screenshots
+### 2. Install
+```bash
+npm install
+```
 
-<p align="center">
-<img src="./images/bot-player.png" width="700">
-<img src="./images/web-dashboard.png" width="700">
-<img src="./images/help_comm.png" width="700">
-</p>
+### 3. Configure `.env`
+Create `.env` in project root:
 
----
+```env
+# Required
+BOT_TOKEN=your_discord_bot_token
+LAVALINK_HOST=your_lavalink_host
+LAVALINK_PORT=443
+LAVALINK_PASSWORD=your_lavalink_password
+LAVALINK_SECURE=true
 
-## ✨ Features
+# Optional (Spotify track metadata + better mapping)
+SPOTIFY_CLIENT_ID=your_spotify_client_id
+SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 
-- 🎵 Play high-quality music
-- 📃 Advanced queue system
-- 🎚️ 20+ audio filters
-- 💾 Playlist save/load system
-- 🌐 Web status dashboard
-- ⚡ Fast Lavalink playback
-- 🔊 Volume and seek controls
+# Optional (web + owner)
+PORT=10000
+OWNER_ID=your_discord_user_id
+OWNERS=comma,separated,user_ids
 
----
+# Optional (webhooks)
+WEBHOOK_URL=
+FEEDBACK_WEBHOOK_URL=
 
-## 🚀 Invite Bot
+# Optional (premium enforcement)
+ENFORCE_PREMIUM=false
+```
 
-Click below to add the bot to your server:
+### 4. Run
+```bash
+npm start
+```
 
-👉 **https://discord.com/oauth2/authorize?client_id=1466777461680373820&permissions=281474980236544&scope=bot%20applications.commands**
+## Demo Commands
+Use prefix `f`:
 
----
+```text
+fhelp
+fping
+fplay shape of you
+fplay https://open.spotify.com/track/... 
+fqueue
+fskip
+fstop
+```
 
-## 🛠️ Tech Stack
+## Project Structure
+- `index.js` - bot bootstrap and events
+- `commands/` - all text commands
+- `utils/` - embeds, helpers, premium checks
+- `website/` - static status/premium pages
+- `server/` - webhook endpoints
 
-- Node.js
-- Discord.js
-- Lavalink
-- Riffy
-- JavaScript
-
----
-
-
-## 🎧 Commands
-
-### Music
-- play (supports Spotify, YouTube & SoundCloud)
-- skip
-- stop
-- queue
-- volume
-
-
-
-### Filters
-- bassboost
-- nightcore
-- vaporwave
-- echo
-- karaoke
-
-### Info
-- help
-- ping
-- botinfo
-- nowplaying
-
----
-
-## 🌐 Support
-
-Discord Server:  
-https://discord.gg/A5R9HWGkfF
-
----
-
-## 📊 Status
-
-<p align="center">
-<img src="https://komarev.com/ghpvc/?username=Psradhguna&color=00ffa3&style=for-the-badge">
-</p>
-
----
-
-<p align="center">
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0066FF,100:00FFA3&height=120&section=footer"/>
-</p>
+## License
+MIT

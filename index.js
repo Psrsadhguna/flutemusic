@@ -42,6 +42,12 @@ const userData = {}; // {userId: {favorites: [], history: []}}
 
 // Track song history per guild for Previous button (stack of played songs)
 const songHistory = {}; // {guildId: [track1, track2, ...]}
+// Core playback/info commands should always remain freely accessible (no premium/vote lock).
+const coreFreeCommands = new Set([
+    "help", "ping", "play", "pause", "resume", "skip", "stop", "queue",
+    "nowplaying", "volume", "loop", "shuffle", "seek", "remove", "clearqueue",
+    "clear", "replay", "247"
+]);
 
 const statsPath = path.join(__dirname, 'stats.json');
 const userDataPath = path.join(__dirname, 'userdata.json');
@@ -393,7 +399,7 @@ client.on("messageCreate", async (message) => {
     if (!command) return;
 
     try {
-        if (command.premium) {
+        if (command.premium && !coreFreeCommands.has(command.name)) {
             const premiumAllowed = await requirePremium(message);
             if (!premiumAllowed) return;
         }

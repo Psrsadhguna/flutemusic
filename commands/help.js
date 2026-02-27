@@ -1,19 +1,41 @@
 const messages = require('../utils/messages.js');
 const config = require('../config.js');
 
+const CATEGORY_MAP = {
+    normal: ['botinfo', 'feedback', 'help', 'invite', 'ping', 'premium', 'servers', 'uptime'],
+    music: ['247', 'clear', 'clearqueue', 'loop', 'move', 'nowplaying', 'pause', 'play', 'queue', 'remove', 'replay', 'resume', 'seek', 'shuffle', 'skip', 'stop', 'volume'],
+    playlist: ['deleteplaylist', 'loadplaylist', 'myplaylists', 'saveplaylist'],
+    user: ['favorite', 'history', 'topac'],
+    filter: ['8d', 'chipmunkfilter', 'clearfilters', 'daycore', 'darthvader', 'doubletime', 'equalizer', 'karaoke', 'nightcore', 'pop', 'slowmode', 'soft', 'treblebass', 'tremolo', 'vaporwave', 'vibrato'],
+    effect: ['cinema', 'cleareffects', 'echo', 'earrape', 'lofi', 'party', 'radio', 'telephone', 'underwater', 'vocalboost']
+};
+
+function pickCommands(orderedNames, existingSet, usedSet) {
+    const picked = [];
+
+    for (const name of orderedNames) {
+        if (existingSet.has(name) && !usedSet.has(name)) {
+            picked.push(name);
+            usedSet.add(name);
+        }
+    }
+
+    return picked;
+}
+
 module.exports = {
     name: 'help',
-    aliases: ['h',],
+    aliases: ['h'],
     description: 'Show this help message',
     usage: 'fhelp',
     execute: async (message, args, client) => {
         const prefix = config.prefix || 'f';
 
-        // If user requested a specific command, show detailed info
         if (args && args[0]) {
             const name = args[0].toLowerCase();
-            const cmd = client.commands.get(name);
-            if (!cmd) return messages.error(message.channel, `❌ Command not found: ${name}`);
+            let cmd = client.commands.get(name);
+            if (!cmd) cmd = client.commands.find((c) => Array.isArray(c.aliases) && c.aliases.includes(name));
+            if (!cmd) return messages.error(message.channel, `Command not found: ${name}`);
 
             const title = `Command: ${prefix}${cmd.name}`;
             const description = cmd.description || 'No description available.';
@@ -22,24 +44,29 @@ module.exports = {
             return messages.info(message.channel, title, `${description}\n\n${usage}`);
         }
 
-        // Build categorized lists from the loaded commands (fallback to sensible defaults)
-        const normalList = ['botinfo', 'feedback', 'help', 'ping', 'invite', 'uptime'];
-        const musicList = ['play', 'pause', 'resume', 'skip', 'stop', 'queue', 'volume', 'loop', 'shuffle', 'seek', 'clearqueue', 'join', 'move', 'remove', 'nowplaying', '247'];
-        const playlistList = ['saveplaylist', 'loadplaylist', 'myplaylists', 'deleteplaylist'];
-        const userList = ['favorite', 'history', 'topac'];
-        const filterList = ['nightcore', 'vaporwave', '8d', 'karaoke', 'tremolo', 'vibrato', 'slowmode', 'daycore', 'darthvader', 'doubletime', 'pop', 'soft', 'treblebass', 'chipmunkfilter', 'equalizer', 'clearfilters'];
-        const effectList = ['lofi', 'underwater', 'telephone', 'party', 'radio', 'cinema', 'vocalboost', 'echo', 'earrape', 'cleareffects'];
+        const existingCommands = new Set(client.commands.keys());
+        const used = new Set();
+
+        const normalCommands = pickCommands(CATEGORY_MAP.normal, existingCommands, used);
+        const musicCommands = pickCommands(CATEGORY_MAP.music, existingCommands, used);
+        const playlistCommands = pickCommands(CATEGORY_MAP.playlist, existingCommands, used);
+        const userCommands = pickCommands(CATEGORY_MAP.user, existingCommands, used);
+        const filterCommands = pickCommands(CATEGORY_MAP.filter, existingCommands, used);
+        const effectCommands = pickCommands(CATEGORY_MAP.effect, existingCommands, used);
+
+        const uncategorized = [...existingCommands].filter((name) => !used.has(name)).sort();
+        normalCommands.push(...uncategorized);
 
         const helpData = {
             prefix,
-            normalCommands: normalList.filter(n => client.commands.has(n)),
-            musicCommands: musicList.filter(n => client.commands.has(n)),
-            playlistCommands: playlistList.filter(n => client.commands.has(n)),
-            userCommands: userList.filter(n => client.commands.has(n)),
-            filterCommands: filterList.filter(n => client.commands.has(n)),
-            effectCommands: effectList.filter(n => client.commands.has(n))
+            normalCommands,
+            musicCommands,
+            playlistCommands,
+            userCommands,
+            filterCommands,
+            effectCommands
         };
 
-        messages.help(message.channel, helpData, message.author);
+        return messages.help(message.channel, helpData, message.author);
     }
 };
