@@ -68,9 +68,6 @@ Flute Music now supports premium subscriptions through **Razorpay**!
 Visit the premium page to purchase:  
 👉 **Visit `/premium` on your website**
 
-Or use the Discord command:  
-```
-
 ---
 
 ## 🚀 Invite Bot
