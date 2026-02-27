@@ -182,12 +182,9 @@ client.riffy = new Riffy(client, config.nodes, {
         const guild = client.guilds.cache.get(payload.d.guild_id);
         if (guild) guild.shard.send(payload);
     },
-    defaultSearchPlatform: "ytmsearch",
-    restVersion: "v4",
-    plugins: []
+    defaultSearchPlatform: "ytsearch",
+    restVersion: "v4"
 });
-
-
 
 // update on guild add/remove so site is more responsive
 client.on('guildCreate', async (guild) => {
@@ -425,7 +422,33 @@ client.riffy.on("nodeError", (node, error) => {
     console.log(`${emojis.error} Node "${node.name}" encountered an error: ${error.message}.`);
 });
 
+client.riffy.on("trackError", (player, track, error) => {
+    console.error(`❌ Track Error: ${track?.info?.title || 'Unknown'} - ${error.message}`);
+    if (player.textChannel) {
+        try {
+            const textChannel = client.channels.cache.get(player.textChannel);
+            if (textChannel) {
+                textChannel.send(`❌ Error playing **${track?.info?.title || 'Track'}**: ${error.message}`);
+            }
+        } catch (e) {
+            console.error("Failed to send error message:", e.message);
+        }
+    }
+});
 
+client.riffy.on("trackStuck", (player, track, thresholdMs) => {
+    console.warn(`⚠️ Track Stuck: ${track?.info?.title || 'Unknown'} after ${thresholdMs}ms`);
+    if (player.textChannel) {
+        try {
+            const textChannel = client.channels.cache.get(player.textChannel);
+            if (textChannel) {
+                textChannel.send(`⚠️ Track stuck: **${track?.info?.title || 'Track'}**, skipping...`);
+            }
+        } catch (e) {
+            console.error("Failed to send stuck message:", e.message);
+        }
+    }
+});
 
 // Helper: set voice channel "status"/topic to show now playing (if supported)
 // (Persistent now-playing message removed)

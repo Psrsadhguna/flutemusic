@@ -486,8 +486,12 @@ const buildEmbed = (position, currentTrack) => {
         return channel.send({ embeds: [embed] });
     },
 
-    addedTrack: (channel, track, position) => {
+    addedTrack: (channel, track, position, options = {}) => {
         try {
+            const addedAtMs = Number(options.addedAt) || Date.now();
+            const addedAtUnix = Math.floor(addedAtMs / 1000);
+            const deleteAfterMs = Number(options.deleteAfterMs) || 0;
+
             const embed = new EmbedBuilder()
                 .setColor('#00FF00')
                 .setTitle(`${emojis.success} Added to Queue`)
@@ -499,22 +503,29 @@ const buildEmbed = (position, currentTrack) => {
             }
 
             embed.addFields([
-                { name: '📌 Position', value: `${position}`, inline: false },
-                { name: '⏱️ Duration', value: getDurationString(track) || 'N/A', inline: false }
+                { name: 'Position', value: `${position}`, inline: false },
+                { name: 'Duration', value: getDurationString(track) || 'N/A', inline: false },
+                { name: 'Added At', value: `<t:${addedAtUnix}:F>\n(<t:${addedAtUnix}:R>)`, inline: false }
             ]);
 
-            // Add Play Now button
             const playNowButton = new ButtonBuilder()
                 .setCustomId('play_now_track')
                 .setLabel('Play Now')
-                .setStyle(ButtonStyle.Success)
-                .setEmoji('▶️');
-            
-            const row = new ActionRowBuilder().addComponents(playNowButton);
+                .setStyle(ButtonStyle.Success);
 
-            return channel.send({ embeds: [embed], components: [row] }).catch(() => {});
+            const row = new ActionRowBuilder().addComponents(playNowButton);
+            const sent = channel.send({ embeds: [embed], components: [row] }).catch(() => null);
+            if (deleteAfterMs > 0) {
+                sent.then((msg) => {
+                    if (!msg) return;
+                    setTimeout(() => {
+                        msg.delete().catch(() => {});
+                    }, deleteAfterMs);
+                });
+            }
+            return sent;
         } catch (e) {
-            return channel.send({ content: `✅ Added to queue: ${track.info.title || 'Unknown'}` }).catch(() => {});
+            return channel.send({ content: `Added to queue: ${track.info.title || 'Unknown'}` }).catch(() => {});
         }
     },
 

@@ -70,11 +70,13 @@ Click below to add the bot to your server:
 ## 🎧 Commands
 
 ### Music
-- play
+- play (supports Spotify, YouTube & SoundCloud)
 - skip
 - stop
 - queue
 - volume
+
+
 
 ### Filters
 - bassboost
