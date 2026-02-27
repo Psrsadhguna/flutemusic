@@ -1,55 +1,55 @@
 const express = require("express");
 const crypto = require("crypto");
+
+const router = express.Router();
+
 const db = require("../premium/premiumDB");
 const { syncPremiumRoleForUser } =
   require("../premium/syncPremiumRole");
 
-const router = express.Router();
-
 router.post("/razorpay", async (req, res) => {
   try {
-    console.log("✅ Webhook received");
 
-    const event = req.body.event;
-    console.log("Event:", event);
+    // =========================
+    // VERIFY SIGNATURE
+    // =========================
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-    let discordId = null;
+    const signature = req.headers["x-razorpay-signature"];
 
-    // ===============================
-    // PAYMENT (Normal Orders)
-    // ===============================
-    if (event === "payment.captured") {
-      const payment = req.body.payload.payment.entity;
+    const expected = crypto
+      .createHmac("sha256", secret)
+      .update(req.body)
+      .digest("hex");
 
-      discordId =
-        payment.notes?.discord_id ||
-        payment.order_id; // fallback
+    if (signature !== expected) {
+      console.log("❌ Invalid webhook signature");
+      return res.sendStatus(400);
     }
 
-    // ===============================
-    // SUBSCRIPTION EVENTS ⭐
-    // ===============================
-    if (
-      event === "subscription.activated" ||
-      event === "subscription.charged"
-    ) {
-      const subscription =
-        req.body.payload.subscription.entity;
+    // RAW → JSON
+    const body = JSON.parse(req.body.toString());
 
-      discordId = subscription.notes?.discord_id;
-    }
+    console.log("✅ Webhook received:", body.event);
 
-    // ===============================
-    // CHECK DISCORD ID
-    // ===============================
+    if (body.event !== "payment.captured")
+      return res.sendStatus(200);
+
+    const payment = body.payload.payment.entity;
+
+    const discordId = payment.notes?.discord_id;
+
     if (!discordId) {
       console.log("❌ No discord_id in payment notes");
       return res.sendStatus(200);
     }
 
-    console.log("⭐ Premium activated for", discordId);
+    console.log(`⭐ Premium activated for ${discordId}`);
 
-    // 30 days premium
+    // =========================
+    // SAVE PREMIUM
+    // =========================
+
     const expiry =
       Date.now() + 30 * 24 * 60 * 60 * 1000;
 
@@ -59,17 +59,17 @@ router.post("/razorpay", async (req, res) => {
       [discordId, expiry]
     );
 
-    // ===============================
-    // ADD ROLE IN DISCORD
-    // ===============================
-    const client = global.discordClient;
+    // =========================
+    // ADD DISCORD ROLE
+    // =========================
 
-    if (client) {
+    if (global.discordClient) {
       await syncPremiumRoleForUser(
-        client,
+        global.discordClient,
         discordId,
         true
       );
+
       console.log("✅ Premium role synced");
     }
 

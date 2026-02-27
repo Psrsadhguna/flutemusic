@@ -10,7 +10,7 @@ module.exports = {
     const isPremium = paymentUtils.isPremium(userId);
     const premiumUser = paymentUtils.getPremiumUser(userId);
 
-    const webURL = process.env.WEBSITE_URL || 'https://rzp.io/rzp/dmOr2uCN';
+    const webURL = process.env.WEBSITE_URL || 'https://rzp.io/rzp/uZFgBFL';
 
     const embed = new EmbedBuilder()
       .setTitle('💎 Flute Music Premium')

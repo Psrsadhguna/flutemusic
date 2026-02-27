@@ -756,7 +756,11 @@ const app = express();
 const port = process.env.PORT || 10000;
 
 // ✅ Mount Razorpay webhook routes
-app.use("/webhook", webhookRoutes);
+app.use(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  webhookRoutes
+);
 
 // Serve static files from website
 app.use(express.static(path.join(__dirname, 'website')));

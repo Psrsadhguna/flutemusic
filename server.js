@@ -8,7 +8,7 @@ const webhookNotifier = require('./utils/webhookNotifier');
 
 const app = express();
 const port = process.env.PORT || 4000;
-
+const webhookRoutes = require('./server/webhook');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'website')));
@@ -25,19 +25,34 @@ const razorpay = new Razorpay({
 // =======================
 // Plans
 // =======================
-const plans = {
-  monthly: {
-    name: "Monthly Premium",
-    amount: 100, // ₹1 test
-    currency: "INR"
-  },
-  lifetime: {
-    name: "Lifetime Premium",
-    amount: 100,
-    currency: "INR"
-  }
-};
+app.post("/api/create-order", async (req, res) => {
+  try {
 
+    const { userId, plan } = req.body;
+
+    const order = await razorpay.orders.create({
+      amount: 100, // ₹1 test
+      currency: "INR",
+
+      notes: {
+        discord_id: String(userId),
+        plan: plan || "monthly"
+      }
+    });
+
+    console.log("✅ Order created for:", userId);
+
+    res.json({
+      orderId: order.id,
+      key: process.env.RAZORPAY_KEY_ID,
+      amount: order.amount
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Order failed");
+  }
+});
 // =======================
 // Pages
 // =======================
