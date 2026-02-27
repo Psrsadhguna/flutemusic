@@ -70,14 +70,6 @@ Visit the premium page to purchase:
 
 Or use the Discord command:  
 ```
-/premium buy
-```
-
-### Payment Integration Docs
-
-For setup instructions, see:
-- [Razorpay Setup Guide](./RAZORPAY_SETUP.md)
-- [Payment Integration Guide](./PAYMENT_INTEGRATION_GUIDE.md)
 
 ---
 
