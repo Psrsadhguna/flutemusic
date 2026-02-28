@@ -125,8 +125,8 @@ async function sendWelcomePoster(member) {
         const memberCount = Number(member.guild.memberCount) || 0;
         const embed = new EmbedBuilder()
             .setColor("#7ED321")
-            .setTitle("welcome to flute music commutiy")
-            .setDescription(`Member Count: **${memberCount}**`)
+            .setTitle("**WELCOM TO FLUTE MUSIC COMMUNITY**")
+            .setDescription(`MEMBER COUNT: **${memberCount}**`)
             .setTimestamp();
 
         const posterFilePath = getWelcomePosterFilePath();
