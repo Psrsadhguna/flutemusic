@@ -237,7 +237,6 @@ function recordUserHistory(track) {
 
 async function resolveAutoplayTrack(client, player, seedTrack) {
     if (!seedTrack || !seedTrack.info) return null;
-    if (seedTrack.info.autoplayEligible === false) return null;
 
     const title = String(seedTrack.info.title || "").trim();
     const author = String(seedTrack.info.author || "").trim();
@@ -1066,11 +1065,15 @@ client.riffy.on("trackStart", async (player, track) => {
 
 client.riffy.on("queueEnd", async (player) => {
     try {
-        const vc = client.channels.cache.get(player.voiceChannel);
-        if (!vc) return;
+        let vc = client.channels.cache.get(player.voiceChannel);
+        if (!vc && player.voiceChannel) {
+            vc = await client.channels.fetch(player.voiceChannel).catch(() => null);
+        }
 
-        await setVoiceStatus(vc, null);
-        console.log("Voice status cleared (queue ended)");
+        if (vc) {
+            await setVoiceStatus(vc, null);
+            console.log("Voice status cleared (queue ended)");
+        }
 
         const autoplayEnabled = Boolean(
             stats.autoplayServers &&

@@ -499,7 +499,6 @@ module.exports = {
             if (loadType === 'playlist') {
                 for (const track of tracks) {
                     track.info.requester = message.author;
-                    track.info.autoplayEligible = !inputIsUrl;
                     player.queue.add(track);
                 }
 
@@ -540,7 +539,6 @@ module.exports = {
             }
 
             selectedTrack.info.requester = message.author;
-            selectedTrack.info.autoplayEligible = !inputIsUrl;
             const queuePosition = player.queue.length + 1;
             const shouldStartNow = !player.playing && !player.paused;
             const addedAt = Date.now();
