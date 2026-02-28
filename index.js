@@ -146,12 +146,32 @@ function looksLikeSameSong(a, b) {
     if (!aTitle || !bTitle) return false;
 
     if (aTitle === bTitle) {
-        if (!aAuthor || !bAuthor || aAuthor === bAuthor) return true;
+        return true;
     }
 
-    const titleContains = aTitle.includes(bTitle) || bTitle.includes(aTitle);
-    if (titleContains && aAuthor && bAuthor && aAuthor === bAuthor) {
+    const titleContains = (aTitle.includes(bTitle) || bTitle.includes(aTitle))
+        && Math.min(aTitle.length, bTitle.length) >= 8;
+    if (titleContains) {
         return true;
+    }
+
+    const aWords = new Set(aTitle.split(" ").filter((word) => word.length > 2));
+    const bWords = new Set(bTitle.split(" ").filter((word) => word.length > 2));
+    if (aWords.size > 0 && bWords.size > 0) {
+        let overlap = 0;
+        for (const word of aWords) {
+            if (bWords.has(word)) overlap += 1;
+        }
+
+        const minSize = Math.min(aWords.size, bWords.size);
+        const ratio = minSize > 0 ? (overlap / minSize) : 0;
+        if (ratio >= 0.75) {
+            return true;
+        }
+
+        if (aAuthor && bAuthor && aAuthor === bAuthor && ratio >= 0.55) {
+            return true;
+        }
     }
 
     return false;
@@ -246,8 +266,8 @@ async function resolveAutoplayTrack(client, player, seedTrack) {
     const requester = seedTrack.info.requester || client.user;
 
     const queries = [
-        [title, author, "songs"].filter(Boolean).join(" ").trim(),
         [author, "popular songs"].filter(Boolean).join(" ").trim(),
+        [author, "hits"].filter(Boolean).join(" ").trim(),
         [title, "similar songs"].filter(Boolean).join(" ").trim()
     ].filter((q) => q.length > 0);
 

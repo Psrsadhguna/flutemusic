@@ -4,6 +4,7 @@ const messages = require('../utils/messages.js');
 const searchCache = new Map();
 const SEARCH_CACHE_TTL_MS = 2 * 60 * 1000;
 const SEARCH_SOURCES = ['ytmsearch', 'ytsearch'];
+const SPOTIFY_URL_REGEX = /https?:\/\/(?:open\.)?spotify\.com\//i;
 const SPOTIFY_TRACK_REGEX = /https?:\/\/(?:open\.)?spotify\.com\/track\//i;
 const FILTER_KEYWORDS = [
     'ringtone',
@@ -184,66 +185,48 @@ function pickBestTrack(tracks, query) {
     return rankTracks(tracks, query)[0]?.track || null;
 }
 
-function splitMeaningfulWords(text) {
+function splitWords(text = '') {
     return clean(text).split(' ').filter((word) => word.length > 2);
 }
 
-function durationMatches(expectedMs, actualMs) {
+function durationClose(expectedMs, actualMs) {
     const expected = Number(expectedMs) || 0;
     const actual = Number(actualMs) || 0;
     if (!expected || !actual) return true;
 
     const diff = Math.abs(expected - actual);
-    const tolerance = Math.max(15000, Math.min(45000, Math.floor(expected * 0.12)));
+    const tolerance = Math.max(12000, Math.min(40000, Math.floor(expected * 0.12)));
     return diff <= tolerance;
 }
 
-function scoreSpotifyCandidate(spotifyTrack, candidate) {
+function scoreSpotifyMatch(spotifyTrack, candidate) {
     const spotifyTitle = clean(spotifyTrack?.info?.title || '');
-    const spotifyAuthor = clean(spotifyTrack?.info?.author || '');
+    const spotifyArtist = clean(spotifyTrack?.info?.author || '');
     const candidateTitle = clean(candidate?.info?.title || '');
-    const candidateAuthor = clean(candidate?.info?.author || '');
-
+    const candidateArtist = clean(candidate?.info?.author || '');
     if (!spotifyTitle || !candidateTitle) return Number.NEGATIVE_INFINITY;
 
-    const titleWords = splitMeaningfulWords(spotifyTitle);
+    const titleWords = splitWords(spotifyTitle);
     const titleHits = titleWords.filter((word) => candidateTitle.includes(word)).length;
-    const titleCoverage = titleWords.length ? (titleHits / titleWords.length) : 0;
+    const titleCoverage = titleWords.length > 0 ? (titleHits / titleWords.length) : 0;
 
-    const artistWords = splitMeaningfulWords(spotifyAuthor).slice(0, 5);
-    const artistHits = artistWords.filter(
-        (word) => candidateAuthor.includes(word) || candidateTitle.includes(word)
-    ).length;
+    const artistWords = splitWords(spotifyArtist).slice(0, 5);
+    const artistHits = artistWords.filter((word) => candidateArtist.includes(word) || candidateTitle.includes(word)).length;
 
     let score = 0;
-    score += titleCoverage * 110;
-    score += artistHits * 18;
+    score += titleCoverage * 120;
+    score += artistHits * 20;
 
     if (candidateTitle.includes(spotifyTitle) || spotifyTitle.includes(candidateTitle)) {
-        score += 35;
+        score += 30;
     }
 
     if (artistWords.length > 0 && artistHits === 0) {
-        score -= 70;
+        score -= 55;
     }
 
-    if (!durationMatches(spotifyTrack?.info?.length, candidate?.info?.length)) {
-        score -= 65;
-    }
-
-    const candidateTitleLower = (candidate?.info?.title || '').toLowerCase();
-    const spotifyTitleLower = (spotifyTrack?.info?.title || '').toLowerCase();
-
-    if (hasAny(candidateTitleLower, ALT_VERSION_KEYWORDS) && !hasAny(spotifyTitleLower, ALT_VERSION_KEYWORDS)) {
-        score -= 35;
-    }
-
-    if (
-        candidateTitleLower.includes('official') ||
-        candidateTitleLower.includes('audio') ||
-        candidateAuthor.includes('topic')
-    ) {
-        score += 10;
+    if (!durationClose(spotifyTrack?.info?.length, candidate?.info?.length)) {
+        score -= 60;
     }
 
     return score;
@@ -252,15 +235,12 @@ function scoreSpotifyCandidate(spotifyTrack, candidate) {
 function pickSpotifyMappedTrack(spotifyTrack, candidates) {
     if (!spotifyTrack || !Array.isArray(candidates) || candidates.length === 0) return null;
 
-    const scored = candidates
-        .map((track) => ({ track, score: scoreSpotifyCandidate(spotifyTrack, track) }))
+    const ranked = candidates
+        .map((track) => ({ track, score: scoreSpotifyMatch(spotifyTrack, track) }))
         .filter((item) => Number.isFinite(item.score))
         .sort((a, b) => b.score - a.score);
 
-    if (scored.length === 0) return null;
-
-    const best = scored[0];
-    return best.track;
+    return ranked[0]?.track || null;
 }
 
 async function resolveSafe(client, options) {
@@ -285,11 +265,12 @@ async function resolveWithFallback(client, query, requester) {
     let rankingQuery = query;
     let resolve = null;
 
-    if (SPOTIFY_TRACK_REGEX.test(query)) {
+    if (SPOTIFY_URL_REGEX.test(query)) {
         const spotifyResolve = await resolveSafe(client, { query, requester });
-        const spotifyTrack = spotifyResolve?.tracks?.[0] || null;
+        resolve = spotifyResolve;
 
-        if (spotifyTrack) {
+        if (SPOTIFY_TRACK_REGEX.test(query) && spotifyResolve?.tracks?.length) {
+            const spotifyTrack = spotifyResolve.tracks[0];
             const mappedQuery = [spotifyTrack.info?.title, spotifyTrack.info?.author, 'official audio']
                 .filter(Boolean)
                 .join(' ')
@@ -297,43 +278,40 @@ async function resolveWithFallback(client, query, requester) {
 
             if (mappedQuery) {
                 rankingQuery = mappedQuery;
-                const mappedCandidates = [];
+                const candidates = [];
                 const seen = new Set();
 
                 for (const source of SEARCH_SOURCES) {
-                    const sourceResolve = await resolveSafe(client, {
-                        query: mappedQuery,
-                        source,
-                        requester
-                    });
+                    const attempt = await resolveSafe(client, { query: mappedQuery, source, requester });
+                    if (!attempt?.tracks?.length) continue;
 
-                    if (!resolve && sourceResolve?.tracks?.length) {
-                        resolve = sourceResolve;
-                    }
-
-                    if (!sourceResolve?.tracks?.length) continue;
-
-                    for (const track of sourceResolve.tracks.slice(0, 10)) {
+                    for (const track of attempt.tracks.slice(0, 12)) {
                         const fp = getTrackFingerprint(track);
                         if (!fp || seen.has(fp)) continue;
                         seen.add(fp);
-                        mappedCandidates.push(track);
+                        candidates.push(track);
                     }
                 }
 
-                const bestMappedTrack = pickSpotifyMappedTrack(spotifyTrack, mappedCandidates);
-                if (bestMappedTrack) {
+                const best = pickSpotifyMappedTrack(spotifyTrack, candidates);
+                if (best) {
+                    best.info = {
+                        ...best.info,
+                        originalUri: query
+                    };
                     resolve = {
                         loadType: 'track',
-                        tracks: [bestMappedTrack],
+                        tracks: [best],
                         playlistInfo: null,
                         pluginInfo: {}
                     };
+                } else if (spotifyTrack?.info) {
+                    spotifyTrack.info.originalUri = query;
                 }
+            } else if (spotifyTrack?.info) {
+                spotifyTrack.info.originalUri = query;
             }
         }
-
-        if (!resolve) resolve = spotifyResolve;
     } else if (isURL(query)) {
         resolve = await resolveSafe(client, { query, requester });
     } else {
@@ -494,7 +472,6 @@ module.exports = {
             }
 
             const inputIsUrl = isURL(query);
-            const spotifyTrackLink = SPOTIFY_TRACK_REGEX.test(query);
 
             if (loadType === 'playlist') {
                 for (const track of tracks) {
@@ -511,11 +488,7 @@ module.exports = {
 
             let selectedTrack = null;
             if (inputIsUrl) {
-                if (spotifyTrackLink) {
-                    selectedTrack = tracks[0];
-                } else {
-                    selectedTrack = tracks[0];
-                }
+                selectedTrack = tracks[0];
             } else {
                 const ranked = rankTracks(tracks, rankingQuery);
 
@@ -539,6 +512,9 @@ module.exports = {
             }
 
             selectedTrack.info.requester = message.author;
+            if (SPOTIFY_TRACK_REGEX.test(query)) {
+                selectedTrack.info.originalUri = query;
+            }
             const queuePosition = player.queue.length + 1;
             const shouldStartNow = !player.playing && !player.paused;
             const addedAt = Date.now();

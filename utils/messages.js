@@ -127,6 +127,13 @@ function getDurationString(track) {
     }
 }
 
+function getTrackUrl(track) {
+    if (!track || !track.info) return '';
+    const preferred = String(track.info.originalUri || '').trim();
+    if (preferred) return preferred;
+    return String(track.info.uri || '').trim();
+}
+
 // Update the existing now-playing message for a player (if one exists)
 async function updateNowPlaying(client, player) {
     try {
@@ -251,7 +258,7 @@ const buildEmbed = (position, currentTrack) => {
         const trackTitle =
             (trackToUse.info.title || "Unknown").substring(0, 256);
 
-        const trackUrl = trackToUse.info.uri || "";
+        const trackUrl = getTrackUrl(trackToUse);
 
         const embed = new EmbedBuilder()
             .setColor(config.embedColor)
@@ -552,7 +559,8 @@ const buildEmbed = (position, currentTrack) => {
         let description = '';
 
         if (currentTrack) {
-            description = `**Now Playing:**\n[${currentTrack.info.title}](${currentTrack.info.uri})\nDuration: ${getDurationString(currentTrack)}\n\n`;
+            const nowUrl = getTrackUrl(currentTrack);
+            description = `**Now Playing:**\n[${currentTrack.info.title}](${nowUrl})\nDuration: ${getDurationString(currentTrack)}\n\n`;
 
             if (currentTrack.info.thumbnail) {
                 embed.setThumbnail(currentTrack.info.thumbnail);
@@ -569,7 +577,7 @@ const buildEmbed = (position, currentTrack) => {
             
             const tracksList = paginatedQueue.map((track, i) => {
                 const trackNumber = startIndex + i + 1;
-                return `\`${trackNumber.toString().padStart(2, '0')}\` [${track.info.title}](${track.info.uri}) ${getDurationString(track)}`;
+                return `\`${trackNumber.toString().padStart(2, '0')}\` [${track.info.title}](${getTrackUrl(track)}) ${getDurationString(track)}`;
             }).join('\n');
 
             embed.setDescription(description);
@@ -626,7 +634,7 @@ const buildEmbed = (position, currentTrack) => {
             embed.addFields([
                 {
                     name: 'Current Track',
-                    value: `[${track.info.title}](${track.info.uri})`,
+                    value: `[${track.info.title}](${getTrackUrl(track)})`,
                     inline: false
                 },
                 {
