@@ -13,6 +13,7 @@ const { requirePremium } = require("./utils/requirePremium");
 const paymentUtils = require("./utils/paymentUtils");
 const growthUtils = require("./utils/growthUtils");
 const webhookNotifier = require("./utils/webhookNotifier");
+const autoCaption = require("./utils/autoCaption");
 const { listPlans, normalizePlan, isTestAmountEnabled } = require("./utils/premiumPlans");
 const { syncPremiumRoleForUser } = require("./premium/roleSystem");
 const fs = require("fs");
@@ -90,6 +91,126 @@ function getWelcomePosterFilePath() {
         ? configured
         : path.join(__dirname, configured);
 }
+
+function parseBoolean(value, fallback = false) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (!normalized) return fallback;
+    return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+}
+
+function getTopggAuthToken() {
+    return String(process.env.TOPGG_TOKEN || "").trim();
+}
+
+function shouldAutoThankVoters() {
+    return isFeatureEnabled(process.env.AUTO_THANK_VOTERS, true);
+}
+
+function getVoteThankChannelId() {
+    return String(process.env.VOTE_THANK_CHANNEL_ID || "").trim();
+}
+
+function getVoteThankGuildId() {
+    return String(process.env.VOTE_THANK_GUILD_ID || "").trim();
+}
+
+function isWeekendVote(payload) {
+    if (!payload || typeof payload !== "object") return false;
+
+    if (payload.isWeekend === true || payload.weekend === true) return true;
+    if (payload.isWeekend === 1 || payload.weekend === 1) return true;
+
+    return parseBoolean(payload.isWeekend, false) || parseBoolean(payload.weekend, false);
+}
+
+function isTopggAuthorized(req) {
+    const expectedToken = getTopggAuthToken();
+    if (!expectedToken) return false;
+
+    const providedToken = String(req.headers?.authorization || "").trim();
+    if (!providedToken) return false;
+
+    return timingSafeHexEqual(providedToken, expectedToken);
+}
+
+function formatRetryAfter(retryAfterMs) {
+    const totalSeconds = Math.max(0, Math.ceil((Number(retryAfterMs) || 0) / 1000));
+    if (totalSeconds < 60) return `${totalSeconds}s`;
+
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
+}
+
+async function sendVoteThanks(client, userId, reward, payload = {}) {
+    if (!shouldAutoThankVoters()) return;
+
+    const normalizedUserId = String(userId || "").trim();
+    if (!normalizedUserId) return;
+
+    const voteType = String(payload.type || "upvote").toLowerCase();
+    const rewardGranted = reward?.granted === true;
+    const rewardTokens = Number(reward?.rewardTokens || 0);
+    const totalTokens = Number(reward?.trialTokens || 0);
+    const retryText = reward?.retryAfterMs
+        ? ` Reward cooldown active for ${formatRetryAfter(reward.retryAfterMs)}.`
+        : "";
+
+    const dmDescription = rewardGranted
+        ? `Thanks for voting on Top.gg. You received **+${rewardTokens} trial token${rewardTokens === 1 ? "" : "s"}**.`
+        : `Thanks for voting on Top.gg.${retryText}`;
+
+    const dmEmbed = new EmbedBuilder()
+        .setColor("#00C853")
+        .setTitle("Vote Received - Thank You")
+        .setDescription(dmDescription)
+        .addFields(
+            { name: "Vote Type", value: voteType, inline: true },
+            { name: "Your Trial Tokens", value: String(totalTokens), inline: true }
+        )
+        .setTimestamp();
+
+    const user = await client.users.fetch(normalizedUserId).catch(() => null);
+    if (user) {
+        await user.send({ embeds: [dmEmbed] }).catch(() => {});
+    }
+
+    const thankChannelId = getVoteThankChannelId();
+    if (!thankChannelId) return;
+
+    const channel = client.channels.cache.get(thankChannelId)
+        || await client.channels.fetch(thankChannelId).catch(() => null);
+    if (!channel || !channel.isTextBased?.()) return;
+
+    const requiredGuildId = getVoteThankGuildId();
+    if (requiredGuildId && channel.guildId && channel.guildId !== requiredGuildId) {
+        console.warn(`Vote thank skipped: channel guild mismatch (${channel.guildId} != ${requiredGuildId})`);
+        return;
+    }
+
+    const publicEmbed = new EmbedBuilder()
+        .setColor("#00C853")
+        .setTitle("New Top.gg Vote")
+        .setDescription(
+            rewardGranted
+                ? `<@${normalizedUserId}> thanks for voting. +${rewardTokens} trial token${rewardTokens === 1 ? "" : "s"} added.`
+                : `<@${normalizedUserId}> thanks for voting. Vote registered${retryText ? `.${retryText}` : "."}`
+        )
+        .addFields(
+            { name: "Vote Type", value: voteType, inline: true },
+            { name: "Trial Tokens", value: String(totalTokens), inline: true }
+        )
+        .setTimestamp();
+
+    await channel.send({
+        content: `<@${normalizedUserId}>`,
+        embeds: [publicEmbed],
+        allowedMentions: { users: [normalizedUserId] }
+    }).catch((error) => {
+        console.error("Failed to send vote thank message:", error.message);
+    });
+}
+
 async function sendWelcomePoster(member) {
     const channelId = getWelcomeChannelId();
     if (!channelId) {
@@ -234,6 +355,17 @@ const AUTOPLAY_LANGUAGE_HINTS = {
     }
 };
 
+const AUTOPLAY_LANGUAGE_GUARDRAILS = {
+    telugu: {
+        include: ["telugu", "tollywood"],
+        exclude: ["hindi", "bollywood", "punjabi", "bhojpuri"]
+    },
+    hindi: {
+        include: ["hindi", "bollywood"],
+        exclude: ["telugu", "tollywood", "tamil", "kollywood", "kannada", "malayalam"]
+    }
+};
+
 function buildTrackSearchBlob(track) {
     if (!track || !track.info) return "";
 
@@ -272,6 +404,36 @@ function inferAutoplayLanguageFromText(value) {
 
 function inferTrackLanguage(track) {
     return inferAutoplayLanguageFromText(buildTrackSearchBlob(track));
+}
+
+function trackHasLanguageToken(track, language) {
+    const hints = AUTOPLAY_LANGUAGE_GUARDRAILS[language];
+    if (!hints || !Array.isArray(hints.include) || hints.include.length === 0) {
+        return false;
+    }
+
+    const normalized = ` ${normalizeTrackText(buildTrackSearchBlob(track))} `;
+    for (const token of hints.include) {
+        if (normalized.includes(` ${token} `)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function trackHasForeignLanguageToken(track, preferredLanguage) {
+    const hints = AUTOPLAY_LANGUAGE_GUARDRAILS[preferredLanguage];
+    if (!hints || !Array.isArray(hints.exclude) || hints.exclude.length === 0) {
+        return false;
+    }
+
+    const normalized = ` ${normalizeTrackText(buildTrackSearchBlob(track))} `;
+    for (const token of hints.exclude) {
+        if (normalized.includes(` ${token} `)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function addLanguageBiasedQueries(queries, preferredLanguage, autoplayMode) {
@@ -519,6 +681,8 @@ async function resolveAutoplayTrack(client, player, seedTrack, mode = "similar")
     const current = player?.queue?.current || player?.current || player?.nowPlaying || null;
     const recentHistory = (songHistory[player.guildId] || []).slice(-8);
     const blockedTracks = [seedTrack, current, ...recentHistory].filter(Boolean);
+    const preferredCandidates = [];
+    const neutralCandidates = [];
     const allowedCandidates = [];
     const mismatchedCandidates = [];
 
@@ -537,11 +701,39 @@ async function resolveAutoplayTrack(client, player, seedTrack, mode = "similar")
             continue;
         }
 
+        if (candidateLanguage === preferredLanguage) {
+            preferredCandidates.push(candidate);
+            continue;
+        }
+
+        if (trackHasForeignLanguageToken(candidate, preferredLanguage)) {
+            mismatchedCandidates.push(candidate);
+            continue;
+        }
+
+        if (trackHasLanguageToken(candidate, preferredLanguage)) {
+            preferredCandidates.push(candidate);
+            continue;
+        }
+
+        neutralCandidates.push(candidate);
         allowedCandidates.push(candidate);
+    }
+
+    if (preferredCandidates.length > 0) {
+        return preferredCandidates[0];
     }
 
     if (allowedCandidates.length > 0) {
         return allowedCandidates[0];
+    }
+
+    if (neutralCandidates.length > 0) {
+        return neutralCandidates[0];
+    }
+
+    if (preferredLanguage) {
+        return null;
     }
 
     if (mismatchedCandidates.length > 0) {
@@ -1340,6 +1532,8 @@ client.riffy.on("trackStart", async (player, track) => {
         recordUserHistory(track);
         saveStats().catch(() => {});
         saveUserData().catch(() => {});
+        player.autoCaptionText = "";
+        player.autoCaptionLanguage = "";
 
         const vc = client.channels.cache.get(player.voiceChannel);
         if (!vc) return;
@@ -1361,6 +1555,32 @@ client.riffy.on("trackStart", async (player, track) => {
             }
         }
 
+        if (autoCaption.isEnabled() && player.textChannel) {
+            const startTrackFingerprint = getTrackFingerprint(track);
+            setImmediate(async () => {
+                try {
+                    const caption = await autoCaption.buildTrackCaption(track);
+                    if (!caption || !caption.text) return;
+
+                    const currentTrack = player?.queue?.current || player?.current || player?.nowPlaying || null;
+                    const currentTrackFingerprint = getTrackFingerprint(currentTrack);
+                    if (
+                        startTrackFingerprint &&
+                        currentTrackFingerprint &&
+                        startTrackFingerprint !== currentTrackFingerprint
+                    ) {
+                        return;
+                    }
+
+                    player.autoCaptionText = caption.text;
+                    player.autoCaptionLanguage = caption.targetLang || autoCaption.getTargetLanguage().toUpperCase();
+                    await messages.updateNowPlaying(client, player);
+                } catch (captionError) {
+                    console.error("Auto caption failed:", captionError.message);
+                }
+            });
+        }
+
         console.log(`Voice status updated -> ${track.info.title}`);
     } catch (err) {
         console.error("Voice status update failed:", err.message);
@@ -1369,6 +1589,9 @@ client.riffy.on("trackStart", async (player, track) => {
 
 client.riffy.on("queueEnd", async (player) => {
     try {
+        player.autoCaptionText = "";
+        player.autoCaptionLanguage = "";
+
         // Remove the old now-playing embed when the current song/queue finishes.
         try { await messages.clearNowPlaying(client, player); } catch (e) {}
 
@@ -1457,6 +1680,9 @@ client.riffy.on("queueEnd", async (player) => {
 
 client.riffy.on("playerDestroy", async (player) => {
     try {
+        player.autoCaptionText = "";
+        player.autoCaptionLanguage = "";
+
         const vc = client.channels.cache.get(player.voiceChannel);
         if (!vc) return;
 
@@ -1543,6 +1769,44 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.post("/api/topgg-vote", async (req, res) => {
+    try {
+        if (!getTopggAuthToken()) {
+            return res.status(503).json({ success: false, error: "TOPGG_TOKEN is not configured" });
+        }
+
+        if (!isTopggAuthorized(req)) {
+            return res.status(401).json({ success: false, error: "Unauthorized vote webhook" });
+        }
+
+        const payload = req.body || {};
+        const userId = String(payload.user || payload.id || "").trim();
+        if (!isLikelyDiscordId(userId)) {
+            return res.status(400).json({ success: false, error: "Invalid Discord user ID" });
+        }
+
+        const weekendVote = isWeekendVote(payload);
+        const reward = growthUtils.grantVoteTrialToken(userId, { isWeekend: weekendVote });
+
+        setImmediate(() => {
+            sendVoteThanks(client, userId, reward, payload).catch((error) => {
+                console.error("Auto thank voter failed:", error.message);
+            });
+        });
+
+        return res.json({
+            success: true,
+            rewarded: Boolean(reward?.granted),
+            rewardTokens: Number(reward?.rewardTokens || 0),
+            trialTokens: Number(reward?.trialTokens || 0),
+            reason: reward?.reason || "OK"
+        });
+    } catch (error) {
+        console.error("Top.gg vote webhook failed:", error.message);
+        return res.status(500).json({ success: false, error: "Vote webhook failed" });
+    }
+});
 
 app.get("/api/premium-plans", (req, res) => {
     const plans = Object.fromEntries(
@@ -1882,5 +2146,3 @@ process.on("SIGTERM", shutdown);
 
  /// process.exit();
 //});
-
-

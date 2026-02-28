@@ -3,6 +3,15 @@ const path = require("path");
 
 const GROWTH_DB_FILE = path.join(__dirname, "../database/growth.json");
 const DEFAULT_TRIAL_TOKEN_REWARD = 1;
+const DEFAULT_VOTE_REWARD_TOKENS = 1;
+const DEFAULT_VOTE_WEEKEND_REWARD_TOKENS = 2;
+const DEFAULT_VOTE_REWARD_COOLDOWN_MINUTES = 30;
+
+function parsePositiveInt(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+}
 
 function ensureDBFile() {
   if (!fs.existsSync(GROWTH_DB_FILE)) {
@@ -67,7 +76,9 @@ function getOrCreateProfile(userId, db = null) {
       createdAt: new Date().toISOString(),
       campaignJoinedAt: null,
       lastTrialRedeemedAt: null,
-      inviteRewardGuilds: []
+      inviteRewardGuilds: [],
+      voteRewards: 0,
+      lastVoteRewardAt: null
     };
     data.referralIndex[referralCode] = normalizedUserId;
   }
@@ -81,6 +92,8 @@ function getOrCreateProfile(userId, db = null) {
   if (!Array.isArray(profile.referrals)) profile.referrals = [];
   if (!Number.isFinite(profile.trialTokens)) profile.trialTokens = 0;
   if (!Array.isArray(profile.inviteRewardGuilds)) profile.inviteRewardGuilds = [];
+  if (!Number.isFinite(profile.voteRewards)) profile.voteRewards = 0;
+  if (typeof profile.lastVoteRewardAt !== "string") profile.lastVoteRewardAt = null;
 
   return profile;
 }
@@ -219,6 +232,68 @@ function grantInviteJoinTrialToken(userId, guildId) {
   };
 }
 
+function grantVoteTrialToken(userId, options = {}) {
+  const normalizedUserId = String(userId || "").trim();
+  if (!normalizedUserId) {
+    return { ok: false, reason: "USER_ID_REQUIRED" };
+  }
+
+  const data = loadGrowthDB();
+  const profile = getOrCreateProfile(normalizedUserId, data);
+
+  const cooldownMinutes = parsePositiveInt(
+    process.env.VOTE_REWARD_COOLDOWN_MINUTES,
+    DEFAULT_VOTE_REWARD_COOLDOWN_MINUTES
+  );
+  const cooldownMs = cooldownMinutes * 60 * 1000;
+
+  const nowMs = Date.now();
+  const lastVoteAtMs = profile.lastVoteRewardAt
+    ? Date.parse(profile.lastVoteRewardAt)
+    : Number.NaN;
+  const forceReward = options.force === true;
+
+  if (!forceReward && Number.isFinite(lastVoteAtMs) && nowMs - lastVoteAtMs < cooldownMs) {
+    const retryAfterMs = cooldownMs - (nowMs - lastVoteAtMs);
+    saveGrowthDB(data);
+    return {
+      ok: true,
+      granted: false,
+      reason: "COOLDOWN_ACTIVE",
+      retryAfterMs,
+      trialTokens: profile.trialTokens,
+      voteRewards: profile.voteRewards
+    };
+  }
+
+  const baseReward = parsePositiveInt(
+    process.env.VOTE_REWARD_TOKENS,
+    DEFAULT_VOTE_REWARD_TOKENS
+  );
+  const weekendReward = parsePositiveInt(
+    process.env.VOTE_WEEKEND_REWARD_TOKENS,
+    DEFAULT_VOTE_WEEKEND_REWARD_TOKENS
+  );
+  const isWeekend = options.isWeekend === true;
+  const rewardTokens = isWeekend ? weekendReward : baseReward;
+  const grantedAt = new Date(nowMs).toISOString();
+
+  profile.trialTokens += rewardTokens;
+  profile.voteRewards += 1;
+  profile.lastVoteRewardAt = grantedAt;
+
+  saveGrowthDB(data);
+  return {
+    ok: true,
+    granted: true,
+    reason: "VOTE_REWARDED",
+    rewardTokens,
+    trialTokens: profile.trialTokens,
+    voteRewards: profile.voteRewards,
+    lastVoteRewardAt: grantedAt
+  };
+}
+
 function consumeTrialToken(userId) {
   const data = loadGrowthDB();
   const profile = getOrCreateProfile(userId, data);
@@ -244,6 +319,7 @@ module.exports = {
   claimReferral,
   grantCampaignTrialToken,
   grantInviteJoinTrialToken,
+  grantVoteTrialToken,
   consumeTrialToken,
   loadGrowthDB,
   saveGrowthDB

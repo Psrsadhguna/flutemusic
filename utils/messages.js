@@ -306,6 +306,17 @@ const buildEmbed = (position, currentTrack) => {
         if (autoplayEnabled) {
             description += `\n** <a:play:1475228960823705752> Autoplay added:** ON (${autoplayMode})`;
         }
+
+        const autoCaptionText = typeof player?.autoCaptionText === "string"
+            ? player.autoCaptionText.trim()
+            : "";
+        if (autoCaptionText) {
+            const captionLang = typeof player?.autoCaptionLanguage === "string"
+                ? player.autoCaptionLanguage.trim().toUpperCase()
+                : "";
+            const captionLabel = captionLang || "AUTO";
+            description += `\n**Caption (${captionLabel}):** ${autoCaptionText}`;
+        }
         embed.setDescription(description);
 
         // ======================

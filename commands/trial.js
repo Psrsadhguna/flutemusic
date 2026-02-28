@@ -114,7 +114,7 @@ module.exports = {
         }
 
         if (summary.trialTokens <= 0) {
-            return messages.error(message.channel, "No trial tokens available. Use `frefer` or `fcampaign`.");
+            return messages.error(message.channel, "No trial tokens available. Use `frefer`, `fcampaign`, or vote on Top.gg.");
         }
 
         const consumed = growthUtils.consumeTrialToken(userId);
