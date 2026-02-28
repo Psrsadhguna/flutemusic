@@ -1,9 +1,11 @@
+require("dotenv").config();
 const { Client, GatewayDispatchEvents, Collection, ActivityType, AttachmentBuilder, EmbedBuilder } = require("discord.js");
 const express = require('express');
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
 const webhookRoutes = require("./server/webhook");
 const config = require("./config.js");
+const connectDB = require("./database");
 const { Riffy } = require('riffy');
 const messages = require("./utils/messages.js");
 const emojis = require("./emojis.js");
@@ -24,6 +26,8 @@ const { startPremiumExpiryChecker } =
 require("./premium/premiumScheduler");
 const { startupPremiumSync } =
 require("./premium/startupSync");
+
+connectDB();
 
 // Start Express server for webhooks    
 // Startup performance monitoring
