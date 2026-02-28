@@ -940,30 +940,57 @@ app.post("/api/verify-payment", async (req, res) => {
 
         const clientForPayment = getRazorpayClient();
         const payment = await clientForPayment.payments.fetch(paymentId);
-        const notes = payment.notes || {};
-        const userId = notes.discord_id || notes.userId || notes.user_id;
+        const paymentNotes = payment.notes || {};
+        let mergedNotes = { ...paymentNotes };
+        let userId = paymentNotes.discord_id || paymentNotes.userId || paymentNotes.user_id;
+
+        if (!isLikelyDiscordId(userId) && payment.order_id) {
+            try {
+                const order = await clientForPayment.orders.fetch(payment.order_id);
+                const orderNotes = order?.notes || {};
+                mergedNotes = { ...orderNotes, ...mergedNotes };
+                userId = orderNotes.discord_id || orderNotes.userId || orderNotes.user_id;
+            } catch (error) {
+                console.warn("Unable to fetch order notes in verify-payment:", error.message);
+            }
+        }
+
+        if (!isLikelyDiscordId(userId) && payment.subscription_id) {
+            try {
+                const subscription = await clientForPayment.subscriptions.fetch(payment.subscription_id);
+                const subNotes = subscription?.notes || {};
+                mergedNotes = { ...subNotes, ...mergedNotes };
+                userId = subNotes.discord_id || subNotes.userId || subNotes.user_id;
+            } catch (error) {
+                console.warn("Unable to fetch subscription notes in verify-payment:", error.message);
+            }
+        }
 
         if (!isLikelyDiscordId(userId)) {
             return res.status(400).json({ success: false, error: "Payment does not include a valid Discord ID" });
         }
 
+        const resolvedUserId = String(userId).trim();
+        const resolvedEmail = payment.email || mergedNotes.email || "";
+        const resolvedPlan = normalizePlan(mergedNotes.plan);
+
         const premiumUser = paymentUtils.addPremiumUser(
-            userId,
-            payment.email || notes.email || "",
-            normalizePlan(notes.plan),
+            resolvedUserId,
+            resolvedEmail,
+            resolvedPlan,
             payment.id,
             payment.amount
         );
 
         if (global.discordClient) {
-            await syncPremiumRoleForUser(global.discordClient, userId, true);
+            await syncPremiumRoleForUser(global.discordClient, resolvedUserId, true);
         }
 
         if (process.env.WEBHOOK_URL) {
             webhookNotifier.notifyNewPremium(
                 process.env.WEBHOOK_URL,
-                userId,
-                payment.email || notes.email || "",
+                resolvedUserId,
+                resolvedEmail,
                 premiumUser.plan,
                 payment.amount
             ).catch((err) => {

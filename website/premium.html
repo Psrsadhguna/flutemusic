@@ -229,7 +229,12 @@ async function startPayment(plan) {
       description: plans[plan].description,
       order_id: data.orderId,
       prefill: { email: userEmail },
-      notes: { plan, userId: userId.trim() },
+      notes: {
+        plan,
+        userId: userId.trim(),
+        discord_id: userId.trim(),
+        email: userEmail
+      },
       handler: async function (response) {
         try {
           const verifyRes = await fetch("/api/verify-payment", {
