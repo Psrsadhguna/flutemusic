@@ -390,9 +390,13 @@ module.exports = {
                 return messages.error(message.channel, 'No results found.');
             }
 
+            const inputIsUrl = isURL(query);
+            const spotifyTrackLink = SPOTIFY_TRACK_REGEX.test(query);
+
             if (loadType === 'playlist') {
                 for (const track of tracks) {
                     track.info.requester = message.author;
+                    track.info.autoplayEligible = !inputIsUrl;
                     player.queue.add(track);
                 }
 
@@ -404,10 +408,12 @@ module.exports = {
             }
 
             let selectedTrack = null;
-            const allowSelection = (!isURL(query) || SPOTIFY_TRACK_REGEX.test(query));
-
-            if (isURL(query) && !SPOTIFY_TRACK_REGEX.test(query)) {
-                selectedTrack = tracks[0];
+            if (inputIsUrl) {
+                if (spotifyTrackLink) {
+                    selectedTrack = pickBestTrack(tracks, rankingQuery) || tracks[0];
+                } else {
+                    selectedTrack = tracks[0];
+                }
             } else {
                 const ranked = rankTracks(tracks, rankingQuery);
 
@@ -415,7 +421,7 @@ module.exports = {
                     return messages.error(message.channel, 'No suitable match found.');
                 }
 
-                if (allowSelection && ranked.length > 1) {
+                if (ranked.length > 1) {
                     selectedTrack = await requestTrackSelection(message, ranked, rankingQuery);
                 } else {
                     selectedTrack = ranked[0].track;
@@ -431,6 +437,7 @@ module.exports = {
             }
 
             selectedTrack.info.requester = message.author;
+            selectedTrack.info.autoplayEligible = !inputIsUrl;
             const queuePosition = player.queue.length + 1;
             const shouldStartNow = !player.playing && !player.paused;
             const addedAt = Date.now();

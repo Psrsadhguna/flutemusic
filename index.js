@@ -116,6 +116,47 @@ function sameTrack(a, b) {
     return getTrackFingerprint(a) !== "" && getTrackFingerprint(a) === getTrackFingerprint(b);
 }
 
+function normalizeTrackText(value) {
+    return String(value || "")
+        .toLowerCase()
+        .replace(/\[[^\]]*\]|\([^)]*\)/g, " ")
+        .replace(/\b(official|video|lyrics?|audio|hd|hq|4k|remaster(ed)?|version|full|song|feat\.?|ft\.?)\b/g, " ")
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function getTrackMetaKey(track) {
+    if (!track || !track.info) return "";
+    const title = normalizeTrackText(track.info.title);
+    const author = normalizeTrackText(track.info.author);
+    if (title && author) return `${author}:${title}`;
+    return title || author || "";
+}
+
+function looksLikeSameSong(a, b) {
+    if (!a || !b || !a.info || !b.info) return false;
+    if (sameTrack(a, b)) return true;
+
+    const aTitle = normalizeTrackText(a.info.title);
+    const bTitle = normalizeTrackText(b.info.title);
+    const aAuthor = normalizeTrackText(a.info.author);
+    const bAuthor = normalizeTrackText(b.info.author);
+
+    if (!aTitle || !bTitle) return false;
+
+    if (aTitle === bTitle) {
+        if (!aAuthor || !bAuthor || aAuthor === bAuthor) return true;
+    }
+
+    const titleContains = aTitle.includes(bTitle) || bTitle.includes(aTitle);
+    if (titleContains && aAuthor && bAuthor && aAuthor === bAuthor) {
+        return true;
+    }
+
+    return false;
+}
+
 function cloneTrackSnapshot(track) {
     if (!track || !track.info) return null;
 
@@ -196,27 +237,40 @@ function recordUserHistory(track) {
 
 async function resolveAutoplayTrack(client, player, seedTrack) {
     if (!seedTrack || !seedTrack.info) return null;
+    if (seedTrack.info.autoplayEligible === false) return null;
 
     const title = String(seedTrack.info.title || "").trim();
     const author = String(seedTrack.info.author || "").trim();
 
     if (!title) return null;
 
-    const query = [title, author, "official audio"].filter(Boolean).join(" ").trim();
     const requester = seedTrack.info.requester || client.user;
 
-    const sources = ["ytmsearch", "ytsearch"];
-    let resolvedTracks = [];
+    const queries = [
+        [title, author, "songs"].filter(Boolean).join(" ").trim(),
+        [author, "popular songs"].filter(Boolean).join(" ").trim(),
+        [title, "similar songs"].filter(Boolean).join(" ").trim()
+    ].filter((q) => q.length > 0);
 
-    for (const source of sources) {
-        try {
-            const result = await client.riffy.resolve({ query, source, requester });
-            if (result?.tracks?.length) {
-                resolvedTracks = result.tracks;
-                break;
+    const sources = ["ytmsearch", "ytsearch"];
+    const resolvedTracks = [];
+    const seen = new Set();
+
+    for (const query of queries) {
+        for (const source of sources) {
+            try {
+                const result = await client.riffy.resolve({ query, source, requester });
+                if (!result?.tracks?.length) continue;
+
+                for (const track of result.tracks.slice(0, 20)) {
+                    const uniq = getTrackFingerprint(track) || `meta:${getTrackMetaKey(track)}`;
+                    if (!uniq || seen.has(uniq)) continue;
+                    seen.add(uniq);
+                    resolvedTracks.push(track);
+                }
+            } catch (error) {
+                // Ignore a source failure and continue fallback.
             }
-        } catch (error) {
-            // Ignore a source failure and continue fallback.
         }
     }
 
@@ -224,14 +278,13 @@ async function resolveAutoplayTrack(client, player, seedTrack) {
         return null;
     }
 
-    const seedFingerprint = getTrackFingerprint(seedTrack);
     const current = player?.queue?.current || player?.current || player?.nowPlaying || null;
+    const recentHistory = (songHistory[player.guildId] || []).slice(-8);
+    const blockedTracks = [seedTrack, current, ...recentHistory].filter(Boolean);
 
     for (const candidate of resolvedTracks) {
-        const candidateFingerprint = getTrackFingerprint(candidate);
-        if (!candidateFingerprint) continue;
-        if (candidateFingerprint === seedFingerprint) continue;
-        if (current && sameTrack(candidate, current)) continue;
+        const isBlocked = blockedTracks.some((tracked) => looksLikeSameSong(candidate, tracked));
+        if (isBlocked) continue;
         return candidate;
     }
 
