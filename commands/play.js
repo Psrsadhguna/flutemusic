@@ -539,8 +539,7 @@ module.exports = {
             }
 
             return messages.addedTrack(message.channel, selectedTrack, queuePosition, {
-                addedAt,
-                deleteAfterMs: 15000
+                addedAt
             });
         } catch (error) {
             console.error('Play Command Error:', error);
