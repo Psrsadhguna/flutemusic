@@ -17,6 +17,16 @@ function getNodeList(client) {
     return [];
 }
 
+async function getServerCount(client) {
+    const cacheCount = client.guilds.cache.filter((guild) => guild.available !== false).size;
+    try {
+        const liveGuilds = await client.guilds.fetch();
+        return liveGuilds.size;
+    } catch {
+        return cacheCount;
+    }
+}
+
 module.exports = {
     name: "status",
     aliases: ["health", "botstatus"],
@@ -28,6 +38,7 @@ module.exports = {
         const connectedNodes = nodeList.filter((n) => n.connected).length;
         const memoryMb = Math.round(process.memoryUsage().rss / (1024 * 1024));
         const stats = global.stats || {};
+        const serverCount = await getServerCount(client);
 
         const embed = new EmbedBuilder()
             .setColor("#00B8D4")
@@ -36,7 +47,7 @@ module.exports = {
                 { name: "Uptime", value: formatUptime(client.uptime), inline: true },
                 { name: "Ping", value: `${Math.round(client.ws.ping)}ms`, inline: true },
                 { name: "Memory", value: `${memoryMb} MB`, inline: true },
-                { name: "Servers", value: `${client.guilds.cache.size}`, inline: true },
+                { name: "Servers", value: `${serverCount}`, inline: true },
                 { name: "Commands Used", value: `${stats.totalCommandsExecuted || 0}`, inline: true },
                 { name: "Errors Logged", value: `${stats.errorCount || 0}`, inline: true },
                 { name: "Music Nodes", value: `${connectedNodes}/${nodeList.length} connected`, inline: false }

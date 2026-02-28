@@ -2,65 +2,76 @@ const { EmbedBuilder } = require('discord.js');
 const fs = require('fs').promises;
 const path = require('path');
 
+async function getServerCount(client) {
+    const cacheCount = client.guilds.cache.filter((guild) => guild.available !== false).size;
+    try {
+        const liveGuilds = await client.guilds.fetch();
+        return liveGuilds.size;
+    } catch {
+        return cacheCount;
+    }
+}
+
 module.exports = {
     name: 'botinfo',
     description: 'Display bot information',
     usage: 'fbotinfo',
     execute: async (message, args, client) => {
+        const serverCount = await getServerCount(client);
+
         const embed = new EmbedBuilder()
             .setColor('#0061ff')
-            .setTitle('🤖 Bot Information')
+            .setTitle('Bot Information')
             .setThumbnail(client.user.displayAvatarURL({ dynamic: true }))
             .addFields([
                 {
-                    name: '📅 Creation Date',
+                    name: 'Creation Date',
                     value: `<t:${Math.floor(client.user.createdTimestamp / 1000)}:D>`,
                     inline: false
                 },
-        
                 {
-                    name: '🌍 Servers',
-                    value: `${client.guilds.cache.size}`,
+                    name: 'Servers',
+                    value: `${serverCount}`,
                     inline: false
                 },
                 {
-                    name: '📢 Channels',
+                    name: 'Channels',
                     value: `${client.channels.cache.size}`,
                     inline: false
                 },
                 {
-                    name: '👥 Users',
+                    name: 'Users',
                     value: `${client.users.cache.size}`,
                     inline: false
                 },
                 {
-                    name: '📡 Ping',
+                    name: 'Ping',
                     value: `${Math.round(client.ws.ping)}ms`,
                     inline: false
                 },
                 {
-                    name: '💾 Memory',
+                    name: 'Memory',
                     value: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`,
                     inline: false
                 },
                 {
-                    name: '🎵 Total Streams',
+                    name: 'Total Streams',
                     value: `Playing Music In ${client.guilds.cache.filter(g => g.members.me?.voice.channel).size} Server!`,
                     inline: false
                 }
             ])
             .setFooter({
-                text: '⚙️ Powered By flute music team',
+                text: 'Powered By flute music team',
                 iconURL: client.user.displayAvatarURL()
             })
             .setTimestamp();
 
-        // attempt to update website status file with current counts
+        // Attempt to update website status file with current counts
         (async () => {
             try {
                 const statusPath = path.join(__dirname, '..', 'website', 'status.json');
                 const data = {
-                    servers: client.guilds.cache.size,
+                    servers: serverCount,
                     members: client.users.cache.size,
                     updated: new Date().toISOString()
                 };

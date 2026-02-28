@@ -1,4 +1,4 @@
-﻿const { Client, GatewayDispatchEvents, Collection, ActivityType, EmbedBuilder } = require("discord.js");
+﻿const { Client, GatewayDispatchEvents, Collection, ActivityType } = require("discord.js");
 const express = require('express');
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
@@ -82,14 +82,19 @@ function getWelcomePosterUrl() {
 
 async function sendWelcomePoster(member) {
     const channelId = getWelcomeChannelId();
-    if (!channelId) return;
+    if (!channelId) {
+        console.warn("Welcome skipped: WELCOME_CHANNEL_ID not set");
+        return;
+    }
 
     if (!isFeatureEnabled(process.env.WELCOME_POSTER_ENABLED, true)) {
+        console.log("Welcome skipped: WELCOME_POSTER_ENABLED is off");
         return;
     }
 
     const targetGuildId = String(process.env.WELCOME_GUILD_ID || "").trim();
     if (targetGuildId && targetGuildId !== member.guild.id) {
+        console.log(`Welcome skipped: guild mismatch (${member.guild.id})`);
         return;
     }
 
@@ -97,34 +102,29 @@ async function sendWelcomePoster(member) {
         member.client.channels.cache.get(channelId) ||
         await member.client.channels.fetch(channelId).catch(() => null);
     if (!channel || !channel.isTextBased?.()) {
+        console.warn(`Welcome skipped: channel not found/text (${channelId})`);
         return;
     }
 
     if (channel.guildId && channel.guildId !== member.guild.id) {
+        console.warn(`Welcome skipped: channel guild mismatch (${channel.guildId} != ${member.guild.id})`);
         return;
     }
 
     try {
         const memberCount = Number(member.guild.memberCount) || 0;
         const posterUrl = getWelcomePosterUrl();
-        const embed = new EmbedBuilder()
-            .setColor("#00A8FF")
-            .setTitle("welcome to flute music commutiy")
-            .setDescription(`Member Count: **${memberCount}**`)
-            .setImage(posterUrl)
-            .setTimestamp();
-
         await channel.send({
-            content: `${member}`,
-            embeds: [embed],
+            content:
+                `${member}\n` +
+                `welcome to flute music commutiy\n` +
+                `Member Count: ${memberCount}\n` +
+                `${posterUrl}`,
             allowedMentions: { users: [member.id] }
         });
+        console.log(`Welcome sent in guild ${member.guild.id} for ${member.user.tag}`);
     } catch (error) {
         console.error("Failed to send welcome poster:", error.message);
-        await channel.send({
-            content: `${member}\nwelcome to flute music commutiy\nMember Count: ${member.guild.memberCount}`,
-            allowedMentions: { users: [member.id] }
-        }).catch(() => {});
     }
 }
 function isOwnerUser(userId) {
@@ -1253,6 +1253,7 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 client.on("guildMemberAdd", (member) => {
+    console.log(`guildMemberAdd received: ${member.user.tag} (${member.id}) in ${member.guild.id}`);
     sendWelcomePoster(member).catch((error) => {
         console.error("Welcome poster handler failed:", error.message);
     });
@@ -1825,5 +1826,6 @@ process.on("SIGTERM", shutdown);
 
  /// process.exit();
 //});
+
 
 
