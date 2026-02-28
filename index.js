@@ -1,4 +1,4 @@
-﻿const { Client, GatewayDispatchEvents, Collection, ActivityType } = require("discord.js");
+﻿const { Client, GatewayDispatchEvents, Collection, ActivityType, EmbedBuilder } = require("discord.js");
 const express = require('express');
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
@@ -11,6 +11,7 @@ const setVoiceStatus = require('./utils/voiceStatus');
 const statusRotator = require("./utils/statusRotator.js");
 const { requirePremium } = require("./utils/requirePremium");
 const paymentUtils = require("./utils/paymentUtils");
+const growthUtils = require("./utils/growthUtils");
 const webhookNotifier = require("./utils/webhookNotifier");
 const { listPlans, normalizePlan, isTestAmountEnabled } = require("./utils/premiumPlans");
 const { syncPremiumRoleForUser } = require("./premium/roleSystem");
@@ -62,6 +63,70 @@ const temporarilyBlockedUsers = new Map(); // userId -> unblockAt
 
 const AUTOPLAY_MODES = new Set(["similar", "artist", "random"]);
 
+function isFeatureEnabled(rawValue, fallback = true) {
+    const value = String(rawValue || "").trim().toLowerCase();
+    if (!value) return fallback;
+    return value === "1" || value === "true" || value === "yes" || value === "on";
+}
+
+function getWelcomeChannelId() {
+    return String(process.env.WELCOME_CHANNEL_ID || "").trim();
+}
+
+function getWelcomePosterUrl() {
+    const fallback =
+        "https://cdn.discordapp.com/attachments/1475863623934148680/1477229390697070602/IMG_20260228_141726.jpg?ex=69a40094&is=69a2af14&hm=cb33fd40609c3133d9650f7f185731b7de86e45014245dd6ceaf330f569fa90e&";
+    const configured = String(process.env.WELCOME_POSTER_URL || "").trim();
+    return configured || fallback;
+}
+
+async function sendWelcomePoster(member) {
+    const channelId = getWelcomeChannelId();
+    if (!channelId) return;
+
+    if (!isFeatureEnabled(process.env.WELCOME_POSTER_ENABLED, true)) {
+        return;
+    }
+
+    const targetGuildId = String(process.env.WELCOME_GUILD_ID || "").trim();
+    if (targetGuildId && targetGuildId !== member.guild.id) {
+        return;
+    }
+
+    const channel =
+        member.client.channels.cache.get(channelId) ||
+        await member.client.channels.fetch(channelId).catch(() => null);
+    if (!channel || !channel.isTextBased?.()) {
+        return;
+    }
+
+    if (channel.guildId && channel.guildId !== member.guild.id) {
+        return;
+    }
+
+    try {
+        const memberCount = Number(member.guild.memberCount) || 0;
+        const posterUrl = getWelcomePosterUrl();
+        const embed = new EmbedBuilder()
+            .setColor("#00A8FF")
+            .setTitle("welcome to flute music commutiy")
+            .setDescription(`Member Count: **${memberCount}**`)
+            .setImage(posterUrl)
+            .setTimestamp();
+
+        await channel.send({
+            content: `${member}`,
+            embeds: [embed],
+            allowedMentions: { users: [member.id] }
+        });
+    } catch (error) {
+        console.error("Failed to send welcome poster:", error.message);
+        await channel.send({
+            content: `${member}\nwelcome to flute music commutiy\nMember Count: ${member.guild.memberCount}`,
+            allowedMentions: { users: [member.id] }
+        }).catch(() => {});
+    }
+}
 function isOwnerUser(userId) {
     if (!userId) return false;
 
@@ -127,6 +192,89 @@ function normalizeTrackText(value) {
         .replace(/[^a-z0-9]+/g, " ")
         .replace(/\s+/g, " ")
         .trim();
+}
+
+const AUTOPLAY_LANGUAGE_HINTS = {
+    telugu: {
+        tokens: ["telugu", "tollywood"],
+        script: /[\u0C00-\u0C7F]/
+    },
+    hindi: {
+        tokens: ["hindi", "bollywood"],
+        script: /[\u0900-\u097F]/
+    }
+};
+
+function buildTrackSearchBlob(track) {
+    if (!track || !track.info) return "";
+
+    return [
+        track.info.title,
+        track.info.author,
+        track.info.uri,
+        track.info.identifier,
+        track.info.sourceName
+    ]
+        .filter(Boolean)
+        .join(" ");
+}
+
+function inferAutoplayLanguageFromText(value) {
+    const raw = String(value || "");
+    if (!raw) return null;
+
+    for (const [language, hint] of Object.entries(AUTOPLAY_LANGUAGE_HINTS)) {
+        if (hint.script.test(raw)) {
+            return language;
+        }
+    }
+
+    const normalized = ` ${normalizeTrackText(raw)} `;
+    for (const [language, hint] of Object.entries(AUTOPLAY_LANGUAGE_HINTS)) {
+        for (const token of hint.tokens) {
+            if (normalized.includes(` ${token} `)) {
+                return language;
+            }
+        }
+    }
+
+    return null;
+}
+
+function inferTrackLanguage(track) {
+    return inferAutoplayLanguageFromText(buildTrackSearchBlob(track));
+}
+
+function addLanguageBiasedQueries(queries, preferredLanguage, autoplayMode) {
+    if (!Array.isArray(queries) || queries.length === 0) return [];
+    if (!preferredLanguage || autoplayMode === "random") {
+        return queries;
+    }
+
+    const suffixes = autoplayMode === "artist"
+        ? [`${preferredLanguage} songs`, `${preferredLanguage} hits`]
+        : [`${preferredLanguage} similar songs`, `${preferredLanguage} songs`];
+
+    const merged = [];
+    const seen = new Set();
+
+    const pushQuery = (value) => {
+        const text = String(value || "").trim();
+        if (!text) return;
+        const key = text.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        merged.push(text);
+    };
+
+    for (const query of queries) {
+        for (const suffix of suffixes) {
+            pushQuery([query, suffix].join(" ").trim());
+        }
+        pushQuery(query);
+    }
+
+    return merged.slice(0, 12);
 }
 
 function sanitizeAutoplayMode(value) {
@@ -280,6 +428,7 @@ async function resolveAutoplayTrack(client, player, seedTrack, mode = "similar")
 
     const requester = seedTrack.info.requester || client.user;
     const autoplayMode = sanitizeAutoplayMode(mode);
+    const preferredLanguage = inferTrackLanguage(seedTrack);
     const randomPool = [
         "top global hits",
         "viral songs mix",
@@ -310,6 +459,7 @@ async function resolveAutoplayTrack(client, player, seedTrack, mode = "similar")
         ];
     }
     queries = queries.filter((q) => q.length > 0);
+    queries = addLanguageBiasedQueries(queries, preferredLanguage, autoplayMode);
 
     const sources = ["ytmsearch", "ytsearch"];
     const resolvedTracks = [];
@@ -340,11 +490,33 @@ async function resolveAutoplayTrack(client, player, seedTrack, mode = "similar")
     const current = player?.queue?.current || player?.current || player?.nowPlaying || null;
     const recentHistory = (songHistory[player.guildId] || []).slice(-8);
     const blockedTracks = [seedTrack, current, ...recentHistory].filter(Boolean);
+    const allowedCandidates = [];
+    const mismatchedCandidates = [];
 
     for (const candidate of resolvedTracks) {
         const isBlocked = blockedTracks.some((tracked) => looksLikeSameSong(candidate, tracked));
         if (isBlocked) continue;
-        return candidate;
+
+        if (!preferredLanguage) {
+            allowedCandidates.push(candidate);
+            continue;
+        }
+
+        const candidateLanguage = inferTrackLanguage(candidate);
+        if (candidateLanguage && candidateLanguage !== preferredLanguage) {
+            mismatchedCandidates.push(candidate);
+            continue;
+        }
+
+        allowedCandidates.push(candidate);
+    }
+
+    if (allowedCandidates.length > 0) {
+        return allowedCandidates[0];
+    }
+
+    if (mismatchedCandidates.length > 0) {
+        return mismatchedCandidates[0];
     }
 
     return null;
@@ -493,6 +665,7 @@ Promise.all([loadStats(), loadUserData(), loadPlaylists()]).then(() => {
 const client = new Client({
     intents: [
         "Guilds",
+        "GuildMembers",
         "GuildMessages",
         "GuildVoiceStates",
         "GuildMessageReactions",
@@ -548,11 +721,26 @@ client.on('guildCreate', async (guild) => {
     setImmediate(async () => {
         try { await fsp.writeFile(path.join(__dirname, 'website', 'status.json'), JSON.stringify({ servers: client.guilds.cache.size, members: client.users.cache.size, updated: new Date().toISOString() }, null, 2), 'utf8'); } catch(e){/*ignore*/}
     });
+
+    let inviteReward = null;
+    try {
+        if (guild.ownerId) {
+            inviteReward = growthUtils.grantInviteJoinTrialToken(guild.ownerId, guild.id);
+        }
+    } catch (error) {
+        console.error("Failed to grant invite reward token:", error.message);
+    }
     
     // Send DM to the server owner thanking them for adding the bot
     try {
         const owner = await guild.fetchOwner();
         const { EmbedBuilder } = require('discord.js');
+        const rewardText = inviteReward?.granted
+            ? `You received +${inviteReward.rewardTokens} trial token. Total tokens: ${inviteReward.trialTokens}.`
+            : (inviteReward?.ok
+                ? "Invite reward for this server was already claimed before."
+                : "Could not process invite reward automatically right now.");
+
         const dmEmbed = new EmbedBuilder()
             .setColor('#0099ff')
             .setTitle('Thanks for adding Flute Music Bot!')
@@ -565,6 +753,11 @@ client.on('guildCreate', async (guild) => {
                 {
                     name: 'Quick Start',
                     value: 'Try `f play [song name]` to start playing music!'
+                },
+                {
+                    name: 'Invite Reward',
+                    value: `${rewardText}\nUse \`ftrial status\` to check.`,
+                    inline: false
                 }
             ])
             .setTimestamp();
@@ -1058,6 +1251,13 @@ client.on('interactionCreate', async (interaction) => {
         }
     }
 });
+
+client.on("guildMemberAdd", (member) => {
+    sendWelcomePoster(member).catch((error) => {
+        console.error("Welcome poster handler failed:", error.message);
+    });
+});
+
 // Send webhook notifications for member joins/leaves if configured (fire and forget)
 if (config.webhookUrl && config.webhookUrl.length > 5) {
     client.on('guildMemberAdd', (member) => {
@@ -1625,3 +1825,5 @@ process.on("SIGTERM", shutdown);
 
  /// process.exit();
 //});
+
+

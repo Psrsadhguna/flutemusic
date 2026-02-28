@@ -55,10 +55,7 @@ PORT=10000
 OWNER_ID=your_discord_user_id
 OWNERS=comma,separated,user_ids
 
-# Optional (webhooks)
-WEBHOOK_URL=
-FEEDBACK_WEBHOOK_URL=
-
+```
 
 ### 4. Run
 ```bash

@@ -9,7 +9,7 @@ function ensureDBFile() {
     fs.mkdirSync(path.dirname(GROWTH_DB_FILE), { recursive: true });
     fs.writeFileSync(
       GROWTH_DB_FILE,
-      JSON.stringify({ users: {}, referralIndex: {} }, null, 2),
+      JSON.stringify({ users: {}, referralIndex: {}, inviteRewards: {} }, null, 2),
       "utf8"
     );
   }
@@ -23,10 +23,13 @@ function loadGrowthDB() {
     if (!parsed.referralIndex || typeof parsed.referralIndex !== "object") {
       parsed.referralIndex = {};
     }
+    if (!parsed.inviteRewards || typeof parsed.inviteRewards !== "object") {
+      parsed.inviteRewards = {};
+    }
     return parsed;
   } catch (error) {
     console.error("Failed to load growth DB:", error.message);
-    return { users: {}, referralIndex: {} };
+    return { users: {}, referralIndex: {}, inviteRewards: {} };
   }
 }
 
@@ -63,7 +66,8 @@ function getOrCreateProfile(userId, db = null) {
       trialTokens: 0,
       createdAt: new Date().toISOString(),
       campaignJoinedAt: null,
-      lastTrialRedeemedAt: null
+      lastTrialRedeemedAt: null,
+      inviteRewardGuilds: []
     };
     data.referralIndex[referralCode] = normalizedUserId;
   }
@@ -76,6 +80,7 @@ function getOrCreateProfile(userId, db = null) {
 
   if (!Array.isArray(profile.referrals)) profile.referrals = [];
   if (!Number.isFinite(profile.trialTokens)) profile.trialTokens = 0;
+  if (!Array.isArray(profile.inviteRewardGuilds)) profile.inviteRewardGuilds = [];
 
   return profile;
 }
@@ -166,6 +171,54 @@ function grantCampaignTrialToken(userId) {
   };
 }
 
+function grantInviteJoinTrialToken(userId, guildId) {
+  const normalizedUserId = String(userId || "").trim();
+  if (!normalizedUserId) {
+    return { ok: false, reason: "USER_ID_REQUIRED" };
+  }
+
+  const normalizedGuildId = String(guildId || "").trim();
+  if (!normalizedGuildId) {
+    return { ok: false, reason: "GUILD_ID_REQUIRED" };
+  }
+
+  const data = loadGrowthDB();
+  const profile = getOrCreateProfile(normalizedUserId, data);
+
+  if (data.inviteRewards[normalizedGuildId]) {
+    saveGrowthDB(data);
+    return {
+      ok: true,
+      granted: false,
+      reason: "GUILD_ALREADY_REWARDED",
+      trialTokens: profile.trialTokens
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+
+  profile.trialTokens += DEFAULT_TRIAL_TOKEN_REWARD;
+  if (!profile.inviteRewardGuilds.includes(normalizedGuildId)) {
+    profile.inviteRewardGuilds.push(normalizedGuildId);
+  }
+
+  data.inviteRewards[normalizedGuildId] = {
+    guildId: normalizedGuildId,
+    userId: profile.userId,
+    rewardedAt: nowIso,
+    rewardTokens: DEFAULT_TRIAL_TOKEN_REWARD
+  };
+
+  saveGrowthDB(data);
+  return {
+    ok: true,
+    granted: true,
+    reason: "INVITE_REWARDED",
+    rewardTokens: DEFAULT_TRIAL_TOKEN_REWARD,
+    trialTokens: profile.trialTokens
+  };
+}
+
 function consumeTrialToken(userId) {
   const data = loadGrowthDB();
   const profile = getOrCreateProfile(userId, data);
@@ -190,6 +243,7 @@ module.exports = {
   getUserGrowthSummary,
   claimReferral,
   grantCampaignTrialToken,
+  grantInviteJoinTrialToken,
   consumeTrialToken,
   loadGrowthDB,
   saveGrowthDB
