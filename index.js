@@ -1,4 +1,4 @@
-﻿const { Client, GatewayDispatchEvents, Collection, ActivityType } = require("discord.js");
+﻿const { Client, GatewayDispatchEvents, Collection, ActivityType, AttachmentBuilder, EmbedBuilder } = require("discord.js");
 const express = require('express');
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
@@ -80,6 +80,16 @@ function getWelcomePosterUrl() {
     return configured || fallback;
 }
 
+function getWelcomePosterFilePath() {
+    const configured = String(process.env.WELCOME_POSTER_FILE || "").trim();
+    if (!configured) {
+        return path.join(__dirname, "images", "welcome-fm.jpg");
+    }
+
+    return path.isAbsolute(configured)
+        ? configured
+        : path.join(__dirname, configured);
+}
 async function sendWelcomePoster(member) {
     const channelId = getWelcomeChannelId();
     if (!channelId) {
@@ -113,15 +123,34 @@ async function sendWelcomePoster(member) {
 
     try {
         const memberCount = Number(member.guild.memberCount) || 0;
-        const posterUrl = getWelcomePosterUrl();
-        await channel.send({
-            content:
-                `${member}\n` +
-                `welcome to flute music commutiy\n` +
-                `Member Count: ${memberCount}\n` +
-                `${posterUrl}`,
-            allowedMentions: { users: [member.id] }
-        });
+        const embed = new EmbedBuilder()
+            .setColor("#7ED321")
+            .setTitle("welcome to flute music commutiy")
+            .setDescription(`Member Count: **${memberCount}**`)
+            .setTimestamp();
+
+        const posterFilePath = getWelcomePosterFilePath();
+        const hasLocalPoster = fs.existsSync(posterFilePath);
+
+        if (hasLocalPoster) {
+            const attachment = new AttachmentBuilder(posterFilePath, { name: "welcome-fm.jpg" });
+            embed.setImage("attachment://welcome-fm.jpg");
+            await channel.send({
+                content: `${member}`,
+                embeds: [embed],
+                files: [attachment],
+                allowedMentions: { users: [member.id] }
+            });
+        } else {
+            const posterUrl = getWelcomePosterUrl();
+            embed.setImage(posterUrl);
+            await channel.send({
+                content: `${member}`,
+                embeds: [embed],
+                allowedMentions: { users: [member.id] }
+            });
+        }
+
         console.log(`Welcome sent in guild ${member.guild.id} for ${member.user.tag}`);
     } catch (error) {
         console.error("Failed to send welcome poster:", error.message);
@@ -1826,6 +1855,8 @@ process.on("SIGTERM", shutdown);
 
  /// process.exit();
 //});
+
+
 
 
 

@@ -55,6 +55,13 @@ PORT=10000
 OWNER_ID=your_discord_user_id
 OWNERS=comma,separated,user_ids
 
+# Optional (welcome poster)
+WELCOME_CHANNEL_ID=your_text_channel_id
+WELCOME_GUILD_ID=your_server_id
+WELCOME_POSTER_ENABLED=true
+WELCOME_POSTER_FILE=images/welcome-fm.jpg
+WELCOME_POSTER_URL=https://cdn.discordapp.com/.../welcome.jpg
+
 ```
 
 ### 4. Run
