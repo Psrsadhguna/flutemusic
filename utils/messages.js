@@ -11,6 +11,14 @@ function isValidURL(string) {
     try { new URL(string); return true; } catch (e) { return false; }
 }
 
+function normalizeText(value) {
+    if (typeof value !== "string") return value;
+    let out = value.replace(/\uFFFD/g, "");
+    out = out.replace(/[ \t]{2,}/g, " ");
+    out = out.replace(/\n{3,}/g, "\n\n");
+    return out.trim();
+}
+
 // Create help button
 function createHelpButton() {
     const url = config.websiteURL || config.helpURL || '';
@@ -74,23 +82,23 @@ const baseEmbed = (title, description = '') => {
     const embed = new EmbedBuilder()
         .setColor(config.embedColor)
         .setTimestamp();
-    if (title) embed.setTitle(title);
-    if (description) embed.setDescription(description);
-    embed.setFooter({ text: '© flute music ' });
+    if (title) embed.setTitle(normalizeText(title));
+    if (description) embed.setDescription(normalizeText(description));
+    embed.setFooter({ text: 'Flute Music' });
     return embed;
 };
 
 const successEmbed = (message) => {
     return new EmbedBuilder()
         .setColor('#00FF00')
-        .setDescription(`${emojis.success} ${message}`)
+        .setDescription(normalizeText(message))
         .setTimestamp();
 };
 
 const errorEmbed = (message) => {
     return new EmbedBuilder()
         .setColor('#FF0000')
-        .setDescription(`${emojis.error} ${message}`)
+        .setDescription(normalizeText(message))
         .setTimestamp();
 };
 
@@ -189,7 +197,7 @@ module.exports = {
     nowPlaying: async (channel, track, player, client) => {
         try {
             if (!track || !track.info) {
-                return channel.send({ content: '❌ No valid track information available' });
+                return channel.send({ content: 'No valid track information available.' });
             }
 
             // recommendations removed
@@ -210,7 +218,7 @@ module.exports = {
 
         let progress = position / length;
 
-        // clamp value between 0 → 1
+        // clamp value between 0 and 1
         progress = Math.max(0, Math.min(1, progress));
 
         const filledLength = Math.round(progress * barLength);
@@ -229,7 +237,7 @@ module.exports = {
         return '';
     }
 };
-            // …existing code…
+            // existing code
 
 const buildEmbed = (position, currentTrack) => {
     try {
@@ -250,7 +258,7 @@ const buildEmbed = (position, currentTrack) => {
             .setTitle("<a:playing:1473974241887256641> Now Playing")
             .setTimestamp();
 
-        // ✅ duration values
+        // duration values
         const totalDuration =
             formatDuration(trackToUse.info.length) || "N/A";
 
@@ -262,11 +270,11 @@ const buildEmbed = (position, currentTrack) => {
         const source =
             (trackToUse.info.sourceName || "Unknown");
 
-        // ✅ CLEAN DESCRIPTION (YOUR DESIGN)
+        // clean description
         let description =
             trackUrl && trackUrl.startsWith("http")
                 ? ` [${trackTitle}](${trackUrl})`
-                : `▶ Playing: ${trackTitle}`;
+                : `Playing: ${trackTitle}`;
 
         // Build progress bar if we have position data
         const progressBar = createProgressBar(position, trackToUse.info.length, trackToUse.info.isStream);
@@ -313,10 +321,10 @@ const buildEmbed = (position, currentTrack) => {
         if (thumbnail)
             embed.setThumbnail(thumbnail);
 
-        // ❌ REMOVE author + fields (clean UI)
+        // remove author + extra fields for a cleaner UI
 
 
-            // …rest of the function…
+            // rest of the function
  
              if (player && player.queue && Array.isArray(player.queue) && player.queue.length > 0) {
                         try {
@@ -325,13 +333,13 @@ const buildEmbed = (position, currentTrack) => {
                                 const t = player.queue[i];
                                 if (t && t.info && t.info.title) {
                                     const title = t.info.title.substring(0, 40);
-                                    upNext.push(`• ${title}`);
+                                    upNext.push(`- ${title}`);
                                 }
                             }
                             if (upNext.length > 0) {
                                 const queueText = upNext.join('\n');
                                 embed.addFields([
-                                    { name: '📑 Up Next', value: queueText || 'No more tracks', inline: false }
+                                    { name: 'Up Next', value: queueText || 'No more tracks', inline: false }
                                 ]);
                             }
                         } catch (e) {
@@ -339,7 +347,7 @@ const buildEmbed = (position, currentTrack) => {
                         }
                     }
 
-                    embed.setFooter({ text: '© flute music team' });
+                    embed.setFooter({ text: 'Flute Music Team' });
                     return embed;
                 } catch (err) {
                     console.error('Error building embed:', err.message);
@@ -397,12 +405,12 @@ const buildEmbed = (position, currentTrack) => {
             const clientInstance = client || channel?.client;
             
             try {
-                console.log('📤 Sending now-playing message...');
+                console.log('Sending now-playing message...');
                 const msg = await channel.send({ 
                     embeds: [buildEmbed(playerPosition)], 
                     components: [row, row2]
                 });
-                console.log('✅ Message sent successfully');
+                console.log('Now-playing message sent successfully');
                 
                 // store reference to message so interactions can update it live
                 try {
@@ -449,11 +457,11 @@ const buildEmbed = (position, currentTrack) => {
                 return msg;
             } catch (err) {
                 console.error('Error in nowPlaying function:', err.message);
-                return channel.send({ content: `❌ Error displaying now playing: ${err.message}` }).catch(() => {});
+                return channel.send({ content: `Error displaying now playing: ${err.message}` }).catch(() => {});
             }
         } catch (err) {
             console.error('Error in nowPlaying outer:', err.message);
-            return channel.send({ content: `❌ Error displaying now playing: ${err.message}` }).catch(() => {});
+            return channel.send({ content: `Error displaying now playing: ${err.message}` }).catch(() => {});
         }
     },
 
@@ -478,9 +486,9 @@ const buildEmbed = (position, currentTrack) => {
         }
 
         embed.addFields([
-            { name: '📊 Tracks', value: `${tracks.length} tracks`, inline: true },
-            { name: '⏱️ Total Duration', value: formatDuration(totalDuration), inline: true },
-            { name: '🔴 Streams', value: `${streamCount}`, inline: true }
+            { name: 'Tracks', value: `${tracks.length} tracks`, inline: true },
+            { name: 'Total Duration', value: formatDuration(totalDuration), inline: true },
+            { name: 'Streams', value: `${streamCount}`, inline: true }
         ]);
 
         return channel.send({ embeds: [embed] });
@@ -532,8 +540,8 @@ const buildEmbed = (position, currentTrack) => {
     queueEnded: (channel) => {
         const embed = new EmbedBuilder()
             .setColor('#FFA500')
-            .setTitle('<a:bye_bye:1475217491759206421>  im leaving voice channel...')
-            .setDescription('songs completed, queue ended ... see you next time boi boiiiiii...')
+            .setTitle('Queue Finished')
+            .setDescription('Queue completed. Leaving the voice channel.')
             .setTimestamp();
         return channel.send({ embeds: [embed] });
     },
@@ -544,7 +552,7 @@ const buildEmbed = (position, currentTrack) => {
         let description = '';
 
         if (currentTrack) {
-            description = `** <a:playing:1473974241887256641> Now Playing:**\n[${currentTrack.info.title}](${currentTrack.info.uri})\n⏱️ ${getDurationString(currentTrack)}\n\n`;
+            description = `**Now Playing:**\n[${currentTrack.info.title}](${currentTrack.info.uri})\nDuration: ${getDurationString(currentTrack)}\n\n`;
 
             if (currentTrack.info.thumbnail) {
                 embed.setThumbnail(currentTrack.info.thumbnail);
@@ -552,7 +560,7 @@ const buildEmbed = (position, currentTrack) => {
         }
 
         if (queue.length > 0) {
-            description += '**📋 Up Next:**';
+            description += '**Up Next:**';
             
             const tracksPerPage = 10;
             const startIndex = (currentPage - 1) * tracksPerPage;
@@ -593,14 +601,14 @@ const buildEmbed = (position, currentTrack) => {
     playerStatus: (channel, player) => {
         const embed = baseEmbed(`${emojis.info} Player Status`);
 
-        const statusText = player.playing ? '▶️ Playing' : '⏸️ Paused';
-        const loopModeText = player.loop === 'queue' ? '🔁 On' : '❌ Off';
+        const statusText = player.playing ? 'Playing' : 'Paused';
+        const loopModeText = player.loop === 'queue' ? 'On' : 'Off';
 
         embed.addFields([
-            { name: '🎵 Status', value: statusText, inline: true },
-            { name: '🔊 Volume', value: `${player.volume}%`, inline: true },
-            { name: '🔄 Loop', value: loopModeText, inline: true },
-            { name: '📊 Queue Size', value: `${player.queue.length} tracks`, inline: true }
+            { name: 'Status', value: statusText, inline: true },
+            { name: 'Volume', value: `${player.volume}%`, inline: true },
+            { name: 'Loop', value: loopModeText, inline: true },
+            { name: 'Queue Size', value: `${player.queue.length} tracks`, inline: true }
         ]);
 
         let currentTrack = null;
@@ -617,12 +625,12 @@ const buildEmbed = (position, currentTrack) => {
 
             embed.addFields([
                 {
-                    name: '🎵 Current Track',
+                    name: 'Current Track',
                     value: `[${track.info.title}](${track.info.uri})`,
                     inline: false
                 },
                 {
-                    name: '⏱️ Duration',
+                    name: 'Duration',
                     value: getDurationString(track),
                     inline: false
                 }
@@ -656,49 +664,49 @@ const buildEmbed = (position, currentTrack) => {
 
         embed.addFields([
             {
-                name: '📌 Normal Commands',
-                value: helpData.normalCommands.map(cmd => `\`${cmd}\``).join(' • '),
+                name: 'Normal Commands',
+                value: helpData.normalCommands.map(cmd => `\`${cmd}\``).join(' | '),
                 inline: false
             },
             {
                 name: '<a:music:1474074087042056253>  Music Commands',
                 value: helpData.musicCommands.length > 0 
-                    ? helpData.musicCommands.map(cmd => `\`${cmd}\``).join(' • ')
+                    ? helpData.musicCommands.map(cmd => `\`${cmd}\``).join(' | ')
                     : 'Coming soon...',
                 inline: false
             },
             {
-                name: '📂 Playlist Commands',
+                name: 'Playlist Commands',
                 value: helpData.playlistCommands && helpData.playlistCommands.length > 0
-                    ? helpData.playlistCommands.map(cmd => `\`${cmd}\``).join(' • ')
+                    ? helpData.playlistCommands.map(cmd => `\`${cmd}\``).join(' | ')
                     : 'Coming soon...',
                 inline: false
             },
             {
                 name: '<a:users:1474075424765247780>  User Commands',
                 value: helpData.userCommands && helpData.userCommands.length > 0
-                    ? helpData.userCommands.map(cmd => `\`${cmd}\``).join(' • ')
+                    ? helpData.userCommands.map(cmd => `\`${cmd}\``).join(' | ')
                     : 'No commands available',
                 inline: false
             },
             {
                 name: '<a:filter:1474074633283178578>  Filter Commands',
                 value: helpData.filterCommands.length > 0 
-                    ? helpData.filterCommands.map(cmd => `\`${cmd}\``).join(' • ')
+                    ? helpData.filterCommands.map(cmd => `\`${cmd}\``).join(' | ')
                     : 'Coming soon...',
                 inline: false
             },
             {
                 name: '<a:ACZ_blue_effects:1474074999525740757>  Effect Commands',
                 value: helpData.effectCommands.length > 0 
-                    ? helpData.effectCommands.map(cmd => `\`${cmd}\``).join(' • ')
+                    ? helpData.effectCommands.map(cmd => `\`${cmd}\``).join(' | ')
                     : 'Coming soon...',
                 inline: false
             }
         ]);
 
         embed.setFooter({
-            text: '⚙️ Powered By flute music team',
+            text: 'Powered by Flute Music Team',
             iconURL: channel.client.user.displayAvatarURL()
         });
 
@@ -718,3 +726,4 @@ const buildEmbed = (position, currentTrack) => {
     createButton: buttonUtils.createButton,
     createButtonRow: buttonUtils.createButtonRow
 };
+
