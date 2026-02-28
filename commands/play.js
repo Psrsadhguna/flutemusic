@@ -184,6 +184,85 @@ function pickBestTrack(tracks, query) {
     return rankTracks(tracks, query)[0]?.track || null;
 }
 
+function splitMeaningfulWords(text) {
+    return clean(text).split(' ').filter((word) => word.length > 2);
+}
+
+function durationMatches(expectedMs, actualMs) {
+    const expected = Number(expectedMs) || 0;
+    const actual = Number(actualMs) || 0;
+    if (!expected || !actual) return true;
+
+    const diff = Math.abs(expected - actual);
+    const tolerance = Math.max(15000, Math.min(45000, Math.floor(expected * 0.12)));
+    return diff <= tolerance;
+}
+
+function scoreSpotifyCandidate(spotifyTrack, candidate) {
+    const spotifyTitle = clean(spotifyTrack?.info?.title || '');
+    const spotifyAuthor = clean(spotifyTrack?.info?.author || '');
+    const candidateTitle = clean(candidate?.info?.title || '');
+    const candidateAuthor = clean(candidate?.info?.author || '');
+
+    if (!spotifyTitle || !candidateTitle) return Number.NEGATIVE_INFINITY;
+
+    const titleWords = splitMeaningfulWords(spotifyTitle);
+    const titleHits = titleWords.filter((word) => candidateTitle.includes(word)).length;
+    const titleCoverage = titleWords.length ? (titleHits / titleWords.length) : 0;
+
+    const artistWords = splitMeaningfulWords(spotifyAuthor).slice(0, 5);
+    const artistHits = artistWords.filter(
+        (word) => candidateAuthor.includes(word) || candidateTitle.includes(word)
+    ).length;
+
+    let score = 0;
+    score += titleCoverage * 110;
+    score += artistHits * 18;
+
+    if (candidateTitle.includes(spotifyTitle) || spotifyTitle.includes(candidateTitle)) {
+        score += 35;
+    }
+
+    if (artistWords.length > 0 && artistHits === 0) {
+        score -= 70;
+    }
+
+    if (!durationMatches(spotifyTrack?.info?.length, candidate?.info?.length)) {
+        score -= 65;
+    }
+
+    const candidateTitleLower = (candidate?.info?.title || '').toLowerCase();
+    const spotifyTitleLower = (spotifyTrack?.info?.title || '').toLowerCase();
+
+    if (hasAny(candidateTitleLower, ALT_VERSION_KEYWORDS) && !hasAny(spotifyTitleLower, ALT_VERSION_KEYWORDS)) {
+        score -= 35;
+    }
+
+    if (
+        candidateTitleLower.includes('official') ||
+        candidateTitleLower.includes('audio') ||
+        candidateAuthor.includes('topic')
+    ) {
+        score += 10;
+    }
+
+    return score;
+}
+
+function pickSpotifyMappedTrack(spotifyTrack, candidates) {
+    if (!spotifyTrack || !Array.isArray(candidates) || candidates.length === 0) return null;
+
+    const scored = candidates
+        .map((track) => ({ track, score: scoreSpotifyCandidate(spotifyTrack, track) }))
+        .filter((item) => Number.isFinite(item.score))
+        .sort((a, b) => b.score - a.score);
+
+    if (scored.length === 0) return null;
+
+    const best = scored[0];
+    return best.track;
+}
+
 async function resolveSafe(client, options) {
     try {
         return await client.riffy.resolve(options);
@@ -208,24 +287,48 @@ async function resolveWithFallback(client, query, requester) {
 
     if (SPOTIFY_TRACK_REGEX.test(query)) {
         const spotifyResolve = await resolveSafe(client, { query, requester });
+        const spotifyTrack = spotifyResolve?.tracks?.[0] || null;
 
-        if (spotifyResolve?.tracks?.length) {
-            const spotifyTrack = spotifyResolve.tracks[0];
-            const mappedQuery = [spotifyTrack.info?.title, spotifyTrack.info?.author]
+        if (spotifyTrack) {
+            const mappedQuery = [spotifyTrack.info?.title, spotifyTrack.info?.author, 'official audio']
                 .filter(Boolean)
-                .join(' - ')
+                .join(' ')
                 .trim();
 
             if (mappedQuery) {
-                const ytResolve = await resolveSafe(client, {
-                    query: mappedQuery,
-                    source: 'ytsearch',
-                    requester
-                });
+                rankingQuery = mappedQuery;
+                const mappedCandidates = [];
+                const seen = new Set();
 
-                if (ytResolve?.tracks?.length) {
-                    rankingQuery = mappedQuery;
-                    resolve = ytResolve;
+                for (const source of SEARCH_SOURCES) {
+                    const sourceResolve = await resolveSafe(client, {
+                        query: mappedQuery,
+                        source,
+                        requester
+                    });
+
+                    if (!resolve && sourceResolve?.tracks?.length) {
+                        resolve = sourceResolve;
+                    }
+
+                    if (!sourceResolve?.tracks?.length) continue;
+
+                    for (const track of sourceResolve.tracks.slice(0, 10)) {
+                        const fp = getTrackFingerprint(track);
+                        if (!fp || seen.has(fp)) continue;
+                        seen.add(fp);
+                        mappedCandidates.push(track);
+                    }
+                }
+
+                const bestMappedTrack = pickSpotifyMappedTrack(spotifyTrack, mappedCandidates);
+                if (bestMappedTrack) {
+                    resolve = {
+                        loadType: 'track',
+                        tracks: [bestMappedTrack],
+                        playlistInfo: null,
+                        pluginInfo: {}
+                    };
                 }
             }
         }
@@ -410,7 +513,7 @@ module.exports = {
             let selectedTrack = null;
             if (inputIsUrl) {
                 if (spotifyTrackLink) {
-                    selectedTrack = pickBestTrack(tracks, rankingQuery) || tracks[0];
+                    selectedTrack = tracks[0];
                 } else {
                     selectedTrack = tracks[0];
                 }
