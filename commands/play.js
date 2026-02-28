@@ -27,6 +27,29 @@ const ALT_VERSION_KEYWORDS = [
     'remix'
 ];
 
+function pickArtwork(info = {}) {
+    return info.thumbnail || info.artworkUrl || info.image || '';
+}
+
+function attachSpotifyMetadata(targetTrack, spotifyTrack, fallbackUri = '') {
+    if (!targetTrack || !targetTrack.info) return;
+
+    const spotifyInfo = spotifyTrack && spotifyTrack.info ? spotifyTrack.info : {};
+    const originalUri = String(spotifyInfo.uri || fallbackUri || '').trim();
+    const originalTitle = String(spotifyInfo.title || '').trim();
+    const originalAuthor = String(spotifyInfo.author || '').trim();
+    const originalThumbnail = String(pickArtwork(spotifyInfo) || '').trim();
+
+    targetTrack.info = {
+        ...targetTrack.info,
+        originalUri: originalUri || targetTrack.info.originalUri || '',
+        originalTitle: originalTitle || targetTrack.info.originalTitle || '',
+        originalAuthor: originalAuthor || targetTrack.info.originalAuthor || '',
+        originalThumbnail: originalThumbnail || targetTrack.info.originalThumbnail || '',
+        originalSourceName: 'spotify'
+    };
+}
+
 function clean(str = '') {
     return str
         .toLowerCase()
@@ -304,10 +327,7 @@ async function resolveWithFallback(client, query, requester) {
 
                 const best = pickSpotifyMappedTrack(spotifyTrack, candidates);
                 if (best) {
-                    best.info = {
-                        ...best.info,
-                        originalUri: query
-                    };
+                    attachSpotifyMetadata(best, spotifyTrack, query);
                     resolve = {
                         loadType: 'track',
                         tracks: [best],
@@ -315,10 +335,10 @@ async function resolveWithFallback(client, query, requester) {
                         pluginInfo: {}
                     };
                 } else if (spotifyTrack?.info) {
-                    spotifyTrack.info.originalUri = query;
+                    attachSpotifyMetadata(spotifyTrack, spotifyTrack, query);
                 }
             } else if (spotifyTrack?.info) {
-                spotifyTrack.info.originalUri = query;
+                attachSpotifyMetadata(spotifyTrack, spotifyTrack, query);
             }
         }
     } else if (isURL(query)) {
@@ -525,7 +545,8 @@ module.exports = {
 
             selectedTrack.info.requester = message.author;
             if (SPOTIFY_TRACK_REGEX.test(query)) {
-                selectedTrack.info.originalUri = query;
+                selectedTrack.info.originalUri = selectedTrack.info.originalUri || query;
+                selectedTrack.info.originalSourceName = selectedTrack.info.originalSourceName || 'spotify';
             }
             const queuePosition = player.queue.length + 1;
             const shouldStartNow = !player.playing && !player.paused;

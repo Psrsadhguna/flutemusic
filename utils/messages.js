@@ -133,6 +133,61 @@ function getTrackUrl(track) {
     return String(track.info.uri || '').trim();
 }
 
+function getTrackTitle(track) {
+    if (!track || !track.info) return 'Unknown';
+    const preferred = String(track.info.originalTitle || '').trim();
+    if (preferred) return preferred;
+    const fallback = String(track.info.title || '').trim();
+    return fallback || 'Unknown';
+}
+
+function isSpotifyOriginal(track) {
+    const originalUri = String(track?.info?.originalUri || '').toLowerCase();
+    return originalUri.includes('spotify.com/');
+}
+
+function getTrackSourceLabel(track) {
+    if (!track || !track.info) return 'Unknown';
+    if (isSpotifyOriginal(track)) return 'spotify';
+
+    const preferred = String(track.info.originalSourceName || '').trim();
+    if (preferred) return preferred;
+
+    const fallback = String(track.info.sourceName || '').trim();
+    return fallback || 'Unknown';
+}
+
+function getTrackThumbnail(track) {
+    if (!track || !track.info) return '';
+
+    const preferred = String(track.info.originalThumbnail || '').trim();
+    if (preferred) return preferred;
+
+    const direct = String(track.info.thumbnail || track.info.artworkUrl || track.info.image || '').trim();
+    if (direct) return direct;
+
+    const uri = String(track.info.uri || '').trim();
+    if (!uri) return '';
+
+    try {
+        let videoId = '';
+
+        if (uri.includes('v=')) {
+            videoId = uri.split('v=')[1]?.substring(0, 11) || '';
+        } else if (uri.includes('youtu.be/')) {
+            videoId = uri.split('youtu.be/')[1]?.substring(0, 11) || '';
+        }
+
+        if (videoId) {
+            return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        }
+    } catch {
+        return '';
+    }
+
+    return '';
+}
+
 // Update the existing now-playing message for a player (if one exists)
 async function updateNowPlaying(client, player) {
     try {
@@ -254,8 +309,7 @@ const buildEmbed = (position, currentTrack) => {
             (trackToUse.requestedBy?.tag) ||
             "Unknown";
 
-        const trackTitle =
-            (trackToUse.info.title || "Unknown").substring(0, 256);
+        const trackTitle = getTrackTitle(trackToUse).substring(0, 256);
 
         const trackUrl = getTrackUrl(trackToUse);
 
@@ -273,8 +327,7 @@ const buildEmbed = (position, currentTrack) => {
                 ? formatDuration(position)
                 : "0:00";
 
-        const source =
-            (trackToUse.info.sourceName || "Unknown");
+        const source = getTrackSourceLabel(trackToUse);
         const autoplayEnabled = Boolean(
             player &&
             global.stats &&
@@ -319,37 +372,8 @@ const buildEmbed = (position, currentTrack) => {
         }
         embed.setDescription(description);
 
-        // ======================
-        // Thumbnail logic (keep)
-        // ======================
-
-        let thumbnail = null;
-
-        if (trackToUse.info.thumbnail)
-            thumbnail = trackToUse.info.thumbnail;
-        else if (trackToUse.info.artworkUrl)
-            thumbnail = trackToUse.info.artworkUrl;
-        else if (trackToUse.info.image)
-            thumbnail = trackToUse.info.image;
-
-        if (!thumbnail && trackToUse.info.uri) {
-            try {
-                const uri = trackToUse.info.uri;
-                let videoId = null;
-
-                if (uri.includes("v="))
-                    videoId = uri.split("v=")[1]?.substring(0, 11);
-                else if (uri.includes("youtu.be/"))
-                    videoId = uri.split("youtu.be/")[1]?.substring(0, 11);
-
-                if (videoId)
-                    thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-
-            } catch {}
-        }
-
-        if (thumbnail)
-            embed.setThumbnail(thumbnail);
+        const thumbnail = getTrackThumbnail(trackToUse);
+        if (thumbnail) embed.setThumbnail(thumbnail);
 
         // remove author + extra fields for a cleaner UI
 
@@ -361,8 +385,8 @@ const buildEmbed = (position, currentTrack) => {
                             const upNext = [];
                             for (let i = 0; i < Math.min(3, player.queue.length); i++) {
                                 const t = player.queue[i];
-                                if (t && t.info && t.info.title) {
-                                    const title = t.info.title.substring(0, 40);
+                                if (t && t.info) {
+                                    const title = getTrackTitle(t).substring(0, 40);
                                     upNext.push(`- ${title}`);
                                 }
                             }
@@ -533,11 +557,12 @@ const buildEmbed = (position, currentTrack) => {
             const embed = new EmbedBuilder()
                 .setColor('#00FF00')
                 .setTitle(`${emojis.success} Added to Queue`)
-                .setDescription(`**${track.info.title || 'Unknown'}**`)
+                .setDescription(`**${getTrackTitle(track)}**`)
                 .setTimestamp();
 
-            if (track.info.thumbnail) {
-                try { embed.setThumbnail(track.info.thumbnail); } catch (e) {}
+            const trackThumb = getTrackThumbnail(track);
+            if (trackThumb) {
+                try { embed.setThumbnail(trackThumb); } catch (e) {}
             }
 
             embed.addFields([
@@ -563,7 +588,7 @@ const buildEmbed = (position, currentTrack) => {
             }
             return sent;
         } catch (e) {
-            return channel.send({ content: `Added to queue: ${track.info.title || 'Unknown'}` }).catch(() => {});
+            return channel.send({ content: `Added to queue: ${getTrackTitle(track)}` }).catch(() => {});
         }
     },
 
@@ -583,10 +608,11 @@ const buildEmbed = (position, currentTrack) => {
 
         if (currentTrack) {
             const nowUrl = getTrackUrl(currentTrack);
-            description = `**Now Playing:**\n[${currentTrack.info.title}](${nowUrl})\nDuration: ${getDurationString(currentTrack)}\n\n`;
+            description = `**Now Playing:**\n[${getTrackTitle(currentTrack)}](${nowUrl})\nDuration: ${getDurationString(currentTrack)}\n\n`;
 
-            if (currentTrack.info.thumbnail) {
-                embed.setThumbnail(currentTrack.info.thumbnail);
+            const currentThumb = getTrackThumbnail(currentTrack);
+            if (currentThumb) {
+                embed.setThumbnail(currentThumb);
             }
         }
 
@@ -600,7 +626,7 @@ const buildEmbed = (position, currentTrack) => {
             
             const tracksList = paginatedQueue.map((track, i) => {
                 const trackNumber = startIndex + i + 1;
-                return `\`${trackNumber.toString().padStart(2, '0')}\` [${track.info.title}](${getTrackUrl(track)}) ${getDurationString(track)}`;
+                return `\`${trackNumber.toString().padStart(2, '0')}\` [${getTrackTitle(track)}](${getTrackUrl(track)}) ${getDurationString(track)}`;
             }).join('\n');
 
             embed.setDescription(description);
@@ -657,7 +683,7 @@ const buildEmbed = (position, currentTrack) => {
             embed.addFields([
                 {
                     name: 'Current Track',
-                    value: `[${track.info.title}](${getTrackUrl(track)})`,
+                    value: `[${getTrackTitle(track)}](${getTrackUrl(track)})`,
                     inline: false
                 },
                 {
@@ -667,8 +693,9 @@ const buildEmbed = (position, currentTrack) => {
                 }
             ]);
 
-            if (track.info.thumbnail) {
-                embed.setThumbnail(track.info.thumbnail);
+            const statusThumb = getTrackThumbnail(track);
+            if (statusThumb) {
+                embed.setThumbnail(statusThumb);
             }
         }
 

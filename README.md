@@ -52,27 +52,6 @@ LAVALINK_SECURE=true
 SPOTIFY_CLIENT_ID=your_spotify_client_id
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 
-# Optional (web + owner)
-PORT=10000
-OWNER_ID=your_discord_user_id
-OWNERS=comma,separated,user_ids
-
-# Optional (Top.gg vote webhook + auto thank voters)
-TOPGG_TOKEN=your_topgg_webhook_authorization
-AUTO_THANK_VOTERS=true
-VOTE_THANK_CHANNEL_ID=your_discord_channel_id
-VOTE_THANK_GUILD_ID=your_discord_guild_id
-VOTE_REWARD_TOKENS=1
-VOTE_WEEKEND_REWARD_TOKENS=2
-VOTE_REWARD_COOLDOWN_MINUTES=30
-
-# Optional (auto translation captions)
-AUTO_TRANSLATION_CAPTIONS=true
-AUTO_CAPTION_TARGET_LANG=en
-AUTO_CAPTION_SOURCE_LANG=auto
-AUTO_CAPTION_TIMEOUT_MS=1500
-AUTO_CAPTION_CACHE_MINUTES=60
-
 
 ```
 
