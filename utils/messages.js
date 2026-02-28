@@ -1,4 +1,3 @@
-
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const emojis = require('../emojis.js');
 const config = require('../config.js');
@@ -276,6 +275,15 @@ const buildEmbed = (position, currentTrack) => {
 
         const source =
             (trackToUse.info.sourceName || "Unknown");
+        const autoplayEnabled = Boolean(
+            player &&
+            global.stats &&
+            global.stats.autoplayServers instanceof Set &&
+            global.stats.autoplayServers.has(player.guildId)
+        );
+        const autoplayMode = autoplayEnabled
+            ? String(global.stats?.autoplayModesByGuild?.[player.guildId] || "similar").toLowerCase()
+            : null;
 
         // clean description
         let description =
@@ -294,6 +302,10 @@ const buildEmbed = (position, currentTrack) => {
 **<a:users:1474075424765247780> Listener:** ${listenerName}\n
 **<a:Link:1476571707073630430> Source:** ${source}\n
 **<a:Duration:1476572013366874123> Duration:** ${durationText}`;
+
+        if (autoplayEnabled) {
+            description += `\n** <a:play:1475228960823705752> Autoplay added:** ON (${autoplayMode})`;
+        }
         embed.setDescription(description);
 
         // ======================
@@ -684,7 +696,7 @@ const buildEmbed = (position, currentTrack) => {
                 inline: false
             },
             {
-                name: 'Playlist Commands',
+                name: '<a:Queue:1474140240968024065>  Playlist Commands',
                 value: helpData.playlistCommands && helpData.playlistCommands.length > 0
                     ? helpData.playlistCommands.map(cmd => `\`${cmd}\``).join(' | ')
                     : 'Coming soon...',
@@ -734,4 +746,3 @@ const buildEmbed = (position, currentTrack) => {
     createButton: buttonUtils.createButton,
     createButtonRow: buttonUtils.createButtonRow
 };
-

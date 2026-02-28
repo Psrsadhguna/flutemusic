@@ -1,8 +1,14 @@
 {
-  "totalSongsPlayed": 501,
-  "totalPlaytime": 246012456,
-  "totalCommandsExecuted": 588,
+  "totalSongsPlayed": 510,
+  "totalPlaytime": 248052456,
+  "totalCommandsExecuted": 611,
   "twentyFourSevenServers": [],
+  "autoplayServers": [
+    "1367087087005990962"
+  ],
+  "autoplayModesByGuild": {
+    "1367087087005990962": "similar"
+  },
   "recentlyPlayed": [
     {
       "title": "Viral Vayyari ( From \"Junior\")",
@@ -163,6 +169,69 @@
       "requester": "744044949942829127",
       "timestamp": 1772106748015,
       "guildId": "1367087087005990962"
+    },
+    {
+      "title": "Yedhalo Oka Mounam (The Innocence of Love)",
+      "author": "Anirudh Ravichander",
+      "uri": "https://www.youtube.com/watch?v=PmFqM_XDB3Y",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772265151634
+    },
+    {
+      "title": "Daripontothundu (DJ Song)",
+      "author": "Mamidi Mounika",
+      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772265389800
+    },
+    {
+      "title": "Daripontothundu (DJ Song)",
+      "author": "Mamidi Mounika",
+      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772265447876
+    },
+    {
+      "title": "Daripontothundu (DJ Song)",
+      "author": "Mamidi Mounika - Topic",
+      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772265520565
+    },
+    {
+      "title": "Daripontothundu (DJ Song)",
+      "author": "Mamidi Mounika - Topic",
+      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772265649601
+    },
+    {
+      "title": "Shivaratri Paata",
+      "author": "Nallagonda Gaddaar",
+      "uri": "https://www.youtube.com/watch?v=4v03--WWfwc",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772265885048
+    },
+    {
+      "title": "O Na Ramayya",
+      "author": "Nalgonda Gaddar Narsanna",
+      "uri": "https://www.youtube.com/watch?v=3UqGZqeJxfA",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772265910596
+    },
+    {
+      "title": "Shivaratri Paata",
+      "author": "Nallagonda Gaddaar",
+      "uri": "https://www.youtube.com/watch?v=4v03--WWfwc",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772266024853
+    },
+    {
+      "title": "O Na Ramayya",
+      "author": "Nalgonda Gaddar Narsanna",
+      "uri": "https://www.youtube.com/watch?v=3UqGZqeJxfA",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772266290212
     }
   ],
   "errorCount": 4,
@@ -171,7 +240,7 @@
     "1469974428908654818": 71,
     "1475011449834176543": 266,
     "1475911093330251990": 77,
-    "1367087087005990962": 35
+    "1367087087005990962": 44
   },
   "topArtists": {
     "AKASA": 3,
@@ -185,7 +254,7 @@
     "Palm Tree Lounge": 1,
     "Ruhaan Arshad": 1,
     "Javed-Mohsin": 1,
-    "Anirudh Ravichander": 5,
+    "Anirudh Ravichander": 6,
     "Shilpa Rao": 1,
     "Vengaboys": 4,
     "Ramu Rathod": 1,
@@ -274,7 +343,11 @@
     "Dilip Devgan - Topic": 1,
     "Swami": 1,
     "Sai Abhyankkar": 7,
-    "Brown Editz": 4
+    "Brown Editz": 4,
+    "Mamidi Mounika": 2,
+    "Mamidi Mounika - Topic": 2,
+    "Nallagonda Gaddaar": 2,
+    "Nalgonda Gaddar Narsanna": 2
   },
   "commandErrors": [
     {
@@ -306,5 +379,5 @@
       "timestamp": 1771801007273
     }
   ],
-  "lastUpdated": "2026-02-27T14:45:23.629Z"
+  "lastUpdated": "2026-02-28T08:13:02.933Z"
 }

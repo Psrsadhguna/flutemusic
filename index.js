@@ -37,6 +37,7 @@ const stats = {
     totalCommandsExecuted: 0,
     twentyFourSevenServers: new Set(),
     autoplayServers: new Set(),
+    autoplayModesByGuild: {}, // { guildId: "similar" | "artist" | "random" }
     recentlyPlayed: [], // Last 20 songs
     errorCount: 0,
     guildActivity: {}, // {guildId: songCount}
@@ -58,6 +59,8 @@ const SPAM_TEMP_BLOCK_MS = 15000;
 const commandCooldowns = new Map(); // `${userId}:${commandName}` -> expiresAt
 const userCommandWindows = new Map(); // userId -> [timestamps]
 const temporarilyBlockedUsers = new Map(); // userId -> unblockAt
+
+const AUTOPLAY_MODES = new Set(["similar", "artist", "random"]);
 
 function isOwnerUser(userId) {
     if (!userId) return false;
@@ -124,6 +127,18 @@ function normalizeTrackText(value) {
         .replace(/[^a-z0-9]+/g, " ")
         .replace(/\s+/g, " ")
         .trim();
+}
+
+function sanitizeAutoplayMode(value) {
+    const mode = String(value || "").trim().toLowerCase();
+    return AUTOPLAY_MODES.has(mode) ? mode : "similar";
+}
+
+function getGuildAutoplayMode(guildId) {
+    if (!stats.autoplayModesByGuild || typeof stats.autoplayModesByGuild !== "object") {
+        stats.autoplayModesByGuild = {};
+    }
+    return sanitizeAutoplayMode(stats.autoplayModesByGuild[guildId]);
 }
 
 function getTrackMetaKey(track) {
@@ -255,7 +270,7 @@ function recordUserHistory(track) {
     userData[requesterId].history = history;
 }
 
-async function resolveAutoplayTrack(client, player, seedTrack) {
+async function resolveAutoplayTrack(client, player, seedTrack, mode = "similar") {
     if (!seedTrack || !seedTrack.info) return null;
 
     const title = String(seedTrack.info.title || "").trim();
@@ -264,12 +279,37 @@ async function resolveAutoplayTrack(client, player, seedTrack) {
     if (!title) return null;
 
     const requester = seedTrack.info.requester || client.user;
+    const autoplayMode = sanitizeAutoplayMode(mode);
+    const randomPool = [
+        "top global hits",
+        "viral songs mix",
+        "trending music playlist",
+        "new songs this week",
+        "top pop tracks",
+        "top indie tracks",
+        "best chill songs",
+        "best workout songs"
+    ];
 
-    const queries = [
-        [author, "popular songs"].filter(Boolean).join(" ").trim(),
-        [author, "hits"].filter(Boolean).join(" ").trim(),
-        [title, "similar songs"].filter(Boolean).join(" ").trim()
-    ].filter((q) => q.length > 0);
+    // Shuffle a copy and take 3 queries for random mode.
+    const shuffledPool = [...randomPool].sort(() => Math.random() - 0.5).slice(0, 3);
+    let queries = [];
+    if (autoplayMode === "artist") {
+        queries = [
+            [author, "popular songs"].filter(Boolean).join(" ").trim(),
+            [author, "hits"].filter(Boolean).join(" ").trim(),
+            [author, "best songs"].filter(Boolean).join(" ").trim()
+        ];
+    } else if (autoplayMode === "random") {
+        queries = shuffledPool;
+    } else {
+        queries = [
+            [title, author, "similar songs"].filter(Boolean).join(" ").trim(),
+            [title, author, "related songs"].filter(Boolean).join(" ").trim(),
+            [title, author].filter(Boolean).join(" ").trim()
+        ];
+    }
+    queries = queries.filter((q) => q.length > 0);
 
     const sources = ["ytmsearch", "ytsearch"];
     const resolvedTracks = [];
@@ -333,6 +373,7 @@ const advancedPremiumCommands = new Set([
     "party",
     "pop",
     "radio",
+    "slowedreverb",
     "slowmode",
     "soft",
     "telephone",
@@ -357,6 +398,12 @@ async function loadStats() {
             stats.totalCommandsExecuted = data.totalCommandsExecuted || 0;
             stats.twentyFourSevenServers = new Set(data.twentyFourSevenServers || []);
             stats.autoplayServers = new Set(data.autoplayServers || []);
+            const rawAutoplayModes = data.autoplayModesByGuild || {};
+            const sanitizedAutoplayModes = {};
+            for (const [guildId, mode] of Object.entries(rawAutoplayModes)) {
+                sanitizedAutoplayModes[guildId] = sanitizeAutoplayMode(mode);
+            }
+            stats.autoplayModesByGuild = sanitizedAutoplayModes;
             stats.recentlyPlayed = data.recentlyPlayed || [];
             stats.errorCount = data.errorCount || 0;
             stats.guildActivity = data.guildActivity || {};
@@ -389,6 +436,7 @@ async function saveStats() {
             totalCommandsExecuted: stats.totalCommandsExecuted,
             twentyFourSevenServers: Array.from(stats.twentyFourSevenServers),
             autoplayServers: Array.from(stats.autoplayServers || []),
+            autoplayModesByGuild: stats.autoplayModesByGuild || {},
             recentlyPlayed: stats.recentlyPlayed,
             errorCount: stats.errorCount,
             guildActivity: stats.guildActivity,
@@ -1103,25 +1151,17 @@ client.riffy.on("queueEnd", async (player) => {
         if (autoplayEnabled) {
             const guildHistory = songHistory[player.guildId] || [];
             const seedTrack = guildHistory[guildHistory.length - 1] || null;
+            const autoplayMode = getGuildAutoplayMode(player.guildId);
 
             if (seedTrack) {
                 try {
-                    const nextTrack = await resolveAutoplayTrack(client, player, seedTrack);
+                    const nextTrack = await resolveAutoplayTrack(client, player, seedTrack, autoplayMode);
                     if (nextTrack) {
                         nextTrack.info.requester = seedTrack.info.requester || client.user;
                         player.queue.add(nextTrack);
                         await player.play();
 
-                        if (player.textChannel) {
-                            const textChannel = client.channels.cache.get(player.textChannel);
-                            if (textChannel) {
-                                textChannel.send(
-                                    `Autoplay added: **${nextTrack.info.title}** by **${nextTrack.info.author}**`
-                                ).catch(() => {});
-                            }
-                        }
-
-                        console.log(`Autoplay started in guild ${player.guildId}`);
+                        console.log(`Autoplay (${autoplayMode}) started in guild ${player.guildId}`);
                         return;
                     }
                 } catch (autoplayError) {

@@ -6,8 +6,26 @@ const CATEGORY_MAP = {
     music: ['247', 'autoplay', 'clear', 'clearqueue', 'loop', 'move', 'nowplaying', 'pause', 'play', 'previous', 'queue', 'remove', 'replay', 'resume', 'seek', 'shuffle', 'skip', 'stop', 'volume'],
     playlist: ['deleteplaylist', 'loadplaylist', 'myplaylists', 'saveplaylist'],
     user: ['campaign', 'favorite', 'history', 'refer', 'topac', 'trial'],
-    filter: ['8d', 'chipmunkfilter', 'clearfilters', 'daycore', 'darthvader', 'doubletime', 'equalizer', 'karaoke', 'nightcore', 'pop', 'slowmode', 'soft', 'treblebass', 'tremolo', 'vaporwave', 'vibrato'],
+    filter: ['8d', 'chipmunkfilter', 'clearfilters', 'daycore', 'darthvader', 'doubletime', 'equalizer', 'karaoke', 'nightcore', 'pop', 'slowedreverb', 'slowmode', 'soft', 'treblebass', 'tremolo', 'vaporwave', 'vibrato'],
     effect: ['cinema', 'cleareffects', 'echo', 'earrape', 'lofi', 'party', 'radio', 'telephone', 'underwater', 'vocalboost']
+};
+
+const COMMAND_HELP_NOTES = {
+    autoplay: [
+        'Modes:',
+        '- `similar`: similar/related songs',
+        '- `artist`: same artist hits',
+        '- `random`: random discovery tracks',
+        'Examples:',
+        '- `fautoplay similar`',
+        '- `fautoplay artist`',
+        '- `fautoplay random`',
+        '- `fautoplay status`'
+    ],
+    slowedreverb: [
+        'Example:',
+        '- `fslowedreverb` (toggle ON/OFF)'
+    ]
 };
 
 function pickCommands(orderedNames, existingSet, usedSet) {
@@ -21,6 +39,17 @@ function pickCommands(orderedNames, existingSet, usedSet) {
     }
 
     return picked;
+}
+
+function formatUsage(prefix, cmd) {
+    const raw = String(cmd.usage || cmd.name || '').trim();
+    if (!raw) return `Usage: \`${prefix}${cmd.name}\``;
+
+    if (raw.toLowerCase().startsWith(prefix.toLowerCase())) {
+        return `Usage: \`${raw}\``;
+    }
+
+    return `Usage: \`${prefix}${raw}\``;
 }
 
 module.exports = {
@@ -39,9 +68,27 @@ module.exports = {
 
             const title = `Command: ${prefix}${cmd.name}`;
             const description = cmd.description || 'No description available.';
-            const usage = cmd.usage ? `Usage: \`${prefix}${cmd.usage}\`` : `Usage: \`${prefix}${cmd.name}\``;
+            const usage = formatUsage(prefix, cmd);
+            const aliases = Array.isArray(cmd.aliases) && cmd.aliases.length
+                ? `Aliases: ${cmd.aliases.map((alias) => `\`${prefix}${alias}\``).join(', ')}`
+                : null;
+            const notes = COMMAND_HELP_NOTES[cmd.name] || [];
 
-            return messages.info(message.channel, title, `${description}\n\n${usage}`);
+            const details = [
+                description,
+                '',
+                usage
+            ];
+
+            if (aliases) {
+                details.push(aliases);
+            }
+
+            if (notes.length) {
+                details.push('', ...notes);
+            }
+
+            return messages.info(message.channel, title, details.join('\n'));
         }
 
         const existingCommands = new Set(client.commands.keys());
