@@ -2,10 +2,10 @@ const messages = require('../utils/messages.js');
 const config = require('../config.js');
 
 const CATEGORY_MAP = {
-    normal: ['botinfo', 'feedback', 'help', 'invite', 'ping', 'premium', 'servers', 'uptime'],
-    music: ['247', 'clear', 'clearqueue', 'loop', 'move', 'nowplaying', 'pause', 'play', 'queue', 'remove', 'replay', 'resume', 'seek', 'shuffle', 'skip', 'stop', 'volume'],
+    normal: ['botinfo', 'feedback', 'help', 'invite', 'ping', 'premium', 'report', 'servers', 'status', 'uptime'],
+    music: ['247', 'autoplay', 'clear', 'clearqueue', 'loop', 'move', 'nowplaying', 'pause', 'play', 'previous', 'queue', 'remove', 'replay', 'resume', 'seek', 'shuffle', 'skip', 'stop', 'volume'],
     playlist: ['deleteplaylist', 'loadplaylist', 'myplaylists', 'saveplaylist'],
-    user: ['favorite', 'history', 'topac'],
+    user: ['campaign', 'favorite', 'history', 'refer', 'topac', 'trial'],
     filter: ['8d', 'chipmunkfilter', 'clearfilters', 'daycore', 'darthvader', 'doubletime', 'equalizer', 'karaoke', 'nightcore', 'pop', 'slowmode', 'soft', 'treblebass', 'tremolo', 'vaporwave', 'vibrato'],
     effect: ['cinema', 'cleareffects', 'echo', 'earrape', 'lofi', 'party', 'radio', 'telephone', 'underwater', 'vocalboost']
 };

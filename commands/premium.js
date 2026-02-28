@@ -3,6 +3,7 @@ const paymentUtils = require("../utils/paymentUtils");
 const { getPlan } = require("../utils/premiumPlans");
 
 function formatPlanName(planKey) {
+  if (planKey === "trial") return "Trial";
   return getPlan(planKey).label;
 }
 
@@ -57,10 +58,10 @@ module.exports = {
         {
           name: "Unlocked Features",
           value:
-            "- 50+ Audio Filters\n" +
-            "- Advanced Effects\n" +
-            "- Premium Audio Quality\n" +
-            "- Priority Support"
+            "- Advanced filter/effects pack\n" +
+            "- 24/7 voice stay mode\n" +
+            "- Up to 20 saved playlists\n" +
+            "- Priority support"
         }
       );
     } else {

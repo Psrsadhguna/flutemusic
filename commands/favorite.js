@@ -3,7 +3,7 @@ const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'favorite',
-    aliases: ['fav', 'favourite'],
+    aliases: ['fav', 'favorites', 'favourite'],
     description: 'Add or remove songs from your favorites, view your favorites, and play them',
     usage: 'ffavorite [add/remove/list/play <number>]',
     execute: async (message, args, client) => {

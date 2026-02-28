@@ -36,6 +36,7 @@ const stats = {
     totalPlaytime: 0,
     totalCommandsExecuted: 0,
     twentyFourSevenServers: new Set(),
+    autoplayServers: new Set(),
     recentlyPlayed: [], // Last 20 songs
     errorCount: 0,
     guildActivity: {}, // {guildId: songCount}
@@ -48,11 +49,227 @@ const userData = {}; // {userId: {favorites: [], history: []}}
 
 // Track song history per guild for Previous button (stack of played songs)
 const songHistory = {}; // {guildId: [track1, track2, ...]}
+
+const COMMAND_DEFAULT_COOLDOWN_MS = 2000;
+const SPAM_WINDOW_MS = 10000;
+const SPAM_MAX_COMMANDS = 8;
+const SPAM_TEMP_BLOCK_MS = 15000;
+
+const commandCooldowns = new Map(); // `${userId}:${commandName}` -> expiresAt
+const userCommandWindows = new Map(); // userId -> [timestamps]
+const temporarilyBlockedUsers = new Map(); // userId -> unblockAt
+
+function isOwnerUser(userId) {
+    if (!userId) return false;
+
+    if (config.ownerID && String(config.ownerID) === String(userId)) {
+        return true;
+    }
+
+    if (Array.isArray(config.owners) && config.owners.map(String).includes(String(userId))) {
+        return true;
+    }
+
+    return false;
+}
+
+function isUserRateLimited(userId, nowMs = Date.now()) {
+    const blockedUntil = temporarilyBlockedUsers.get(userId) || 0;
+    if (blockedUntil > nowMs) {
+        return { blocked: true, retryAfterMs: blockedUntil - nowMs };
+    }
+
+    if (blockedUntil > 0 && blockedUntil <= nowMs) {
+        temporarilyBlockedUsers.delete(userId);
+    }
+
+    const windowStart = nowMs - SPAM_WINDOW_MS;
+    const previous = userCommandWindows.get(userId) || [];
+    const next = previous.filter((ts) => ts > windowStart);
+    next.push(nowMs);
+    userCommandWindows.set(userId, next);
+
+    if (next.length > SPAM_MAX_COMMANDS) {
+        const unblockAt = nowMs + SPAM_TEMP_BLOCK_MS;
+        temporarilyBlockedUsers.set(userId, unblockAt);
+        return { blocked: true, retryAfterMs: SPAM_TEMP_BLOCK_MS };
+    }
+
+    return { blocked: false, retryAfterMs: 0 };
+}
+
+function getTrackFingerprint(track) {
+    if (!track || !track.info) return "";
+
+    const identifier = String(track.info.identifier || "").trim().toLowerCase();
+    if (identifier) return `id:${identifier}`;
+
+    const uri = String(track.info.uri || "").trim().toLowerCase();
+    if (uri) return `uri:${uri}`;
+
+    const title = String(track.info.title || "").trim().toLowerCase();
+    const author = String(track.info.author || "").trim().toLowerCase();
+    return `meta:${title}:${author}`;
+}
+
+function sameTrack(a, b) {
+    return getTrackFingerprint(a) !== "" && getTrackFingerprint(a) === getTrackFingerprint(b);
+}
+
+function cloneTrackSnapshot(track) {
+    if (!track || !track.info) return null;
+
+    return {
+        ...track,
+        info: {
+            ...track.info,
+            requester: track.info.requester || null
+        }
+    };
+}
+
+function pushGuildSongHistory(guildId, track) {
+    const snapshot = cloneTrackSnapshot(track);
+    if (!snapshot) return;
+
+    if (!songHistory[guildId]) {
+        songHistory[guildId] = [];
+    }
+
+    const history = songHistory[guildId];
+    history.push(snapshot);
+
+    if (history.length > 30) {
+        history.splice(0, history.length - 30);
+    }
+}
+
+function recordTrackAnalytics(guildId, track) {
+    if (!track || !track.info) return;
+
+    stats.totalSongsPlayed += 1;
+    stats.totalPlaytime += Number(track.info.length) || 0;
+    stats.guildActivity[guildId] = (stats.guildActivity[guildId] || 0) + 1;
+
+    const artistName = String(track.info.author || "Unknown").trim();
+    if (artistName) {
+        stats.topArtists[artistName] = (stats.topArtists[artistName] || 0) + 1;
+    }
+
+    stats.recentlyPlayed.push({
+        title: track.info.title || "Unknown",
+        author: track.info.author || "Unknown",
+        uri: track.info.uri || "",
+        guildId,
+        timestamp: Date.now()
+    });
+
+    if (stats.recentlyPlayed.length > 200) {
+        stats.recentlyPlayed.splice(0, stats.recentlyPlayed.length - 200);
+    }
+}
+
+function recordUserHistory(track) {
+    if (!track || !track.info) return;
+    const requesterId = track.info.requester?.id;
+    if (!requesterId) return;
+
+    if (!userData[requesterId]) {
+        userData[requesterId] = { favorites: [], history: [] };
+    }
+
+    const history = userData[requesterId].history || [];
+    history.unshift({
+        title: track.info.title || "Unknown",
+        author: track.info.author || "Unknown",
+        uri: track.info.uri || "",
+        duration: Number(track.info.length) || 0,
+        timestamp: Date.now()
+    });
+
+    if (history.length > 100) {
+        history.splice(100);
+    }
+
+    userData[requesterId].history = history;
+}
+
+async function resolveAutoplayTrack(client, player, seedTrack) {
+    if (!seedTrack || !seedTrack.info) return null;
+
+    const title = String(seedTrack.info.title || "").trim();
+    const author = String(seedTrack.info.author || "").trim();
+
+    if (!title) return null;
+
+    const query = [title, author, "official audio"].filter(Boolean).join(" ").trim();
+    const requester = seedTrack.info.requester || client.user;
+
+    const sources = ["ytmsearch", "ytsearch"];
+    let resolvedTracks = [];
+
+    for (const source of sources) {
+        try {
+            const result = await client.riffy.resolve({ query, source, requester });
+            if (result?.tracks?.length) {
+                resolvedTracks = result.tracks;
+                break;
+            }
+        } catch (error) {
+            // Ignore a source failure and continue fallback.
+        }
+    }
+
+    if (!resolvedTracks.length) {
+        return null;
+    }
+
+    const seedFingerprint = getTrackFingerprint(seedTrack);
+    const current = player?.queue?.current || player?.current || player?.nowPlaying || null;
+
+    for (const candidate of resolvedTracks) {
+        const candidateFingerprint = getTrackFingerprint(candidate);
+        if (!candidateFingerprint) continue;
+        if (candidateFingerprint === seedFingerprint) continue;
+        if (current && sameTrack(candidate, current)) continue;
+        return candidate;
+    }
+
+    return null;
+}
 // Core playback/info commands should always remain freely accessible (no premium/vote lock).
 const coreFreeCommands = new Set([
     "help", "ping", "play", "pause", "resume", "skip", "stop", "queue",
     "nowplaying", "volume", "loop", "shuffle", "seek", "remove", "clearqueue",
-    "clear", "replay", "247"
+    "clear", "replay"
+]);
+
+const advancedPremiumCommands = new Set([
+    "247",
+    "8d",
+    "chipmunkfilter",
+    "cinema",
+    "daycore",
+    "darthvader",
+    "doubletime",
+    "earrape",
+    "echo",
+    "equalizer",
+    "karaoke",
+    "lofi",
+    "nightcore",
+    "party",
+    "pop",
+    "radio",
+    "slowmode",
+    "soft",
+    "telephone",
+    "treblebass",
+    "tremolo",
+    "underwater",
+    "vaporwave",
+    "vibrato",
+    "vocalboost"
 ]);
 
 const statsPath = path.join(__dirname, 'stats.json');
@@ -67,6 +284,7 @@ async function loadStats() {
             stats.totalPlaytime = data.totalPlaytime || 0;
             stats.totalCommandsExecuted = data.totalCommandsExecuted || 0;
             stats.twentyFourSevenServers = new Set(data.twentyFourSevenServers || []);
+            stats.autoplayServers = new Set(data.autoplayServers || []);
             stats.recentlyPlayed = data.recentlyPlayed || [];
             stats.errorCount = data.errorCount || 0;
             stats.guildActivity = data.guildActivity || {};
@@ -98,6 +316,7 @@ async function saveStats() {
             totalPlaytime: stats.totalPlaytime,
             totalCommandsExecuted: stats.totalCommandsExecuted,
             twentyFourSevenServers: Array.from(stats.twentyFourSevenServers),
+            autoplayServers: Array.from(stats.autoplayServers || []),
             recentlyPlayed: stats.recentlyPlayed,
             errorCount: stats.errorCount,
             guildActivity: stats.guildActivity,
@@ -148,6 +367,7 @@ Promise.all([loadStats(), loadUserData(), loadPlaylists()]).then(() => {
     console.log(`âœ… 24/7 mode cleared - ${stats.twentyFourSevenServers.size} servers now enabled`);
     global.stats = stats;
     global.userData = userData;
+    global.songHistory = songHistory;
 }).catch(err => console.error('Error loading data:', err));
 
 const client = new Client({
@@ -173,6 +393,10 @@ function loadCommands() {
             const filePath = path.join(commandsPath, file);
             const command = require(filePath);
             if (command.name) {
+                if (advancedPremiumCommands.has(command.name)) {
+                    command.premium = true;
+                }
+
                 // if premium enforcement is disabled, clean up any "(Premium Only)"
                 // text in the description so the help output doesn't look misleading.
                 if (!config.enforcePremium && typeof command.description === 'string') {
@@ -385,8 +609,10 @@ client.on("messageCreate", async (message) => {
     const matchedPrefix = prefixes.find(p => message.content.startsWith(p));
     if (!matchedPrefix) return;
 
-    const args = message.content.slice(matchedPrefix.length).trim().split(" ");
-    const commandName = args.shift().toLowerCase();
+    const args = message.content.slice(matchedPrefix.length).trim().split(" ").filter(Boolean);
+    const rawCommandName = args.shift();
+    if (!rawCommandName) return;
+    const commandName = rawCommandName.toLowerCase();
 
     // Check if user is in a voice channel for music commands
     // Note: queue and nowplaying are informational - they don't require voice channel
@@ -404,6 +630,41 @@ client.on("messageCreate", async (message) => {
     }
     if (!command) return;
 
+    const userId = message.author.id;
+    const ownerUser = isOwnerUser(userId);
+
+    if (!ownerUser) {
+        const rate = isUserRateLimited(userId);
+        if (rate.blocked) {
+            const retrySeconds = Math.max(1, Math.ceil(rate.retryAfterMs / 1000));
+            return messages.error(
+                message.channel,
+                `You are sending commands too fast. Try again in ${retrySeconds}s.`
+            );
+        }
+    }
+
+    const cooldownMsRaw = Number(command.cooldownMs);
+    const cooldownMs = Number.isFinite(cooldownMsRaw) && cooldownMsRaw >= 0
+        ? cooldownMsRaw
+        : COMMAND_DEFAULT_COOLDOWN_MS;
+
+    if (!ownerUser && cooldownMs > 0) {
+        const cooldownKey = `${userId}:${command.name}`;
+        const nowMs = Date.now();
+        const expiresAt = commandCooldowns.get(cooldownKey) || 0;
+
+        if (expiresAt > nowMs) {
+            const retrySeconds = Math.max(1, Math.ceil((expiresAt - nowMs) / 1000));
+            return messages.error(
+                message.channel,
+                `Wait ${retrySeconds}s before using \`${matchedPrefix}${command.name}\` again.`
+            );
+        }
+
+        commandCooldowns.set(cooldownKey, nowMs + cooldownMs);
+    }
+
     try {
         if (command.premium && !coreFreeCommands.has(command.name)) {
             const premiumAllowed = await requirePremium(message);
@@ -413,16 +674,21 @@ client.on("messageCreate", async (message) => {
         stats.totalCommandsExecuted++;
         await command.execute(message, args, client);
     } catch (error) {
+        const errorId = `ERR-${Date.now().toString(36).toUpperCase()}`;
         stats.errorCount++;
         stats.commandErrors.push({
+            errorId,
             command: commandName,
             error: error.message,
             userId: message.author.id,
             guildId: message.guild.id,
             timestamp: Date.now()
         });
-        console.error(error);
-        messages.error(message.channel, "An error occurred while executing that command!");
+        console.error(`[${errorId}]`, error);
+        messages.error(
+            message.channel,
+            `Something went wrong while running \`${commandName}\`. Report ID: \`${errorId}\` (use \`freport ${errorId} <details>\`).`
+        );
     }
 });
 
@@ -529,19 +795,40 @@ client.on('interactionCreate', async (interaction) => {
             }
             
             // Get the previous track (second to last, since last is current song)
-            const prevTrack = history[history.length - 2];
-            if (!prevTrack) {
+            const previousSnapshot = history[history.length - 2];
+            if (!previousSnapshot) {
                 return interaction.reply({ content: 'âŒ No previous track!', flags: 64 });
             }
-            
+
+            let trackToPlay = previousSnapshot;
+            if (!trackToPlay.track && !trackToPlay.encoded) {
+                const previousUri = previousSnapshot.info?.uri;
+                const previousTitle = previousSnapshot.info?.title || "Unknown";
+                const fallbackQuery = previousUri || `${previousSnapshot.info?.title || ""} ${previousSnapshot.info?.author || ""}`;
+
+                if (!fallbackQuery.trim()) {
+                    return interaction.reply({ content: 'âŒ Previous song metadata missing.', flags: 64 });
+                }
+
+                const resolved = await client.riffy.resolve({
+                    query: fallbackQuery,
+                    requester: interaction.user
+                }).catch(() => null);
+
+                trackToPlay = resolved?.tracks?.[0] || null;
+                if (!trackToPlay) {
+                    return interaction.reply({ content: `âŒ Could not load previous track: **${previousTitle}**`, flags: 64 });
+                }
+            }
+
             // Remove the previous track from history
             history.splice(history.length - 2, 1);
-            
+
             // Queue it and play
-            player.queue.unshift(prevTrack);
+            player.queue.unshift(trackToPlay);
             player.stop();
-            
-            await interaction.reply({ content: `â®ï¸ Playing previous: **${prevTrack.info.title}**`, flags: 64 });
+
+            await interaction.reply({ content: `â®ï¸ Playing previous: **${trackToPlay.info.title}**`, flags: 64 });
         } catch (err) {
             console.error('Previous error:', err);
             await interaction.reply({ content: 'âŒ Failed to play previous: ' + err.message, flags: 64 });
@@ -692,6 +979,12 @@ client.riffy.on("trackStart", async (player, track) => {
     try {
         await new Promise(r => setTimeout(r, 800));
 
+        pushGuildSongHistory(player.guildId, track);
+        recordTrackAnalytics(player.guildId, track);
+        recordUserHistory(track);
+        saveStats().catch(() => {});
+        saveUserData().catch(() => {});
+
         const vc = client.channels.cache.get(player.voiceChannel);
         if (!vc) return;
 
@@ -725,6 +1018,41 @@ client.riffy.on("queueEnd", async (player) => {
 
         await setVoiceStatus(vc, null);
         console.log("ðŸ§¹ Voice status cleared (queue ended)");
+
+        const autoplayEnabled = Boolean(
+            stats.autoplayServers &&
+            stats.autoplayServers.has(player.guildId)
+        );
+
+        if (autoplayEnabled) {
+            const guildHistory = songHistory[player.guildId] || [];
+            const seedTrack = guildHistory[guildHistory.length - 1] || null;
+
+            if (seedTrack) {
+                try {
+                    const nextTrack = await resolveAutoplayTrack(client, player, seedTrack);
+                    if (nextTrack) {
+                        nextTrack.info.requester = seedTrack.info.requester || client.user;
+                        player.queue.add(nextTrack);
+                        await player.play();
+
+                        if (player.textChannel) {
+                            const textChannel = client.channels.cache.get(player.textChannel);
+                            if (textChannel) {
+                                textChannel.send(
+                                    `ðŸ” Autoplay added: **${nextTrack.info.title}** by **${nextTrack.info.author}**`
+                                ).catch(() => {});
+                            }
+                        }
+
+                        console.log(`Autoplay started in guild ${player.guildId}`);
+                        return;
+                    }
+                } catch (autoplayError) {
+                    console.error("Autoplay resolve failed:", autoplayError.message);
+                }
+            }
+        }
 
         // Check if 24/7 mode is enabled
         if (!player.twentyFourSeven) {
@@ -1085,6 +1413,9 @@ async function shutdown() {
     console.log("ðŸ›‘ Shutting down bot properly...");
 
     try {
+        await saveStats().catch(() => {});
+        await saveUserData().catch(() => {});
+
         // âœ… Clear voice status in ALL guilds
         for (const guild of client.guilds.cache.values()) {
             const vc = guild.members.me?.voice?.channel;
@@ -1134,6 +1465,32 @@ client.once("clientReady", async () => {
     // Status rotator
     const statusInterval = statusRotator.initializeStatusRotator(client);
     activeIntervals.push(statusInterval);
+
+    const persistenceInterval = setInterval(() => {
+        const nowMs = Date.now();
+
+        for (const [key, expiresAt] of commandCooldowns.entries()) {
+            if (expiresAt <= nowMs) {
+                commandCooldowns.delete(key);
+            }
+        }
+
+        for (const [userId, unblockAt] of temporarilyBlockedUsers.entries()) {
+            if (unblockAt <= nowMs) {
+                temporarilyBlockedUsers.delete(userId);
+            }
+        }
+
+        for (const [userId, times] of userCommandWindows.entries()) {
+            const keep = times.filter((ts) => ts > (nowMs - SPAM_WINDOW_MS));
+            if (keep.length === 0) userCommandWindows.delete(userId);
+            else userCommandWindows.set(userId, keep);
+        }
+
+        saveStats().catch(() => {});
+        saveUserData().catch(() => {});
+    }, 60 * 1000);
+    activeIntervals.push(persistenceInterval);
 
     // Premium systems
     startPremiumExpiryChecker(client);

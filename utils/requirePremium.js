@@ -20,11 +20,12 @@ async function requirePremium(message) {
     .setTitle("Premium Feature")
     .setDescription(
       "This command is premium only.\n\n" +
+      "Core playback commands are always free.\n" +
       `Plans: ${weeklyPlan.label} INR ${weeklyPlan.amount / 100}, ` +
       `${monthlyPlan.label} INR ${monthlyPlan.amount / 100}.\n\n` +
       "Use `f premium` or open the premium website to buy access."
     )
-    .setFooter({ text: "Premium grants full filter and effects access" });
+    .setFooter({ text: "Premium unlocks advanced filters, 24/7 mode, and extra save slots" });
 
   await message.reply({ embeds: [embed] });
   return false;

@@ -4,7 +4,7 @@ const axios = require('axios');
 
 module.exports = {
     name: 'feedback',
-    aliases: ['bug'],
+    aliases: ['fb'],
     description: 'Send feedback or report a bug',
     usage: 'ffeedback <description>',
     execute: async (message, args, client) => {

@@ -1,5 +1,6 @@
 const messages = require('../utils/messages.js');
 const { EmbedBuilder } = require('discord.js');
+const paymentUtils = require('../utils/paymentUtils');
 
 module.exports = {
     name: 'saveplaylist',
@@ -39,6 +40,16 @@ module.exports = {
             if (!global.playlists) global.playlists = {};
             if (!global.playlists[message.author.id]) {
                 global.playlists[message.author.id] = {};
+            }
+            const existingCount = Object.keys(global.playlists[message.author.id]).length;
+            const userIsPremium = paymentUtils.isPremium(message.author.id);
+            const maxSlots = userIsPremium ? 20 : 2;
+
+            if (!userIsPremium && existingCount >= maxSlots && !global.playlists[message.author.id][playlistName]) {
+                return messages.error(
+                    message.channel,
+                    `Free users can save up to ${maxSlots} playlists. Use \`fpremium\` for more save slots.`
+                );
             }
 
             // Collect current track + queue

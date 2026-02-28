@@ -26,6 +26,14 @@ function getPaymentHistory(user) {
   return Array.isArray(user?.paymentHistory) ? user.paymentHistory : [];
 }
 
+function parsePositiveInt(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return parsed;
+}
+
 function findPaymentOwner(users, paymentId) {
   if (!paymentId) return null;
 
@@ -151,6 +159,70 @@ function addPremiumUser(userId, email, plan, paymentId, amount) {
 }
 
 /**
+ * Grant trial premium for a limited number of days.
+ * @param {string} userId
+ * @param {number} days
+ * @param {string} reason
+ */
+function grantTrialPremium(userId, days = 3, reason = 'trial') {
+  if (!userId) {
+    throw new Error('User ID is required');
+  }
+
+  const validDays = parsePositiveInt(days, 3);
+  const users = loadPremiumUsers();
+  const normalizedUserId = String(userId).trim();
+  const nowMs = Date.now();
+  const nowIso = new Date(nowMs).toISOString();
+
+  const existing = users[normalizedUserId] || {};
+
+  const hasActiveLifetime =
+    existing.plan === 'lifetime' &&
+    existing.isActive === true &&
+    !existing.expiresAt;
+
+  if (hasActiveLifetime) {
+    return existing;
+  }
+
+  const currentExpiryMs = parseIsoToMs(existing.expiresAt);
+  const baseMs = currentExpiryMs && currentExpiryMs > nowMs
+    ? currentExpiryMs
+    : nowMs;
+  const nextExpiryIso = new Date(baseMs + (validDays * 24 * 60 * 60 * 1000)).toISOString();
+
+  const nextHistory = getPaymentHistory(existing).slice(-199);
+  nextHistory.push({
+    paymentId: null,
+    plan: 'trial',
+    amount: 0,
+    purchasedAt: nowIso,
+    reason
+  });
+
+  users[normalizedUserId] = {
+    ...existing,
+    email: existing.email || '',
+    plan: 'trial',
+    paymentId: existing.paymentId || null,
+    amount: 0,
+    purchasedAt: nowIso,
+    expiresAt: nextExpiryIso,
+    isActive: true,
+    paymentHistory: nextHistory,
+    trial: {
+      days: validDays,
+      reason,
+      grantedAt: nowIso
+    }
+  };
+
+  savePremiumUsers(users);
+  return users[normalizedUserId];
+}
+
+/**
  * Check if user is premium
  * @param {string} userId - Discord User ID
  */
@@ -244,6 +316,7 @@ function getPremiumStats() {
   let weekly = 0;
   let monthly = 0;
   let lifetime = 0;
+  let trial = 0;
   let active = 0;
   let expired = 0;
   let totalRevenue = 0;
@@ -254,6 +327,7 @@ function getPremiumStats() {
     if (user.plan === 'weekly') weekly++;
     if (user.plan === 'monthly') monthly++;
     if (user.plan === 'lifetime') lifetime++;
+    if (user.plan === 'trial') trial++;
     if (user.isActive) active++;
     else expired++;
     
@@ -267,6 +341,7 @@ function getPremiumStats() {
     weeklySubscribers: weekly,
     monthlySubscribers: monthly,
     lifetimeUsers: lifetime,
+    trialUsers: trial,
     totalRevenue: totalRevenue,
     totalRevenueInRupees: (totalRevenue / 100).toFixed(2)
   };
@@ -274,6 +349,7 @@ function getPremiumStats() {
 
 module.exports = {
   addPremiumUser,
+  grantTrialPremium,
   isPremium,
   getPremiumUser,
   removePremiumUser,
