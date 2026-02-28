@@ -1,14 +1,10 @@
 {
-  "totalSongsPlayed": 510,
-  "totalPlaytime": 248052456,
-  "totalCommandsExecuted": 612,
+  "totalSongsPlayed": 517,
+  "totalPlaytime": 249732456,
+  "totalCommandsExecuted": 616,
   "twentyFourSevenServers": [],
-  "autoplayServers": [
-    "1367087087005990962"
-  ],
-  "autoplayModesByGuild": {
-    "1367087087005990962": "similar"
-  },
+  "autoplayServers": [],
+  "autoplayModesByGuild": {},
   "recentlyPlayed": [
     {
       "title": "Viral Vayyari ( From \"Junior\")",
@@ -232,6 +228,55 @@
       "uri": "https://www.youtube.com/watch?v=3UqGZqeJxfA",
       "guildId": "1367087087005990962",
       "timestamp": 1772266290212
+    },
+    {
+      "title": "Daripontothundu (DJ Song)",
+      "author": "Mamidi Mounika - Topic",
+      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772280037556
+    },
+    {
+      "title": "Nemaleeya Raja",
+      "author": "Mamidi Mounika",
+      "uri": "https://www.youtube.com/watch?v=xEZMLwVBQ-c",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772280223780
+    },
+    {
+      "title": "Abbabba Emandhame",
+      "author": "Mamidi Mounika",
+      "uri": "https://www.youtube.com/watch?v=-IwRMDdDKaI",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772280410473
+    },
+    {
+      "title": "Abbabba Emi Andame",
+      "author": "A. Devayya",
+      "uri": "https://www.youtube.com/watch?v=G475Jii7NqI",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772280702014
+    },
+    {
+      "title": "Daripontothundu (DJ Song)",
+      "author": "Mamidi Mounika - Topic",
+      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772280761059
+    },
+    {
+      "title": "Alone, Pt. II",
+      "author": "Ava Max",
+      "uri": "https://www.youtube.com/watch?v=ciwx8yJPX54",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772280798440
+    },
+    {
+      "title": "Kumkumala (From \"Brahmastra (Telugu)\")",
+      "author": "Pritam",
+      "uri": "https://www.youtube.com/watch?v=_Keinp6SZ7w",
+      "guildId": "1367087087005990962",
+      "timestamp": 1772280819424
     }
   ],
   "errorCount": 4,
@@ -240,7 +285,7 @@
     "1469974428908654818": 71,
     "1475011449834176543": 266,
     "1475911093330251990": 77,
-    "1367087087005990962": 44
+    "1367087087005990962": 51
   },
   "topArtists": {
     "AKASA": 3,
@@ -344,10 +389,13 @@
     "Swami": 1,
     "Sai Abhyankkar": 7,
     "Brown Editz": 4,
-    "Mamidi Mounika": 2,
-    "Mamidi Mounika - Topic": 2,
+    "Mamidi Mounika": 4,
+    "Mamidi Mounika - Topic": 4,
     "Nallagonda Gaddaar": 2,
-    "Nalgonda Gaddar Narsanna": 2
+    "Nalgonda Gaddar Narsanna": 2,
+    "A. Devayya": 1,
+    "Ava Max": 1,
+    "Pritam": 1
   },
   "commandErrors": [
     {
@@ -379,5 +427,5 @@
       "timestamp": 1771801007273
     }
   ],
-  "lastUpdated": "2026-02-28T08:34:46.458Z"
+  "lastUpdated": "2026-02-28T12:18:36.714Z"
 }

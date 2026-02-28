@@ -686,6 +686,12 @@ Promise.all([loadStats(), loadUserData(), loadPlaylists()]).then(() => {
     console.log(`Clearing 24/7 mode from ${serversBefore} server(s)...`);
     stats.twentyFourSevenServers.clear();
     console.log(`24/7 mode cleared - ${stats.twentyFourSevenServers.size} servers now enabled`);
+    // Always reset autoplay after restart (manual opt-in each boot).
+    const autoplayBefore = stats.autoplayServers.size;
+    console.log(`Clearing autoplay mode from ${autoplayBefore} server(s)...`);
+    stats.autoplayServers.clear();
+    stats.autoplayModesByGuild = {};
+    console.log("Autoplay reset complete - all servers are OFF");
     global.stats = stats;
     global.userData = userData;
     global.songHistory = songHistory;
@@ -1363,6 +1369,9 @@ client.riffy.on("trackStart", async (player, track) => {
 
 client.riffy.on("queueEnd", async (player) => {
     try {
+        // Remove the old now-playing embed when the current song/queue finishes.
+        try { await messages.clearNowPlaying(client, player); } catch (e) {}
+
         let vc = client.channels.cache.get(player.voiceChannel);
         if (!vc && player.voiceChannel) {
             vc = await client.channels.fetch(player.voiceChannel).catch(() => null);
@@ -1387,6 +1396,24 @@ client.riffy.on("queueEnd", async (player) => {
                 try {
                     const nextTrack = await resolveAutoplayTrack(client, player, seedTrack, autoplayMode);
                     if (nextTrack) {
+                        // Autoplay should never repeat the finished queue by loop.
+                        if (player.loop === "queue") {
+                            if (typeof player.setLoop === "function") {
+                                player.setLoop("none");
+                            } else {
+                                player.loop = "none";
+                            }
+                        }
+
+                        // Ensure ended tracks are not replayed before autoplay suggestion.
+                        if (player.queue) {
+                            if (typeof player.queue.clear === "function") {
+                                player.queue.clear();
+                            } else if (Array.isArray(player.queue)) {
+                                player.queue.length = 0;
+                            }
+                        }
+
                         nextTrack.info.requester = seedTrack.info.requester || client.user;
                         player.queue.add(nextTrack);
                         await player.play();
@@ -1855,8 +1882,5 @@ process.on("SIGTERM", shutdown);
 
  /// process.exit();
 //});
-
-
-
 
 

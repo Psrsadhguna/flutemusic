@@ -49,6 +49,15 @@ function isURL(value) {
     }
 }
 
+function shouldUseManualPicker(args = []) {
+    const interactiveEnabled = process.env.PLAY_INTERACTIVE_SELECT === 'true';
+    if (!interactiveEnabled) {
+        // Fast mode by default: skip picker unless user explicitly requests it.
+        return args.some((part) => ['--pick', '-pick'].includes(String(part || '').toLowerCase()));
+    }
+    return true;
+}
+
 function hasAny(text, list) {
     return list.some((word) => text.includes(word));
 }
@@ -446,7 +455,10 @@ module.exports = {
     usage: 'fplay <query>',
 
     execute: async (message, args, client) => {
-        const query = args.join(' ').trim();
+        const queryParts = (Array.isArray(args) ? args : [])
+            .filter((part) => !['--pick', '-pick'].includes(String(part || '').toLowerCase()));
+        const query = queryParts.join(' ').trim();
+        const manualPicker = shouldUseManualPicker(args);
 
         if (!query) {
             return messages.error(message.channel, 'Provide a song name or link.');
@@ -496,7 +508,7 @@ module.exports = {
                     return messages.error(message.channel, 'No suitable match found.');
                 }
 
-                if (ranked.length > 1) {
+                if (manualPicker && ranked.length > 1) {
                     selectedTrack = await requestTrackSelection(message, ranked, rankingQuery);
                 } else {
                     selectedTrack = ranked[0].track;
