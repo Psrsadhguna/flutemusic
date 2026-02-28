@@ -22,7 +22,7 @@ module.exports = {
     const hasPremium = paymentUtils.isPremium(userId);
     const premiumUser = paymentUtils.getPremiumUser(userId);
 
-    const webURL = process.env.WEBSITE_URL || "https://rzp.io/rzp/uZFgBFL";
+    const webURL = process.env.WEBSITE_URL || "https://rzp.io/rzp/y8GBu3mB";
     const weeklyPlan = getPlan("weekly");
     const monthlyPlan = getPlan("monthly");
     const lifetimePlan = getPlan("lifetime");
