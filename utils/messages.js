@@ -188,6 +188,122 @@ function getTrackThumbnail(track) {
     return '';
 }
 
+const queuedTrackNoticeRefs = new Map();
+
+function normalizeTrackKey(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function getQueuedNoticeFingerprint(track) {
+    if (!track || !track.info) return '';
+
+    const identifier = String(track.info.identifier || '').trim().toLowerCase();
+    if (identifier) return `id:${identifier}`;
+
+    const originalUri = String(track.info.originalUri || '').trim().toLowerCase();
+    if (originalUri) return `original:${originalUri}`;
+
+    const uri = String(track.info.uri || '').trim().toLowerCase();
+    if (uri) return `uri:${uri}`;
+
+    const title = normalizeTrackKey(track.info.originalTitle || track.info.title || '');
+    const author = normalizeTrackKey(track.info.originalAuthor || track.info.author || '');
+
+    if (!title && !author) return '';
+    return `meta:${author}:${title}`;
+}
+
+function getQueuedNoticeKey(guildId, track) {
+    const gid = String(guildId || '').trim();
+    const fingerprint = getQueuedNoticeFingerprint(track);
+    if (!gid || !fingerprint) return '';
+    return `${gid}:${fingerprint}`;
+}
+
+function rememberQueuedTrackNotice(message, track) {
+    const guildId = String(message?.guildId || message?.guild?.id || '').trim();
+    const key = getQueuedNoticeKey(guildId, track);
+    if (!key) return;
+
+    const entry = {
+        channelId: String(message.channelId || message.channel?.id || ''),
+        messageId: String(message.id || ''),
+        createdAt: Date.now()
+    };
+
+    if (!entry.channelId || !entry.messageId) return;
+
+    const existing = queuedTrackNoticeRefs.get(key) || [];
+    existing.push(entry);
+    queuedTrackNoticeRefs.set(key, existing.slice(-5));
+}
+
+function forgetQueuedTrackNoticeByMessageId(messageId) {
+    const target = String(messageId || '').trim();
+    if (!target) return;
+
+    for (const [key, refs] of queuedTrackNoticeRefs.entries()) {
+        if (!Array.isArray(refs) || refs.length === 0) {
+            queuedTrackNoticeRefs.delete(key);
+            continue;
+        }
+
+        const nextRefs = refs.filter((ref) => String(ref?.messageId || '') !== target);
+        if (nextRefs.length > 0) {
+            queuedTrackNoticeRefs.set(key, nextRefs);
+        } else {
+            queuedTrackNoticeRefs.delete(key);
+        }
+    }
+}
+
+async function clearQueuedTrackNotice(client, guildId, track) {
+    const key = getQueuedNoticeKey(guildId, track);
+    if (!key) return false;
+
+    const refs = queuedTrackNoticeRefs.get(key);
+    if (!Array.isArray(refs) || refs.length === 0) {
+        queuedTrackNoticeRefs.delete(key);
+        return false;
+    }
+
+    const ref = refs.shift();
+    if (refs.length > 0) {
+        queuedTrackNoticeRefs.set(key, refs);
+    } else {
+        queuedTrackNoticeRefs.delete(key);
+    }
+
+    const channelId = String(ref?.channelId || '').trim();
+    const messageId = String(ref?.messageId || '').trim();
+    if (!channelId || !messageId) return false;
+
+    const channel = await client.channels.fetch(channelId).catch(() => null);
+    if (!channel || !channel.isTextBased?.()) return false;
+
+    const message = await channel.messages.fetch(messageId).catch(() => null);
+    if (!message) return false;
+
+    await message.delete().catch(() => {});
+    return true;
+}
+
+function clearQueuedTrackNoticesForGuild(guildId) {
+    const gid = String(guildId || '').trim();
+    if (!gid) return;
+
+    const prefix = `${gid}:`;
+    for (const key of queuedTrackNoticeRefs.keys()) {
+        if (key.startsWith(prefix)) {
+            queuedTrackNoticeRefs.delete(key);
+        }
+    }
+}
+
 // Update the existing now-playing message for a player (if one exists)
 async function updateNowPlaying(client, player) {
     try {
@@ -578,14 +694,19 @@ const buildEmbed = (position, currentTrack) => {
 
             const row = new ActionRowBuilder().addComponents(playNowButton);
             const sent = channel.send({ embeds: [embed], components: [row] }).catch(() => null);
-            if (deleteAfterMs > 0) {
-                sent.then((msg) => {
-                    if (!msg) return;
+
+            sent.then((msg) => {
+                if (!msg) return;
+                rememberQueuedTrackNotice(msg, track);
+
+                if (deleteAfterMs > 0) {
                     setTimeout(() => {
+                        forgetQueuedTrackNoticeByMessageId(msg.id);
                         msg.delete().catch(() => {});
                     }, deleteAfterMs);
-                });
-            }
+                }
+            });
+
             return sent;
         } catch (e) {
             return channel.send({ content: `Added to queue: ${getTrackTitle(track)}` }).catch(() => {});
@@ -780,6 +901,8 @@ const buildEmbed = (position, currentTrack) => {
     isValidURL,
     updateNowPlaying,
     clearNowPlaying,
+    clearQueuedTrackNotice,
+    clearQueuedTrackNoticesForGuild,
     // Button utilities
     createButton: buttonUtils.createButton,
     createButtonRow: buttonUtils.createButtonRow

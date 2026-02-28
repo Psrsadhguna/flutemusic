@@ -8,7 +8,15 @@ module.exports = {
     usage: "fautoplay [on/off/status/similar/artist/random]",
     cooldownMs: 1500,
     execute: async (message, args, client) => {
-        const option = String(args[0] || "toggle").toLowerCase();
+        const rawOption = String(args[0] || "toggle").toLowerCase();
+        const optionAliases = {
+            similer: "similar",
+            similair: "similar",
+            artish: "artist",
+            artiste: "artist",
+            rnd: "random"
+        };
+        const option = optionAliases[rawOption] || rawOption;
         const guildId = message.guild.id;
         const validModes = new Set(["similar", "artist", "random"]);
 

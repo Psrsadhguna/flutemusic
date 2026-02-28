@@ -1,4 +1,4 @@
-﻿const { Client, GatewayDispatchEvents, Collection, ActivityType, AttachmentBuilder, EmbedBuilder } = require("discord.js");
+const { Client, GatewayDispatchEvents, Collection, ActivityType, AttachmentBuilder, EmbedBuilder } = require("discord.js");
 const express = require('express');
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
@@ -372,9 +372,13 @@ function buildTrackSearchBlob(track) {
     return [
         track.info.title,
         track.info.author,
+        track.info.originalTitle,
+        track.info.originalAuthor,
         track.info.uri,
+        track.info.originalUri,
         track.info.identifier,
-        track.info.sourceName
+        track.info.sourceName,
+        track.info.originalSourceName
     ]
         .filter(Boolean)
         .join(" ");
@@ -438,13 +442,6 @@ function trackHasForeignLanguageToken(track, preferredLanguage) {
 
 function addLanguageBiasedQueries(queries, preferredLanguage, autoplayMode) {
     if (!Array.isArray(queries) || queries.length === 0) return [];
-    if (!preferredLanguage || autoplayMode === "random") {
-        return queries;
-    }
-
-    const suffixes = autoplayMode === "artist"
-        ? [`${preferredLanguage} songs`, `${preferredLanguage} hits`]
-        : [`${preferredLanguage} similar songs`, `${preferredLanguage} songs`];
 
     const merged = [];
     const seen = new Set();
@@ -459,10 +456,16 @@ function addLanguageBiasedQueries(queries, preferredLanguage, autoplayMode) {
     };
 
     for (const query of queries) {
-        for (const suffix of suffixes) {
-            pushQuery([query, suffix].join(" ").trim());
-        }
         pushQuery(query);
+        if (!preferredLanguage) continue;
+
+        if (autoplayMode === "artist") {
+            pushQuery([preferredLanguage, query].join(" ").trim());
+        } else if (autoplayMode === "similar") {
+            pushQuery([query, preferredLanguage, "official audio"].join(" ").trim());
+        } else {
+            pushQuery([preferredLanguage, "songs official audio"].join(" ").trim());
+        }
     }
 
     return merged.slice(0, 12);
@@ -486,6 +489,246 @@ function getTrackMetaKey(track) {
     const author = normalizeTrackText(track.info.author);
     if (title && author) return `${author}:${title}`;
     return title || author || "";
+}
+
+const AUTOPLAY_BLOCKLIST_KEYWORDS = [
+    "playlist",
+    "mix",
+    "mashup",
+    "non stop",
+    "nonstop",
+    "dj",
+    "jukebox",
+    "compilation",
+    "hour version",
+    "1 hour",
+    "2 hour",
+    "3 hour",
+    "24x7",
+    "24 7",
+    "live stream",
+    "podcast",
+    "study",
+    "sleep",
+    "gym",
+    "workout",
+    "chill",
+    "lofi",
+    "meditation"
+];
+
+const AUTOPLAY_ALT_VERSION_KEYWORDS = [
+    "slowed",
+    "reverb",
+    "nightcore",
+    "sped up",
+    "8d",
+    "bass boosted",
+    "remix",
+    "karaoke",
+    "cover"
+];
+
+function includesAnyKeyword(text, keywords = []) {
+    const normalized = ` ${normalizeTrackText(text)} `;
+    if (!normalized.trim()) return false;
+
+    for (const keyword of keywords) {
+        const token = normalizeTrackText(keyword);
+        if (!token) continue;
+        if (normalized.includes(` ${token} `)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function tokenizeAutoplayText(value) {
+    return normalizeTrackText(value)
+        .split(" ")
+        .filter((word) => word.length > 2);
+}
+
+function wordOverlapRatio(left, right) {
+    const leftWords = new Set(tokenizeAutoplayText(left));
+    const rightWords = new Set(tokenizeAutoplayText(right));
+
+    if (leftWords.size === 0 || rightWords.size === 0) {
+        return 0;
+    }
+
+    let overlap = 0;
+    for (const word of leftWords) {
+        if (rightWords.has(word)) {
+            overlap += 1;
+        }
+    }
+
+    const minSize = Math.min(leftWords.size, rightWords.size);
+    return minSize > 0 ? (overlap / minSize) : 0;
+}
+
+function getTrackDurationMs(track) {
+    const rawLength = Number(track?.info?.length || track?.info?.duration || 0);
+    if (!Number.isFinite(rawLength) || rawLength <= 0) {
+        return 0;
+    }
+    return rawLength;
+}
+
+function isLikelySongCandidate(track, autoplayMode) {
+    if (!track || !track.info) return false;
+    if (track.info.isStream) return false;
+
+    const title = String(track.info.title || "");
+    const normalizedTitle = normalizeTrackText(title);
+    if (!normalizedTitle) return false;
+
+    const durationMs = getTrackDurationMs(track);
+    if (durationMs > 0 && durationMs < 60000) return false;
+    if (durationMs > 0 && durationMs > 12 * 60 * 1000) return false;
+
+    if (includesAnyKeyword(normalizedTitle, AUTOPLAY_BLOCKLIST_KEYWORDS)) {
+        return false;
+    }
+
+    if (autoplayMode === "random" && includesAnyKeyword(normalizedTitle, AUTOPLAY_ALT_VERSION_KEYWORDS)) {
+        return false;
+    }
+
+    return true;
+}
+
+function buildRandomAutoplayPool(preferredLanguage) {
+    if (preferredLanguage) {
+        return [
+            `${preferredLanguage} hit songs official audio`,
+            `${preferredLanguage} latest songs official audio`,
+            `${preferredLanguage} top songs official audio`,
+            `${preferredLanguage} chart songs official audio`,
+            `${preferredLanguage} trending songs official audio`,
+            `${preferredLanguage} melody songs official audio`
+        ];
+    }
+
+    return [
+        "top songs official audio",
+        "latest songs official audio",
+        "trending songs official audio",
+        "popular songs official audio",
+        "chartbuster songs official audio",
+        "best songs official audio"
+    ];
+}
+
+function buildRecentTrackMetaSet(guildId, limit = 30) {
+    const recentEntries = Array.isArray(stats?.recentlyPlayed) ? stats.recentlyPlayed : [];
+    const set = new Set();
+
+    for (let i = recentEntries.length - 1; i >= 0 && set.size < limit; i -= 1) {
+        const entry = recentEntries[i];
+        if (!entry || !entry.title) continue;
+        if (guildId && String(entry.guildId || "") !== String(guildId)) continue;
+
+        const key = getTrackMetaKey({
+            info: {
+                title: entry.title,
+                author: entry.author || ""
+            }
+        });
+
+        if (key) {
+            set.add(key);
+        }
+    }
+
+    return set;
+}
+
+function scoreAutoplayCandidate(candidate, seedTrack, autoplayMode, preferredLanguage, recentMetaSet) {
+    if (!candidate || !candidate.info || !seedTrack || !seedTrack.info) {
+        return Number.NEGATIVE_INFINITY;
+    }
+
+    const candidateTitle = normalizeTrackText(candidate.info.title);
+    const candidateAuthor = normalizeTrackText(candidate.info.author);
+    const seedTitle = normalizeTrackText(seedTrack.info.title);
+    const seedAuthor = normalizeTrackText(seedTrack.info.author);
+
+    if (!candidateTitle) {
+        return Number.NEGATIVE_INFINITY;
+    }
+
+    let score = 0;
+
+    const durationMs = getTrackDurationMs(candidate);
+    if (durationMs >= 120000 && durationMs <= 420000) {
+        score += 10;
+    } else if (durationMs > 0 && durationMs < 90000) {
+        score -= 18;
+    } else if (durationMs > 0 && durationMs > 720000) {
+        score -= 14;
+    }
+
+    const metaKey = getTrackMetaKey(candidate);
+    if (metaKey && recentMetaSet?.has(metaKey)) {
+        score -= 20;
+    }
+
+    const titleOverlap = wordOverlapRatio(seedTitle, candidateTitle);
+    const authorOverlap = wordOverlapRatio(seedAuthor, candidateAuthor);
+
+    if (autoplayMode === "artist") {
+        score += Math.round(authorOverlap * 60);
+        score += Math.round(titleOverlap * 10);
+    } else if (autoplayMode === "similar") {
+        score += Math.round(titleOverlap * 50);
+        score += Math.round(authorOverlap * 18);
+    } else {
+        score += Math.round(titleOverlap * 6);
+        if (seedAuthor && candidateAuthor && seedAuthor === candidateAuthor) {
+            score -= 5;
+        }
+    }
+
+    if (seedAuthor && candidateAuthor && seedAuthor === candidateAuthor) {
+        score += autoplayMode === "artist" ? 30 : 8;
+    } else if (
+        seedAuthor &&
+        candidateAuthor &&
+        (candidateAuthor.includes(seedAuthor) || seedAuthor.includes(candidateAuthor)) &&
+        Math.min(seedAuthor.length, candidateAuthor.length) >= 4
+    ) {
+        score += autoplayMode === "artist" ? 18 : 6;
+    }
+
+    if (candidateTitle.includes("official")) score += 5;
+    if (candidateTitle.includes("audio")) score += 4;
+
+    if (includesAnyKeyword(candidateTitle, AUTOPLAY_ALT_VERSION_KEYWORDS)) {
+        score -= autoplayMode === "random" ? 18 : 10;
+    }
+
+    if (preferredLanguage) {
+        const candidateLanguage = inferTrackLanguage(candidate);
+
+        if (candidateLanguage === preferredLanguage) {
+            score += 20;
+        } else if (candidateLanguage && candidateLanguage !== preferredLanguage) {
+            score -= 40;
+        }
+
+        if (trackHasLanguageToken(candidate, preferredLanguage)) {
+            score += 15;
+        }
+
+        if (trackHasForeignLanguageToken(candidate, preferredLanguage)) {
+            score -= 28;
+        }
+    }
+
+    return score;
 }
 
 function looksLikeSameSong(a, b) {
@@ -620,37 +863,28 @@ async function resolveAutoplayTrack(client, player, seedTrack, mode = "similar")
     const requester = seedTrack.info.requester || client.user;
     const autoplayMode = sanitizeAutoplayMode(mode);
     const preferredLanguage = inferTrackLanguage(seedTrack);
-    const randomPool = [
-        "top global hits",
-        "viral songs mix",
-        "trending music playlist",
-        "new songs this week",
-        "top pop tracks",
-        "top indie tracks",
-        "best chill songs",
-        "best workout songs"
-    ];
 
-    // Shuffle a copy and take 3 queries for random mode.
-    const shuffledPool = [...randomPool].sort(() => Math.random() - 0.5).slice(0, 3);
     let queries = [];
     if (autoplayMode === "artist") {
         queries = [
-            [author, "popular songs"].filter(Boolean).join(" ").trim(),
-            [author, "hits"].filter(Boolean).join(" ").trim(),
-            [author, "best songs"].filter(Boolean).join(" ").trim()
+            [author, "top songs official audio"].filter(Boolean).join(" ").trim(),
+            [author, "hit songs official audio"].filter(Boolean).join(" ").trim(),
+            [author, "popular songs official"].filter(Boolean).join(" ").trim()
         ];
     } else if (autoplayMode === "random") {
-        queries = shuffledPool;
+        const randomPool = buildRandomAutoplayPool(preferredLanguage);
+        const shuffledPool = [...randomPool].sort(() => Math.random() - 0.5);
+        queries = shuffledPool.slice(0, 4);
     } else {
         queries = [
+            [title, author, "official audio"].filter(Boolean).join(" ").trim(),
             [title, author, "similar songs"].filter(Boolean).join(" ").trim(),
             [title, author, "related songs"].filter(Boolean).join(" ").trim(),
             [title, author].filter(Boolean).join(" ").trim()
         ];
     }
-    queries = queries.filter((q) => q.length > 0);
-    queries = addLanguageBiasedQueries(queries, preferredLanguage, autoplayMode);
+
+    queries = addLanguageBiasedQueries(queries.filter((q) => q.length > 0), preferredLanguage, autoplayMode);
 
     const sources = ["ytmsearch", "ytsearch"];
     const resolvedTracks = [];
@@ -662,14 +896,14 @@ async function resolveAutoplayTrack(client, player, seedTrack, mode = "similar")
                 const result = await client.riffy.resolve({ query, source, requester });
                 if (!result?.tracks?.length) continue;
 
-                for (const track of result.tracks.slice(0, 20)) {
+                for (const track of result.tracks.slice(0, 25)) {
                     const uniq = getTrackFingerprint(track) || `meta:${getTrackMetaKey(track)}`;
                     if (!uniq || seen.has(uniq)) continue;
                     seen.add(uniq);
                     resolvedTracks.push(track);
                 }
             } catch (error) {
-                // Ignore a source failure and continue fallback.
+                // Ignore source failure and continue.
             }
         }
     }
@@ -679,69 +913,84 @@ async function resolveAutoplayTrack(client, player, seedTrack, mode = "similar")
     }
 
     const current = player?.queue?.current || player?.current || player?.nowPlaying || null;
-    const recentHistory = (songHistory[player.guildId] || []).slice(-8);
+    const recentHistory = (songHistory[player.guildId] || []).slice(-10);
     const blockedTracks = [seedTrack, current, ...recentHistory].filter(Boolean);
-    const preferredCandidates = [];
-    const neutralCandidates = [];
-    const allowedCandidates = [];
-    const mismatchedCandidates = [];
+    const recentMetaSet = buildRecentTrackMetaSet(player.guildId, 30);
+
+    const scored = [];
+    const languageMatched = [];
+    const languageNeutral = [];
 
     for (const candidate of resolvedTracks) {
         const isBlocked = blockedTracks.some((tracked) => looksLikeSameSong(candidate, tracked));
         if (isBlocked) continue;
-
-        if (!preferredLanguage) {
-            allowedCandidates.push(candidate);
-            continue;
-        }
+        if (!isLikelySongCandidate(candidate, autoplayMode)) continue;
 
         const candidateLanguage = inferTrackLanguage(candidate);
-        if (candidateLanguage && candidateLanguage !== preferredLanguage) {
-            mismatchedCandidates.push(candidate);
-            continue;
+        const hasPreferredToken = preferredLanguage
+            ? trackHasLanguageToken(candidate, preferredLanguage)
+            : false;
+        const hasForeignToken = preferredLanguage
+            ? trackHasForeignLanguageToken(candidate, preferredLanguage)
+            : false;
+
+        if (preferredLanguage) {
+            const explicitMismatch = Boolean(candidateLanguage && candidateLanguage !== preferredLanguage);
+            if (explicitMismatch || hasForeignToken) {
+                continue;
+            }
         }
 
-        if (candidateLanguage === preferredLanguage) {
-            preferredCandidates.push(candidate);
-            continue;
+        const score = scoreAutoplayCandidate(
+            candidate,
+            seedTrack,
+            autoplayMode,
+            preferredLanguage,
+            recentMetaSet
+        );
+
+        if (!Number.isFinite(score)) continue;
+
+        const item = { track: candidate, score, candidateLanguage, hasPreferredToken };
+        scored.push(item);
+
+        if (preferredLanguage) {
+            if (candidateLanguage === preferredLanguage || hasPreferredToken) {
+                languageMatched.push(item);
+            } else {
+                languageNeutral.push(item);
+            }
+        }
+    }
+
+    const pickBest = (items, randomizeTop = false) => {
+        if (!Array.isArray(items) || items.length === 0) return null;
+
+        const sorted = [...items].sort((a, b) => b.score - a.score);
+        if (!randomizeTop) {
+            return sorted[0].track;
         }
 
-        if (trackHasForeignLanguageToken(candidate, preferredLanguage)) {
-            mismatchedCandidates.push(candidate);
-            continue;
-        }
+        const topPool = sorted.slice(0, Math.min(3, sorted.length));
+        const pick = topPool[Math.floor(Math.random() * topPool.length)];
+        return pick?.track || sorted[0].track;
+    };
 
-        if (trackHasLanguageToken(candidate, preferredLanguage)) {
-            preferredCandidates.push(candidate);
-            continue;
-        }
-
-        neutralCandidates.push(candidate);
-        allowedCandidates.push(candidate);
-    }
-
-    if (preferredCandidates.length > 0) {
-        return preferredCandidates[0];
-    }
-
-    if (allowedCandidates.length > 0) {
-        return allowedCandidates[0];
-    }
-
-    if (neutralCandidates.length > 0) {
-        return neutralCandidates[0];
-    }
+    const randomizeTop = autoplayMode === "random";
 
     if (preferredLanguage) {
+        const strictPick = pickBest(languageMatched, randomizeTop);
+        if (strictPick) return strictPick;
+
+        const neutralPick = pickBest(languageNeutral, randomizeTop);
+        if (neutralPick) return neutralPick;
+
         return null;
     }
 
-    if (mismatchedCandidates.length > 0) {
-        return mismatchedCandidates[0];
-    }
-
-    return null;
+    return pickBest(scored, randomizeTop);
 }
+
 // Core playback/info commands should always remain freely accessible (no premium/vote lock).
 const coreFreeCommands = new Set([
     "help", "ping", "play", "pause", "resume", "skip", "stop", "queue",
@@ -1536,6 +1785,12 @@ client.riffy.on("trackStart", async (player, track) => {
         player.autoCaptionText = "";
         player.autoCaptionLanguage = "";
 
+        try {
+            await messages.clearQueuedTrackNotice(client, player.guildId, track);
+        } catch (queuedMsgError) {
+            // Ignore cleanup failure.
+        }
+
         const vc = client.channels.cache.get(player.voiceChannel);
         if (!vc) return;
 
@@ -1597,6 +1852,7 @@ client.riffy.on("queueEnd", async (player) => {
 
         // Remove the old now-playing embed when the current song/queue finishes.
         try { await messages.clearNowPlaying(client, player); } catch (e) {}
+        try { messages.clearQueuedTrackNoticesForGuild(player.guildId); } catch (e) {}
 
         let vc = client.channels.cache.get(player.voiceChannel);
         if (!vc && player.voiceChannel) {
@@ -1685,6 +1941,7 @@ client.riffy.on("playerDestroy", async (player) => {
     try {
         player.autoCaptionText = "";
         player.autoCaptionLanguage = "";
+        try { messages.clearQueuedTrackNoticesForGuild(player.guildId); } catch (e) {}
 
         const vc = client.channels.cache.get(player.voiceChannel);
         if (!vc) return;
