@@ -1,370 +1,363 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Users Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Users Dashboard</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111827;
+      --gold: #f6c945;
+      --text: #f5f7fb;
+      --muted: #9da9bf;
+      --ok: #46d789;
+      --bad: #f25f5c;
+      --week: #6ab8ff;
+      --month: #6696ff;
+      --life: #f6c945;
+    }
 
-        body {
-            background: #0b1220;
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 20px;
-        }
+    * { box-sizing: border-box; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    body {
+      margin: 0;
+      background: radial-gradient(1100px 700px at 10% -10%, #1a2b4f, var(--bg));
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      padding: 18px;
+    }
 
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-        h1 {
-            font-size: 2.5em;
-            color: #FFD700;
-            margin-bottom: 10px;
-        }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
+    h1 {
+      color: var(--gold);
+      margin: 0;
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    }
 
-        .stat-card {
-            background: #111827;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #FFD700;
-            text-align: center;
-        }
+    header p {
+      color: var(--muted);
+      margin-top: 10px;
+    }
 
-        .stat-card h3 {
-            color: #FFD700;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            opacity: 0.8;
-        }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 26px;
+    }
 
-        .stat-card .number {
-            font-size: 2.5em;
-            color: #FFD700;
-            font-weight: bold;
-        }
+    .stat-card {
+      background: linear-gradient(180deg, #1a2542, var(--panel));
+      border: 1px solid rgba(246, 201, 69, 0.35);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
 
-        .table-container {
-            background: #111827;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid #FFD700;
-        }
+    .stat-card h3 {
+      margin: 0 0 8px;
+      color: var(--gold);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    .number {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--text);
+    }
 
-        thead {
-            background: #1a2340;
-            border-bottom: 2px solid #FFD700;
-        }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
 
-        th {
-            padding: 15px;
-            text-align: left;
-            color: #FFD700;
-            font-weight: 600;
-        }
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--gold);
+      color: #1f2937;
+    }
 
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.1);
-        }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
-        tr:hover {
-            background: rgba(255, 215, 0, 0.05);
-        }
+    .message {
+      min-height: 30px;
+      margin-bottom: 10px;
+      color: var(--muted);
+    }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
+    .ok { color: var(--ok); }
+    .err { color: var(--bad); }
 
-        .badge-lifetime {
-            background: rgba(255, 215, 0, 0.2);
-            color: #FFD700;
-        }
+    .table-wrap {
+      background: var(--panel);
+      border: 1px solid rgba(246, 201, 69, 0.35);
+      border-radius: 10px;
+      overflow-x: auto;
+    }
 
-        .badge-monthly {
-            background: rgba(102, 150, 255, 0.2);
-            color: #6696FF;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
 
-        .badge-active {
-            background: rgba(81, 207, 102, 0.2);
-            color: #51CF66;
-        }
+    th {
+      text-align: left;
+      color: var(--gold);
+      font-size: 0.84rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 12px;
+      border-bottom: 1px solid rgba(246, 201, 69, 0.35);
+    }
 
-        .badge-expired {
-            background: rgba(255, 107, 107, 0.2);
-            color: #FF6B6B;
-        }
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: #dfe4ee;
+    }
 
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
+    tr:hover { background: rgba(255, 255, 255, 0.03); }
 
-        button {
-            padding: 10px 20px;
-            background: #FFD700;
-            color: #0b1220;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
+    .badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-weight: 700;
+    }
 
-        button:hover {
-            background: #ffed4e;
-            transform: translateY(-2px);
-        }
+    .badge-weekly {
+      color: var(--week);
+      background: rgba(106, 184, 255, 0.16);
+    }
 
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+    .badge-monthly {
+      color: var(--month);
+      background: rgba(102, 150, 255, 0.18);
+    }
 
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #FFD700;
-        }
+    .badge-lifetime {
+      color: var(--life);
+      background: rgba(246, 201, 69, 0.18);
+    }
 
-        .error {
-            background: rgba(255, 107, 107, 0.1);
-            border: 1px solid #FF6B6B;
-            color: #FF6B6B;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
+    .badge-active {
+      color: var(--ok);
+      background: rgba(70, 215, 137, 0.14);
+    }
 
-        .success {
-            background: rgba(81, 207, 102, 0.1);
-            border: 1px solid #51CF66;
-            color: #51CF66;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-    </style>
+    .badge-inactive {
+      color: var(--bad);
+      background: rgba(242, 95, 92, 0.14);
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>💎 Premium Users Dashboard</h1>
-            <p>Monitor active premium subscriptions in real-time</p>
-        </header>
+  <div class="container">
+    <header>
+      <h1>Premium Users Dashboard</h1>
+      <p>Track weekly, monthly, and lifetime subscriptions.</p>
+    </header>
 
-        <div id="message"></div>
-
-        <div class="stats-grid" id="stats">
-            <div class="stat-card">
-                <h3>Total Premium Users</h3>
-                <div class="number" id="totalUsers">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Active Users</h3>
-                <div class="number" id="activeUsers">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Monthly Subscribers</h3>
-                <div class="number" id="monthlyUsers">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Lifetime Users</h3>
-                <div class="number" id="lifetimeUsers">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Total Revenue</h3>
-                <div class="number" id="totalRevenue">-</div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button onclick="loadData()">🔄 Refresh Data</button>
-            <button onclick="sendWebhook()">📤 Send to Webhook</button>
-            <button onclick="downloadCSV()">📥 Download CSV</button>
-        </div>
-
-        <div class="table-container">
-            <table id="usersTable">
-                <thead>
-                    <tr>
-                        <th>User ID</th>
-                        <th>Email</th>
-                        <th>Plan</th>
-                        <th>Status</th>
-                        <th>Purchased</th>
-                        <th>Expires</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr>
-                        <td colspan="6" class="loading">Loading...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="stats-grid">
+      <div class="stat-card"><h3>Total Users</h3><div class="number" id="totalUsers">-</div></div>
+      <div class="stat-card"><h3>Active Users</h3><div class="number" id="activeUsers">-</div></div>
+      <div class="stat-card"><h3>Weekly</h3><div class="number" id="weeklyUsers">-</div></div>
+      <div class="stat-card"><h3>Monthly</h3><div class="number" id="monthlyUsers">-</div></div>
+      <div class="stat-card"><h3>Lifetime</h3><div class="number" id="lifetimeUsers">-</div></div>
+      <div class="stat-card"><h3>Total Revenue</h3><div class="number" id="totalRevenue">-</div></div>
     </div>
 
-    <script>
-        async function loadData() {
-            try {
-                const response = await fetch('/api/premium-log');
-                const data = await response.json();
+    <div class="controls">
+      <button onclick="loadData()" id="refreshBtn">Refresh</button>
+      <button onclick="sendWebhook(event)" id="webhookBtn">Send Webhook</button>
+      <button onclick="downloadCSV()">Download CSV</button>
+    </div>
 
-                if (!data.success) {
-                    showError('Failed to load premium users');
-                    return;
-                }
+    <div id="message" class="message"></div>
 
-                // Load stats
-                const statsResponse = await fetch('/api/premium-stats');
-                const statsData = await statsResponse.json();
+    <div class="table-wrap">
+      <table id="usersTable">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Email</th>
+            <th>Plan</th>
+            <th>Status</th>
+            <th>Purchased</th>
+            <th>Expires</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="6">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-                if (statsData.success) {
-                    updateStats(statsData.stats);
-                }
+  <script>
+    function setMessage(text, type = "") {
+      const el = document.getElementById("message");
+      el.className = "message" + (type ? ` ${type}` : "");
+      el.textContent = text;
+    }
 
-                // Load users
-                populateTable(data.log);
-            } catch (error) {
-                showError('Error loading data: ' + error.message);
-            }
+    function formatDate(value) {
+      if (!value || value.includes("Never")) return "Never";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Unknown";
+      return date.toLocaleDateString();
+    }
+
+    function planBadge(plan) {
+      const normalized = String(plan || "monthly").toLowerCase();
+      if (normalized === "weekly") {
+        return '<span class="badge badge-weekly">Weekly</span>';
+      }
+      if (normalized === "lifetime") {
+        return '<span class="badge badge-lifetime">Lifetime</span>';
+      }
+      return '<span class="badge badge-monthly">Monthly</span>';
+    }
+
+    function statusBadge(status) {
+      return String(status || "").toLowerCase().includes("active")
+        ? '<span class="badge badge-active">Active</span>'
+        : '<span class="badge badge-inactive">Inactive</span>';
+    }
+
+    function updateStats(stats) {
+      document.getElementById("totalUsers").textContent = stats.totalUsers || 0;
+      document.getElementById("activeUsers").textContent = stats.activeUsers || 0;
+      document.getElementById("weeklyUsers").textContent = stats.weeklySubscribers || 0;
+      document.getElementById("monthlyUsers").textContent = stats.monthlySubscribers || 0;
+      document.getElementById("lifetimeUsers").textContent = stats.lifetimeUsers || 0;
+      document.getElementById("totalRevenue").textContent = "INR " + (stats.totalRevenueInRupees || "0");
+    }
+
+    function populateTable(users) {
+      const tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="6">No premium users yet.</td></tr>';
+        return;
+      }
+
+      users.forEach((user) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><code>${user.userId}</code></td>
+          <td>${user.email || "N/A"}</td>
+          <td>${planBadge(user.plan)}</td>
+          <td>${statusBadge(user.status)}</td>
+          <td>${formatDate(user.purchasedAt)}</td>
+          <td>${formatDate(user.expiresAt)}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function loadData() {
+      try {
+        const [logRes, statsRes] = await Promise.all([
+          fetch("/api/premium-log"),
+          fetch("/api/premium-stats")
+        ]);
+
+        const logData = await logRes.json();
+        const statsData = await statsRes.json();
+
+        if (!logData.success) {
+          setMessage("Failed to load premium log.", "err");
+          return;
         }
 
-        function updateStats(stats) {
-            document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
-            document.getElementById('activeUsers').textContent = stats.activeUsers || 0;
-            document.getElementById('monthlyUsers').textContent = stats.monthlySubscribers || 0;
-            document.getElementById('lifetimeUsers').textContent = stats.lifetimeUsers || 0;
-            document.getElementById('totalRevenue').textContent = '₹' + (stats.totalRevenueInRupees || '0');
+        populateTable(logData.log || []);
+        if (statsData.success) {
+          updateStats(statsData.stats || {});
         }
 
-        function populateTable(users) {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+        setMessage(`Loaded ${logData.totalRecords || 0} records.`, "ok");
+      } catch (error) {
+        setMessage("Error loading data: " + error.message, "err");
+      }
+    }
 
-            if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No premium users yet</td></tr>';
-                return;
-            }
+    async function sendWebhook(event) {
+      const btn = event.currentTarget;
+      btn.disabled = true;
+      btn.textContent = "Sending...";
 
-            users.forEach(user => {
-                const row = document.createElement('tr');
-                const expiryText = user.expiresAt && user.expiresAt !== 'Never (Lifetime)' 
-                    ? new Date(user.expiresAt).toLocaleDateString() 
-                    : 'Never';
+      try {
+        const res = await fetch("/api/webhook-premium-users", { method: "POST" });
+        const data = await res.json();
 
-                const planBadge = user.plan === 'lifetime' 
-                    ? '<span class="badge badge-lifetime">🌟 Lifetime</span>' 
-                    : '<span class="badge badge-monthly">📅 Monthly</span>';
-
-                const statusBadge = user.status.includes('✅')
-                    ? '<span class="badge badge-active">✅ Active</span>'
-                    : '<span class="badge badge-expired">❌ Expired</span>';
-
-                row.innerHTML = `
-                    <td><code>${user.userId}</code></td>
-                    <td>${user.email || 'N/A'}</td>
-                    <td>${planBadge}</td>
-                    <td>${statusBadge}</td>
-                    <td>${new Date(user.purchasedAt).toLocaleDateString()}</td>
-                    <td>${expiryText}</td>
-                `;
-                tbody.appendChild(row);
-            });
+        if (data.success) {
+          setMessage("Webhook sent successfully.", "ok");
+        } else {
+          setMessage("Failed to send webhook.", "err");
         }
+      } catch (error) {
+        setMessage("Webhook error: " + error.message, "err");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Send Webhook";
+      }
+    }
 
-        async function sendWebhook() {
-            try {
-                const btn = event.target;
-                btn.disabled = true;
-                btn.textContent = 'Sending...';
+    function downloadCSV() {
+      const rows = document.querySelectorAll("#usersTable tr");
+      let csv = "User ID,Email,Plan,Status,Purchased,Expires\n";
 
-                const response = await fetch('/api/webhook-premium-users', { method: 'POST' });
-                const data = await response.json();
+      rows.forEach((row, index) => {
+        if (index === 0) return;
+        const cols = row.querySelectorAll("td");
+        if (!cols.length) return;
 
-                if (data.success) {
-                    showSuccess('Webhook notification sent successfully!');
-                } else {
-                    showError('Failed to send webhook notification');
-                }
+        const values = Array.from(cols).map((col) => {
+          return `"${col.textContent.trim().replace(/"/g, '""')}"`;
+        });
 
-                btn.disabled = false;
-                btn.textContent = '📤 Send to Webhook';
-            } catch (error) {
-                showError('Error: ' + error.message);
-            }
-        }
+        csv += values.join(",") + "\n";
+      });
 
-        function downloadCSV() {
-            const table = document.getElementById('usersTable');
-            let csv = 'User ID,Email,Plan,Status,Purchased,Expires\n';
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `premium-users-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
 
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('td');
-                const userId = cols[0].textContent;
-                const email = cols[1].textContent;
-                const plan = cols[2].textContent.trim();
-                const status = cols[3].textContent.trim();
-                const purchased = cols[4].textContent;
-                const expires = cols[5].textContent;
-
-                csv += `"${userId}","${email}","${plan}","${status}","${purchased}","${expires}"\n`;
-            });
-
-            const link = document.createElement('a');
-            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-            link.download = `premium-users-${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-        }
-
-        function showError(message) {
-            const msg = document.getElementById('message');
-            msg.innerHTML = `<div class="error">${message}</div>`;
-        }
-
-        function showSuccess(message) {
-            const msg = document.getElementById('message');
-            msg.innerHTML = `<div class="success">${message}</div>`;
-        }
-
-        // Load data on page load
-        loadData();
-
-        // Auto-refresh every 30 seconds
-        setInterval(loadData, 30000);
-    </script>
+    loadData();
+    setInterval(loadData, 30000);
+  </script>
 </body>
 </html>

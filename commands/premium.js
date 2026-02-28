@@ -1,44 +1,86 @@
-const { EmbedBuilder } = require('discord.js');
-const paymentUtils = require('../utils/paymentUtils');
+﻿const { EmbedBuilder } = require("discord.js");
+const paymentUtils = require("../utils/paymentUtils");
+const { getPlan } = require("../utils/premiumPlans");
+
+function formatPlanName(planKey) {
+  return getPlan(planKey).label;
+}
+
+function formatDate(iso) {
+  if (!iso) return "Never";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "Unknown";
+  return date.toLocaleDateString();
+}
 
 module.exports = {
   name: "premium",
-  description: "Check premium status and features",
-  
-  execute(message, args) {
+  description: "Check premium status and available plans",
+
+  execute(message) {
     const userId = message.author.id;
-    const isPremium = paymentUtils.isPremium(userId);
+    const hasPremium = paymentUtils.isPremium(userId);
     const premiumUser = paymentUtils.getPremiumUser(userId);
 
-    const webURL = process.env.WEBSITE_URL || 'https://rzp.io/rzp/uZFgBFL';
+    const webURL = process.env.WEBSITE_URL || "https://rzp.io/rzp/uZFgBFL";
+    const weeklyPlan = getPlan("weekly");
+    const monthlyPlan = getPlan("monthly");
+    const lifetimePlan = getPlan("lifetime");
 
     const embed = new EmbedBuilder()
-      .setTitle('💎 Flute Music Premium')
-      .setColor(isPremium ? '#FFD700' : '#808080')
+      .setTitle("Flute Music Premium")
+      .setColor(hasPremium ? "#FFD700" : "#808080")
       .setThumbnail(message.author.displayAvatarURL())
-      .setDescription(isPremium ? '✅ You have premium access!' : '❌ You don\'t have premium access yet');
+      .setDescription(
+        hasPremium
+          ? "You have premium access."
+          : "You do not have premium access right now."
+      );
 
-    if (isPremium && premiumUser) {
-      const statusText = premiumUser.plan === 'lifetime' ? '🌟 Lifetime' : '📅 Monthly';
-      const expiry = premiumUser.expiresAt 
-        ? new Date(premiumUser.expiresAt).toLocaleDateString() 
-        : 'Never';
-
+    if (hasPremium && premiumUser) {
       embed.addFields(
-        { name: 'Plan Type', value: statusText, inline: true },
-        { name: 'Expiration', value: expiry, inline: true },
-        { name: 'Purchased', value: new Date(premiumUser.purchasedAt).toLocaleDateString(), inline: true },
-        { name: '✔️ Unlocked Features:', value: 
-          '• 50+ Audio Filters\n' +
-          '• Advanced Effects\n' +
-          '• Premium Audio Quality\n' +
-          '• Priority Support'
+        {
+          name: "Plan Type",
+          value: formatPlanName(premiumUser.plan || "monthly"),
+          inline: true
+        },
+        {
+          name: "Expiration",
+          value: formatDate(premiumUser.expiresAt),
+          inline: true
+        },
+        {
+          name: "Purchased",
+          value: formatDate(premiumUser.purchasedAt),
+          inline: true
+        },
+        {
+          name: "Unlocked Features",
+          value:
+            "- 50+ Audio Filters\n" +
+            "- Advanced Effects\n" +
+            "- Premium Audio Quality\n" +
+            "- Priority Support"
         }
       );
     } else {
       embed.addFields(
-        { name: 'Monthly Premium - ₹50', value: '1 month of all features' },
-        { name: '🔗 Purchase', value: `[Click here to buy premium](${webURL})` }
+        {
+          name: `${weeklyPlan.label} - INR ${weeklyPlan.amount / 100}`,
+          value: `${weeklyPlan.description}`
+        },
+        {
+          name: `${monthlyPlan.label} - INR ${monthlyPlan.amount / 100}`,
+          value: `${monthlyPlan.description}`
+        },
+        {
+          name: `${lifetimePlan.label} - INR ${lifetimePlan.amount / 100}`,
+          value: `${lifetimePlan.description}`
+        },
+        {
+          name: "Purchase Link",
+          value: `[Open premium page](${webURL})`
+        }
       );
     }
 

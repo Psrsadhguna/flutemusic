@@ -1,31 +1,33 @@
-const { EmbedBuilder } = require("discord.js");
-const paymentUtils = require('./paymentUtils');
+﻿const { EmbedBuilder } = require("discord.js");
+const paymentUtils = require("./paymentUtils");
+const { getPlan } = require("./premiumPlans");
 
 async function requirePremium(message) {
-    // if the bot is running in "free" mode we don't enforce premium restrictions
-    // set the ENFORCE_PREMIUM env var to 'true' when you want to toggle premium checks on
-    if (process.env.ENFORCE_PREMIUM !== 'true') {
-        return true; // premium disabled, allow everything
-    }
+  if (process.env.ENFORCE_PREMIUM !== "true") {
+    return true;
+  }
 
-    // Check if user is premium using new Razorpay system
-    const isPremiumUser = paymentUtils.isPremium(message.author.id);
+  const isPremiumUser = paymentUtils.isPremium(message.author.id);
+  if (isPremiumUser) {
+    return true;
+  }
 
-    if (isPremiumUser) return true;
+  const weeklyPlan = getPlan("weekly");
+  const monthlyPlan = getPlan("monthly");
 
-    const embed = new EmbedBuilder()
-        .setColor("#FFD700")
-        .setTitle("💎 Premium Feature")
-        .setDescription(
-            "This command is **Premium Only**.\n\n" +
-            "Unlock all 50+ filters and effects with our **₹99 Premium Plan**!\n\n" +
-            "Use `/premium buy` or visit our website to purchase."
-        )
-        .setFooter({ text: "Premium access grants unlimited filter usage" });
+  const embed = new EmbedBuilder()
+    .setColor("#FFD700")
+    .setTitle("Premium Feature")
+    .setDescription(
+      "This command is premium only.\n\n" +
+      `Plans: ${weeklyPlan.label} INR ${weeklyPlan.amount / 100}, ` +
+      `${monthlyPlan.label} INR ${monthlyPlan.amount / 100}.\n\n` +
+      "Use `f premium` or open the premium website to buy access."
+    )
+    .setFooter({ text: "Premium grants full filter and effects access" });
 
-    await message.reply({ embeds: [embed] });
-
-    return false;
+  await message.reply({ embeds: [embed] });
+  return false;
 }
 
 module.exports = { requirePremium };

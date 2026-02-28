@@ -1,83 +1,85 @@
-const express = require("express");
+﻿const express = require("express");
 const crypto = require("crypto");
+const paymentUtils = require("../utils/paymentUtils");
+const { normalizePlan } = require("../utils/premiumPlans");
+const { syncPremiumRoleForUser } = require("../premium/roleSystem");
 
 const router = express.Router();
 
-const db = require("../premium/premiumDB");
-const { syncPremiumRoleForUser } =
-  require("../premium/syncPremiumRole");
+function signaturesMatch(signature, expected) {
+  if (!signature || !expected) {
+    return false;
+  }
+
+  const left = Buffer.from(signature, "utf8");
+  const right = Buffer.from(expected, "utf8");
+
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(left, right);
+}
 
 router.post("/razorpay", async (req, res) => {
   try {
-
-    // =========================
-    // VERIFY SIGNATURE
-    // =========================
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!secret) {
+      console.warn("RAZORPAY_WEBHOOK_SECRET is missing");
+      return res.sendStatus(500);
+    }
 
     const signature = req.headers["x-razorpay-signature"];
+    const rawBody = Buffer.isBuffer(req.body)
+      ? req.body
+      : Buffer.from(JSON.stringify(req.body || {}));
 
     const expected = crypto
       .createHmac("sha256", secret)
-      .update(req.body)
+      .update(rawBody)
       .digest("hex");
 
-    if (signature !== expected) {
-      console.log("❌ Invalid webhook signature");
+    if (!signaturesMatch(signature, expected)) {
+      console.log("Invalid webhook signature");
       return res.sendStatus(400);
     }
 
-    // RAW → JSON
-    const body = JSON.parse(req.body.toString());
-
-    console.log("✅ Webhook received:", body.event);
-
-    if (body.event !== "payment.captured")
+    const body = JSON.parse(rawBody.toString("utf8"));
+    if (body?.event !== "payment.captured") {
       return res.sendStatus(200);
+    }
 
-    const payment = body.payload.payment.entity;
+    const payment = body?.payload?.payment?.entity;
+    if (!payment) {
+      console.warn("Webhook missing payment payload");
+      return res.sendStatus(200);
+    }
 
-    const discordId = payment.notes?.discord_id;
+    const notes = payment.notes || {};
+    const discordId = notes.discord_id || notes.userId || notes.user_id;
 
     if (!discordId) {
-      console.log("❌ No discord_id in payment notes");
+      console.log("No Discord user ID in Razorpay notes");
       return res.sendStatus(200);
     }
 
-    console.log(`⭐ Premium activated for ${discordId}`);
-
-    // =========================
-    // SAVE PREMIUM
-    // =========================
-
-    const expiry =
-      Date.now() + 30 * 24 * 60 * 60 * 1000;
-
-    db.run(
-      `INSERT OR REPLACE INTO premium_users (userId, expiry)
-       VALUES (?, ?)`,
-      [discordId, expiry]
+    const saved = paymentUtils.addPremiumUser(
+      discordId,
+      payment.email || notes.email || "",
+      normalizePlan(notes.plan),
+      payment.id,
+      payment.amount
     );
 
-    // =========================
-    // ADD DISCORD ROLE
-    // =========================
-
     if (global.discordClient) {
-      await syncPremiumRoleForUser(
-        global.discordClient,
-        discordId,
-        true
-      );
-
-      console.log("✅ Premium role synced");
+      await syncPremiumRoleForUser(global.discordClient, discordId, true);
     }
 
-    res.sendStatus(200);
-
-  } catch (err) {
-    console.error("Webhook error:", err);
-    res.sendStatus(500);
+    console.log(`Premium activated via webhook for ${discordId} (${saved.plan})`);
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error("Webhook error:", error);
+    return res.sendStatus(500);
   }
 });
 

@@ -1,5 +1,7 @@
-const { Client, GatewayDispatchEvents, Collection, ActivityType } = require("discord.js");
+﻿const { Client, GatewayDispatchEvents, Collection, ActivityType } = require("discord.js");
 const express = require('express');
+const crypto = require("crypto");
+const Razorpay = require("razorpay");
 const webhookRoutes = require("./server/webhook");
 const config = require("./config.js");
 const { Riffy } = require('riffy');
@@ -7,7 +9,11 @@ const messages = require("./utils/messages.js");
 const emojis = require("./emojis.js");
 const setVoiceStatus = require('./utils/voiceStatus');
 const statusRotator = require("./utils/statusRotator.js");
-const requirePremium = require("./utils/requirePremium");
+const { requirePremium } = require("./utils/requirePremium");
+const paymentUtils = require("./utils/paymentUtils");
+const webhookNotifier = require("./utils/webhookNotifier");
+const { listPlans, normalizePlan } = require("./utils/premiumPlans");
+const { syncPremiumRoleForUser } = require("./premium/roleSystem");
 const fs = require("fs");
 const path = require("path");
 const fsp = require('fs').promises;
@@ -20,7 +26,7 @@ require("./premium/startupSync");
 // Start Express server for webhooks    
 // Startup performance monitoring
 const startupTime = Date.now();
-console.log('🚀 Bot startup started...');
+console.log('ðŸš€ Bot startup started...');
 // Store interval IDs for cleanup on shutdown
 const activeIntervals = [];
 // Bot stats tracking
@@ -121,10 +127,10 @@ async function loadPlaylists() {
         if (fs.existsSync(playlistsPath)) {
             const data = JSON.parse(await fsp.readFile(playlistsPath, 'utf8'));
             global.playlists = data;
-            console.log(`✅ Loaded playlists for ${Object.keys(data).length} users`);
+            console.log(`âœ… Loaded playlists for ${Object.keys(data).length} users`);
         } else {
             global.playlists = {};
-            console.log('📂 No playlists.json found - creating new...');
+            console.log('ðŸ“‚ No playlists.json found - creating new...');
         }
     } catch (err) {
         console.error('Failed to load playlists.json:', err.message);
@@ -134,12 +140,12 @@ async function loadPlaylists() {
 
 // Export stats to global for access from commands (load in background)
 Promise.all([loadStats(), loadUserData(), loadPlaylists()]).then(() => {
-    console.log(`✅ Loaded user and stats data in ${Date.now() - startupTime}ms`);
+    console.log(`âœ… Loaded user and stats data in ${Date.now() - startupTime}ms`);
     // Clear 247 mode on restart
     const serversBefore = stats.twentyFourSevenServers.size;
-    console.log(`🔄 Clearing 24/7 mode from ${serversBefore} server(s)...`);
+    console.log(`ðŸ”„ Clearing 24/7 mode from ${serversBefore} server(s)...`);
     stats.twentyFourSevenServers.clear();
-    console.log(`✅ 24/7 mode cleared - ${stats.twentyFourSevenServers.size} servers now enabled`);
+    console.log(`âœ… 24/7 mode cleared - ${stats.twentyFourSevenServers.size} servers now enabled`);
     global.stats = stats;
     global.userData = userData;
 }).catch(err => console.error('Error loading data:', err));
@@ -175,7 +181,7 @@ function loadCommands() {
                 client.commands.set(command.name, command);
             }
         }
-        console.log(`✅ Loaded ${client.commands.size} commands`);
+        console.log(`âœ… Loaded ${client.commands.size} commands`);
     } catch (err) {
         console.error('Error loading commands:', err.message);
     }
@@ -205,15 +211,15 @@ client.on('guildCreate', async (guild) => {
         const { EmbedBuilder } = require('discord.js');
         const dmEmbed = new EmbedBuilder()
             .setColor('#0099ff')
-            .setTitle('🎵 Thanks for adding Flute Music Bot!')
+            .setTitle('ðŸŽµ Thanks for adding Flute Music Bot!')
             .setDescription('Thanks for joining from bot! We\'re excited to have you. Type `f help` to see all available commands.')
             .addFields([
                 {
-                    name: '🎧 Getting Started',
+                    name: 'ðŸŽ§ Getting Started',
                     value: 'Use `f help` to view all commands'
                 },
                 {
-                    name: '🎯 Quick Start',
+                    name: 'ðŸŽ¯ Quick Start',
                     value: 'Try `f play [song name]` to start playing music!'
                 }
             ])
@@ -263,31 +269,31 @@ client.on('guildCreate', async (guild) => {
                     username: 'Flute Music Bot',
                     embeds: [{
                         color: 65280, // Green
-                        title: '✅ Bot Added to Server',
+                        title: 'âœ… Bot Added to Server',
                         description: `**${guild.name}**`,
                         fields: [
                             {
-                                name: '🏢 Server Name',
+                                name: 'ðŸ¢ Server Name',
                                 value: `${guild.name}`,
                                 inline: true
                             },
                             {
-                                name: '👥 Total Members',
+                                name: 'ðŸ‘¥ Total Members',
                                 value: `${guild.memberCount}`,
                                 inline: true
                             },
                             {
-                                name: '🆔 Server ID',
+                                name: 'ðŸ†” Server ID',
                                 value: `${guild.id}`,
                                 inline: true
                             },
                             {
-                                name: '👤 Server Owner',
+                                name: 'ðŸ‘¤ Server Owner',
                                 value: ownerName,
                                 inline: true
                             },
                             {
-                                name: '🔗 Server Invite',
+                                name: 'ðŸ”— Server Invite',
                                 value: inviteUrl,
                                 inline: false
                             }
@@ -298,9 +304,9 @@ client.on('guildCreate', async (guild) => {
                 };
                 
                 const response = await axios.post(config.webhookUrl, webhookData);
-                console.log('✅ Guild create webhook sent successfully');
+                console.log('âœ… Guild create webhook sent successfully');
             } catch (error) {
-                console.error('❌ Failed to send guild create webhook:', error.message);
+                console.error('âŒ Failed to send guild create webhook:', error.message);
                 if (error.response) {
                     console.error('Webhook response status:', error.response.status);
                     console.error('Webhook response data:', error.response.data);
@@ -335,13 +341,13 @@ client.on('guildDelete', (guild) => {
                 
                 const embed = new EmbedBuilder()
                     .setColor('#FF0000')
-                    .setTitle('❌ Bot Removed from Server')
+                    .setTitle('âŒ Bot Removed from Server')
                     .setDescription(`**${guild?.name || 'Unknown'}**`)
                     .addFields([
-                        { name: '🏢 Server Name', value: `${guild?.name || 'Unknown'}`, inline: true },
-                        { name: '👥 Total Members', value: `${guild?.memberCount || 'Unknown'}`, inline: true },
-                        { name: '🆔 Server ID', value: `${guild?.id || 'Unknown'}`, inline: true },
-                        { name: '👤 Server Owner', value: ownerName, inline: true }
+                        { name: 'ðŸ¢ Server Name', value: `${guild?.name || 'Unknown'}`, inline: true },
+                        { name: 'ðŸ‘¥ Total Members', value: `${guild?.memberCount || 'Unknown'}`, inline: true },
+                        { name: 'ðŸ†” Server ID', value: `${guild?.id || 'Unknown'}`, inline: true },
+                        { name: 'ðŸ‘¤ Server Owner', value: ownerName, inline: true }
                     ])
                     .setTimestamp();
 
@@ -367,7 +373,7 @@ client.on("messageCreate", async (message) => {
         const displayPrefix = prefixes.map(p => `\`${p}\``).join(' or ');
         const embed = new (require('discord.js')).EmbedBuilder()
             .setColor('#00ff0d')
-            .setTitle('🎵 Flute Music Bot')
+            .setTitle('ðŸŽµ Flute Music Bot')
             .setDescription(`Hey ${message.author}! <a:infinity_hiiii:1474334458130731034> \n\nMy prefix is: ${displayPrefix}\n\nUse \`${prefixes[0]}help\` to see all available commands.`)
             .setThumbnail(client.user.displayAvatarURL({ dynamic: true }))
             .setTimestamp();
@@ -421,7 +427,7 @@ client.on("messageCreate", async (message) => {
 });
 
 client.riffy.on("nodeConnect", (node) => {
-    console.log(`✅ Node "${node.name}" connected.`);
+    console.log(`âœ… Node "${node.name}" connected.`);
 });
 
 client.riffy.on("nodeError", (node, error) => {
@@ -429,12 +435,12 @@ client.riffy.on("nodeError", (node, error) => {
 });
 
 client.riffy.on("trackError", (player, track, error) => {
-    console.error(`❌ Track Error: ${track?.info?.title || 'Unknown'} - ${error.message}`);
+    console.error(`âŒ Track Error: ${track?.info?.title || 'Unknown'} - ${error.message}`);
     if (player.textChannel) {
         try {
             const textChannel = client.channels.cache.get(player.textChannel);
             if (textChannel) {
-                textChannel.send(`❌ Error playing **${track?.info?.title || 'Track'}**: ${error.message}`);
+                textChannel.send(`âŒ Error playing **${track?.info?.title || 'Track'}**: ${error.message}`);
             }
         } catch (e) {
             console.error("Failed to send error message:", e.message);
@@ -443,12 +449,12 @@ client.riffy.on("trackError", (player, track, error) => {
 });
 
 client.riffy.on("trackStuck", (player, track, thresholdMs) => {
-    console.warn(`⚠️ Track Stuck: ${track?.info?.title || 'Unknown'} after ${thresholdMs}ms`);
+    console.warn(`âš ï¸ Track Stuck: ${track?.info?.title || 'Unknown'} after ${thresholdMs}ms`);
     if (player.textChannel) {
         try {
             const textChannel = client.channels.cache.get(player.textChannel);
             if (textChannel) {
-                textChannel.send(`⚠️ Track stuck: **${track?.info?.title || 'Track'}**, skipping...`);
+                textChannel.send(`âš ï¸ Track stuck: **${track?.info?.title || 'Track'}**, skipping...`);
             }
         } catch (e) {
             console.error("Failed to send stuck message:", e.message);
@@ -471,11 +477,11 @@ client.on('interactionCreate', async (interaction) => {
     const guildId = interaction.guildId;
     const player = client.riffy.players.get(guildId);
     
-    if (!player) return interaction.reply({ content: '❌ No active player.', flags: 64 });
+    if (!player) return interaction.reply({ content: 'âŒ No active player.', flags: 64 });
 
     // Only allow users in voice channel to control
     const member = interaction.guild.members.cache.get(interaction.user.id);
-    if (!member || !member.voice.channel) return interaction.reply({ content: '❌ You must be in a voice channel to use this.', flags: 64 });
+    if (!member || !member.voice.channel) return interaction.reply({ content: 'âŒ You must be in a voice channel to use this.', flags: 64 });
 
     // Recommendation dropdown handling removed.
 
@@ -485,16 +491,16 @@ client.on('interactionCreate', async (interaction) => {
         try {
             if (player.paused) {
                 await player.pause(false);
-                await interaction.reply({ content: '▶️ Resumed playback.', flags: 64 });
+                await interaction.reply({ content: 'â–¶ï¸ Resumed playback.', flags: 64 });
                 try { await messages.updateNowPlaying(client, player); } catch (e) {}
             } else {
                 await player.pause(true);
-                await interaction.reply({ content: '⏸️ Paused playback.', flags: 64 });
+                await interaction.reply({ content: 'â¸ï¸ Paused playback.', flags: 64 });
                 try { await messages.updateNowPlaying(client, player); } catch (e) {}
             }
         } catch (err) {
             console.error('Pause error:', err);
-            await interaction.reply({ content: '❌ Failed to toggle pause: ' + err.message, flags: 64 });
+            await interaction.reply({ content: 'âŒ Failed to toggle pause: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_skip') {
         try {
@@ -509,23 +515,23 @@ client.on('interactionCreate', async (interaction) => {
             }
             const skipped = currentTrack;
             await player.stop();
-            await interaction.reply({ content: `⏭️ Skipped: **${skipped?.info?.title || 'Unknown'}**`, flags: 64 });
+            await interaction.reply({ content: `â­ï¸ Skipped: **${skipped?.info?.title || 'Unknown'}**`, flags: 64 });
         } catch (err) {
             console.error('Skip error:', err);
-            await interaction.reply({ content: '❌ Failed to skip: ' + err.message, flags: 64 });
+            await interaction.reply({ content: 'âŒ Failed to skip: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_prev') {
         try {
             // Get history for this guild
             const history = songHistory[guildId];
             if (!history || history.length < 2) {
-                return interaction.reply({ content: '❌ No previous track in history!', flags: 64 });
+                return interaction.reply({ content: 'âŒ No previous track in history!', flags: 64 });
             }
             
             // Get the previous track (second to last, since last is current song)
             const prevTrack = history[history.length - 2];
             if (!prevTrack) {
-                return interaction.reply({ content: '❌ No previous track!', flags: 64 });
+                return interaction.reply({ content: 'âŒ No previous track!', flags: 64 });
             }
             
             // Remove the previous track from history
@@ -535,21 +541,21 @@ client.on('interactionCreate', async (interaction) => {
             player.queue.unshift(prevTrack);
             player.stop();
             
-            await interaction.reply({ content: `⏮️ Playing previous: **${prevTrack.info.title}**`, flags: 64 });
+            await interaction.reply({ content: `â®ï¸ Playing previous: **${prevTrack.info.title}**`, flags: 64 });
         } catch (err) {
             console.error('Previous error:', err);
-            await interaction.reply({ content: '❌ Failed to play previous: ' + err.message, flags: 64 });
+            await interaction.reply({ content: 'âŒ Failed to play previous: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_shuffle') {
         try {
             if (!player.queue || player.queue.length < 2) {
-                return interaction.reply({ content: '🔀 Need at least 2 tracks to shuffle!', flags: 64 });
+                return interaction.reply({ content: 'ðŸ”€ Need at least 2 tracks to shuffle!', flags: 64 });
             }
             await player.queue.shuffle();
-            await interaction.reply({ content: `🔀 Queue shuffled! **${player.queue.length}** tracks remaining.`, flags: 64 });
+            await interaction.reply({ content: `ðŸ”€ Queue shuffled! **${player.queue.length}** tracks remaining.`, flags: 64 });
         } catch (err) {
             console.error('Shuffle error:', err);
-            await interaction.reply({ content: '❌ Failed to shuffle: ' + err.message, flags: 64 });
+            await interaction.reply({ content: 'âŒ Failed to shuffle: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_loop') {
         try {
@@ -560,38 +566,38 @@ client.on('interactionCreate', async (interaction) => {
             } else {
                 player.loop = newMode;
             }
-            await interaction.reply({ content: newMode === 'queue' ? '🔁 Loop enabled for queue.' : '🔂 Loop disabled.', flags: 64 });
+            await interaction.reply({ content: newMode === 'queue' ? 'ðŸ” Loop enabled for queue.' : 'ðŸ”‚ Loop disabled.', flags: 64 });
             try { await messages.updateNowPlaying(client, player); } catch (e) {}
         } catch (err) {
             console.error('Loop toggle error:', err);
-            await interaction.reply({ content: '❌ Failed to toggle loop: ' + err.message, flags: 64 });
+            await interaction.reply({ content: 'âŒ Failed to toggle loop: ' + err.message, flags: 64 });
         }
     } else if (interaction.customId === 'music_stop') {
     try {
 
-        // ✅ Get voice channel safely
+        // âœ… Get voice channel safely
         const vc = client.channels.cache.get(player.voiceChannel);
 
-        // ✅ Clear voice status FIRST
+        // âœ… Clear voice status FIRST
         if (vc) {
             await setVoiceStatus(vc, null);
-            console.log("🧹 Voice status cleared (stop button)");
+            console.log("ðŸ§¹ Voice status cleared (stop button)");
         }
 
-        // ✅ Destroy player AFTER clearing
+        // âœ… Destroy player AFTER clearing
         if (player) {
             await player.destroy();
         }
 
         await interaction.reply({
-            content: '⏹️ Stopped playback and left channel.',
+            content: 'â¹ï¸ Stopped playback and left channel.',
             flags: 64
         });
 
     } catch (err) {
         console.error("Stop button error:", err);
         await interaction.reply({
-            content: '❌ Failed to stop player.',
+            content: 'âŒ Failed to stop player.',
             flags: 64
         });
     }
@@ -609,22 +615,22 @@ client.on('interactionCreate', async (interaction) => {
             }
             
             if (!currentTrack) {
-                return interaction.reply({ content: '❌ No track is currently playing!', flags: 64 });
+                return interaction.reply({ content: 'âŒ No track is currently playing!', flags: 64 });
             }
             
             // Seek to the beginning
             await player.seek(0);
-            await interaction.reply({ content: `🔄 Replaying: **${currentTrack.info.title}**`, flags: 64 });
+            await interaction.reply({ content: `ðŸ”„ Replaying: **${currentTrack.info.title}**`, flags: 64 });
         } catch (err) {
             console.error('Replay error:', err);
-            await interaction.reply({ content: '❌ Failed to replay: ' + err.message, flags: 64 });
+            await interaction.reply({ content: 'âŒ Failed to replay: ' + err.message, flags: 64 });
         }
     
     } else if (interaction.customId === 'play_now_track') {
         try {
             // Get the current queue to find and move the requested track to front
             if (!player.queue || player.queue.length === 0) {
-                return interaction.reply({ content: '❌ Queue is empty!', flags: 64 });
+                return interaction.reply({ content: 'âŒ Queue is empty!', flags: 64 });
             }
 
             // Find the track that was just added (usually at position 0 or close to it)
@@ -632,16 +638,16 @@ client.on('interactionCreate', async (interaction) => {
             const trackToPlay = player.queue[0];
             
             if (!trackToPlay) {
-                return interaction.reply({ content: '❌ No track found in queue!', flags: 64 });
+                return interaction.reply({ content: 'âŒ No track found in queue!', flags: 64 });
             }
 
             // Stop current playback and play the track
             await player.stop();
             
-            await interaction.reply({ content: `▶️ Now playing: **${trackToPlay.info.title}**`, flags: 64 });
+            await interaction.reply({ content: `â–¶ï¸ Now playing: **${trackToPlay.info.title}**`, flags: 64 });
         } catch (err) {
             console.error('Play now error:', err);
-            await interaction.reply({ content: '❌ Failed to play track: ' + err.message, flags: 64 });
+            await interaction.reply({ content: 'âŒ Failed to play track: ' + err.message, flags: 64 });
         }
     }
 });
@@ -652,7 +658,7 @@ if (config.webhookUrl && config.webhookUrl.length > 5) {
         axios.post(config.webhookUrl, {
             username: 'Flute Music - Join/Leave',
             embeds: [{
-                title: '👤 Member Joined',
+                title: 'ðŸ‘¤ Member Joined',
                 description: `${member.user.tag} (${member.id}) joined **${member.guild.name}**`,
                 color: 65280,
                 timestamp: new Date().toISOString()
@@ -665,7 +671,7 @@ if (config.webhookUrl && config.webhookUrl.length > 5) {
         axios.post(config.webhookUrl, {
             username: 'Flute Music - Join/Leave',
             embeds: [{
-                title: '🚪 Member Left',
+                title: 'ðŸšª Member Left',
                 description: `${member.user.tag} (${member.id}) left **${member.guild.name}**`,
                 color: 16711680,
                 timestamp: new Date().toISOString()
@@ -679,7 +685,7 @@ if (config.webhookUrl && config.webhookUrl.length > 5) {
 
 
 // ===============================
-// 🎵 VOICE STATUS SYSTEM (FINAL)
+// ðŸŽµ VOICE STATUS SYSTEM (FINAL)
 // ===============================
 
 client.riffy.on("trackStart", async (player, track) => {
@@ -706,7 +712,7 @@ client.riffy.on("trackStart", async (player, track) => {
             }
         }
 
-        console.log(`🎧 Voice status updated → ${track.info.title}`);
+        console.log(`ðŸŽ§ Voice status updated â†’ ${track.info.title}`);
     } catch (err) {
         console.error("Voice status update failed:", err.message);
     }
@@ -718,7 +724,7 @@ client.riffy.on("queueEnd", async (player) => {
         if (!vc) return;
 
         await setVoiceStatus(vc, null);
-        console.log("🧹 Voice status cleared (queue ended)");
+        console.log("ðŸ§¹ Voice status cleared (queue ended)");
 
         // Check if 24/7 mode is enabled
         if (!player.twentyFourSeven) {
@@ -738,12 +744,12 @@ client.riffy.on("queueEnd", async (player) => {
                 }
                 
                 await player.destroy();
-                console.log("👋 Bot left voice channel (queue ended, 24/7 disabled)");
+                console.log("ðŸ‘‹ Bot left voice channel (queue ended, 24/7 disabled)");
             } catch (e) {
                 console.error("Error destroying player on queue end:", e.message);
             }
         } else {
-            console.log("⏱️ 24/7 mode enabled - bot staying in voice channel");
+            console.log("â±ï¸ 24/7 mode enabled - bot staying in voice channel");
         }
     } catch {}
 });
@@ -754,13 +760,13 @@ client.riffy.on("playerDestroy", async (player) => {
         if (!vc) return;
 
         await setVoiceStatus(vc, null);
-        console.log("🧹 Voice status cleared (player destroyed)");
+        console.log("ðŸ§¹ Voice status cleared (player destroyed)");
     } catch {}
 });
 // When queue finishes
 
 // ===============================
-// ✅ SAFE CLEAR FUNCTION
+// âœ… SAFE CLEAR FUNCTION
 // ===============================
 
 
@@ -772,7 +778,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
     if (oldState.channelId && !newState.channelId) {
         try {
             await setVoiceStatus(oldState.channel, null);
-            console.log("🧹 Voice status cleared (bot disconnected)");
+            console.log("ðŸ§¹ Voice status cleared (bot disconnected)");
         } catch (err) {
             console.error("Failed to clear voice status:", err.message);
         }
@@ -785,57 +791,274 @@ global.discordClient = client;
 
 
 // Initialize Express server for website
-// Initialize Express server for website
 const app = express();
 const port = process.env.PORT || 10000;
+let razorpayClient = null;
 
-// ✅ Mount Razorpay webhook routes
+function timingSafeHexEqual(left, right) {
+    if (!left || !right) {
+        return false;
+    }
+
+    const a = Buffer.from(left, "utf8");
+    const b = Buffer.from(right, "utf8");
+
+    if (a.length !== b.length) {
+        return false;
+    }
+
+    return crypto.timingSafeEqual(a, b);
+}
+
+function getRazorpayClient() {
+    if (razorpayClient) {
+        return razorpayClient;
+    }
+
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        throw new Error("RAZORPAY_NOT_CONFIGURED");
+    }
+
+    razorpayClient = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+
+    return razorpayClient;
+}
+
+function isLikelyDiscordId(userId) {
+    return /^[0-9]{15,22}$/.test(String(userId || "").trim());
+}
+
+const premiumPlans = listPlans();
+
+// Razorpay webhook route must receive raw payload
 app.use(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  webhookRoutes
+    "/webhook",
+    express.raw({ type: "application/json" }),
+    webhookRoutes
 );
 
-// Serve static files from website
-app.use(express.static(path.join(__dirname, 'website')));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'website', 'index.html'));
+app.post("/api/create-order", async (req, res) => {
+    try {
+        const { plan, userId, userEmail } = req.body || {};
+        const selectedPlan = String(plan || "monthly").trim().toLowerCase();
+
+        if (!premiumPlans[selectedPlan]) {
+            return res.status(400).json({ success: false, error: "Invalid plan" });
+        }
+
+        if (!isLikelyDiscordId(userId)) {
+            return res.status(400).json({ success: false, error: "Valid Discord ID is required" });
+        }
+
+        const clientForPayment = getRazorpayClient();
+        const planData = premiumPlans[selectedPlan];
+        const receipt = `rcpt_${Date.now()}_${String(userId).slice(-6)}`;
+
+        const order = await clientForPayment.orders.create({
+            amount: planData.amount,
+            currency: planData.currency,
+            receipt,
+            notes: {
+                discord_id: String(userId),
+                userId: String(userId),
+                email: userEmail || "",
+                plan: selectedPlan
+            }
+        });
+
+        return res.json({
+            success: true,
+            orderId: order.id,
+            amount: order.amount,
+            currency: order.currency,
+            key: process.env.RAZORPAY_KEY_ID
+        });
+    } catch (error) {
+        console.error("Create order failed:", error.message);
+        const isConfigError = error.message === "RAZORPAY_NOT_CONFIGURED";
+        return res.status(500).json({
+            success: false,
+            error: isConfigError
+                ? "Razorpay is not configured on server"
+                : "Failed to create order"
+        });
+    }
 });
 
-// Start Express server (ONLY ONE listen)
+app.post("/api/verify-payment", async (req, res) => {
+    try {
+        const {
+            razorpay_order_id: orderId,
+            razorpay_payment_id: paymentId,
+            razorpay_signature: signature
+        } = req.body || {};
+
+        if (!orderId || !paymentId || !signature) {
+            return res.status(400).json({ success: false, error: "Missing payment verification fields" });
+        }
+
+        if (!process.env.RAZORPAY_KEY_SECRET) {
+            return res.status(500).json({ success: false, error: "Razorpay key secret is missing" });
+        }
+
+        const expectedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(`${orderId}|${paymentId}`)
+            .digest("hex");
+
+        if (!timingSafeHexEqual(signature, expectedSignature)) {
+            return res.status(400).json({ success: false, error: "Invalid payment signature" });
+        }
+
+        const clientForPayment = getRazorpayClient();
+        const payment = await clientForPayment.payments.fetch(paymentId);
+        const notes = payment.notes || {};
+        const userId = notes.discord_id || notes.userId || notes.user_id;
+
+        if (!isLikelyDiscordId(userId)) {
+            return res.status(400).json({ success: false, error: "Payment does not include a valid Discord ID" });
+        }
+
+        const premiumUser = paymentUtils.addPremiumUser(
+            userId,
+            payment.email || notes.email || "",
+            normalizePlan(notes.plan),
+            payment.id,
+            payment.amount
+        );
+
+        if (global.discordClient) {
+            await syncPremiumRoleForUser(global.discordClient, userId, true);
+        }
+
+        if (process.env.WEBHOOK_URL) {
+            webhookNotifier.notifyNewPremium(
+                process.env.WEBHOOK_URL,
+                userId,
+                payment.email || notes.email || "",
+                premiumUser.plan,
+                payment.amount
+            ).catch((err) => {
+                console.error("Premium webhook notify failed:", err.message);
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: "Payment verified and premium activated",
+            plan: premiumUser.plan,
+            expiresAt: premiumUser.expiresAt
+        });
+    } catch (error) {
+        console.error("Verify payment failed:", error.message);
+        return res.status(500).json({ success: false, error: "Payment verification failed" });
+    }
+});
+
+app.get("/api/premium-stats", (req, res) => {
+    try {
+        const statsData = paymentUtils.getPremiumStats();
+        return res.json({ success: true, stats: statsData });
+    } catch (error) {
+        console.error("Premium stats failed:", error.message);
+        return res.status(500).json({ success: false, error: "Failed to fetch premium stats" });
+    }
+});
+
+app.get("/api/premium-log", (req, res) => {
+    try {
+        const users = paymentUtils.getAllPremiumUsers();
+        const log = Object.entries(users).map(([userId, user]) => ({
+            userId,
+            email: user.email || "",
+            plan: user.plan || "monthly",
+            status: user.isActive ? "Active" : "Inactive",
+            purchasedAt: user.purchasedAt,
+            expiresAt: user.expiresAt || "Never (Lifetime)"
+        }));
+
+        log.sort((left, right) => {
+            return new Date(right.purchasedAt || 0) - new Date(left.purchasedAt || 0);
+        });
+
+        return res.json({
+            success: true,
+            totalRecords: log.length,
+            log
+        });
+    } catch (error) {
+        console.error("Premium log failed:", error.message);
+        return res.status(500).json({ success: false, error: "Failed to fetch premium log" });
+    }
+});
+
+app.post("/api/webhook-premium-users", async (req, res) => {
+    try {
+        const statsData = paymentUtils.getPremiumStats();
+        const sent = await webhookNotifier.notifyPremiumStats(
+            process.env.WEBHOOK_URL,
+            statsData
+        );
+
+        return res.json({ success: sent });
+    } catch (error) {
+        console.error("Premium webhook stats failed:", error.message);
+        return res.status(500).json({ success: false, error: "Webhook failed" });
+    }
+});
+
+app.use(express.static(path.join(__dirname, "website")));
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "website", "index.html"));
+});
+
+app.get("/premium", (req, res) => {
+    res.sendFile(path.join(__dirname, "website", "premium.html"));
+});
+
+app.get("/dashboard", (req, res) => {
+    res.sendFile(path.join(__dirname, "website", "premium-dashboard.html"));
+});
+
 app.listen(port, () => {
-  console.log(`🌐 Website server listening on port ${port}`);
+    console.log(`Website server listening on port ${port}`);
 });
 
 
 async function shutdown() {
-    console.log("🛑 Shutting down bot properly...");
+    console.log("ðŸ›‘ Shutting down bot properly...");
 
     try {
-        // ✅ Clear voice status in ALL guilds
+        // âœ… Clear voice status in ALL guilds
         for (const guild of client.guilds.cache.values()) {
             const vc = guild.members.me?.voice?.channel;
             if (vc) {
                 await setVoiceStatus(vc, null);
-                console.log(`🧹 Cleared voice status in ${guild.name}`);
+                console.log(`ðŸ§¹ Cleared voice status in ${guild.name}`);
             }
         }
 
-        // ✅ Destroy players
+        // âœ… Destroy players
         if (client.riffy) {
             client.riffy.players.forEach(player => {
                 try { player.destroy(); } catch {}
             });
         }
 
-        // ✅ Clear intervals
+        // âœ… Clear intervals
         activeIntervals.forEach(i => clearInterval(i));
 
-        // ✅ Disconnect bot
+        // âœ… Disconnect bot
         await client.destroy();
 
-        console.log("✅ Bot disconnected cleanly");
+        console.log("âœ… Bot disconnected cleanly");
 
     } catch (err) {
         console.error("Shutdown error:", err);
@@ -850,8 +1073,8 @@ client.once("clientReady", async () => {
 
     const readyTime = Date.now() - startupTime;
 
-    console.log(`✅ Logged in as ${client.user.tag}`);
-    console.log(`⚡ Bot ready in ${readyTime}ms`);
+    console.log(`âœ… Logged in as ${client.user.tag}`);
+    console.log(`âš¡ Bot ready in ${readyTime}ms`);
 
     // Global access for webhook
     global.discordClient = client;
@@ -867,7 +1090,7 @@ client.once("clientReady", async () => {
     startPremiumExpiryChecker(client);
     startupPremiumSync(client);
 
-    console.log("⭐ Premium systems initialized");
+    console.log("â­ Premium systems initialized");
 
 });
 process.on("SIGINT", shutdown);

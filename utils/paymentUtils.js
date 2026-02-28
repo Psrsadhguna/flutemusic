@@ -5,8 +5,45 @@
 
 const fs = require('fs');
 const path = require('path');
+const { getPlan, normalizePlan, getPlanExpiryMs } = require('./premiumPlans');
 
 const PREMIUM_DB_FILE = path.join(__dirname, '../premium_users.json');
+
+function parseIsoToMs(iso) {
+  if (!iso) return null;
+  const value = new Date(iso).getTime();
+  return Number.isFinite(value) ? value : null;
+}
+
+function isExpiredUser(user, nowMs = Date.now()) {
+  if (!user || !user.expiresAt) return false;
+  const expiryMs = parseIsoToMs(user.expiresAt);
+  if (expiryMs === null) return true;
+  return nowMs > expiryMs;
+}
+
+function getPaymentHistory(user) {
+  return Array.isArray(user?.paymentHistory) ? user.paymentHistory : [];
+}
+
+function findPaymentOwner(users, paymentId) {
+  if (!paymentId) return null;
+
+  for (const [userId, user] of Object.entries(users)) {
+    if (!user) continue;
+
+    if (user.paymentId === paymentId) {
+      return userId;
+    }
+
+    const history = getPaymentHistory(user);
+    if (history.some((entry) => entry && entry.paymentId === paymentId)) {
+      return userId;
+    }
+  }
+
+  return null;
+}
 
 /**
  * Load premium users from database file
@@ -40,29 +77,77 @@ function savePremiumUsers(users) {
  * Add a user to premium
  * @param {string} userId - Discord User ID
  * @param {string} email - User email
- * @param {string} plan - 'monthly' or 'lifetime'
+ * @param {string} plan - 'weekly', 'monthly' or 'lifetime'
  * @param {string} paymentId - Razorpay Payment ID
  * @param {number} amount - Amount paid in paise
  */
 function addPremiumUser(userId, email, plan, paymentId, amount) {
-  const users = loadPremiumUsers();
-  
-  const expiresAt = plan === 'monthly' 
-    ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() 
-    : null; // Lifetime has no expiration
+  if (!userId) {
+    throw new Error('User ID is required');
+  }
 
-  users[userId] = {
-    email: email,
-    plan: plan,
-    paymentId: paymentId,
-    amount: amount,
-    purchasedAt: new Date().toISOString(),
-    expiresAt: expiresAt,
-    isActive: true
+  const users = loadPremiumUsers();
+  const normalizedUserId = String(userId).trim();
+  const normalizedPlan = normalizePlan(plan);
+  const nowMs = Date.now();
+  const nowIso = new Date(nowMs).toISOString();
+
+  const existing = users[normalizedUserId] || {};
+  const existingHistory = getPaymentHistory(existing);
+
+  if (paymentId) {
+    const ownerId = findPaymentOwner(users, paymentId);
+    if (ownerId && ownerId !== normalizedUserId) {
+      throw new Error(`Payment ${paymentId} is already linked to another user`);
+    }
+
+    const alreadyProcessedForUser = existingHistory.some(
+      (entry) => entry && entry.paymentId === paymentId
+    );
+    if (alreadyProcessedForUser || existing.paymentId === paymentId) {
+      return existing;
+    }
+  }
+
+  const currentExpiryMs = parseIsoToMs(existing.expiresAt);
+  const renewalBaseMs = currentExpiryMs && currentExpiryMs > nowMs
+    ? currentExpiryMs
+    : nowMs;
+
+  const hasActiveLifetime =
+    existing.plan === 'lifetime' &&
+    existing.isActive === true &&
+    !existing.expiresAt;
+
+  const finalPlan = hasActiveLifetime ? 'lifetime' : normalizedPlan;
+  const finalPlanMeta = getPlan(finalPlan);
+  const nextExpiryMs = getPlanExpiryMs(finalPlan, renewalBaseMs);
+  const nextExpiryIso = nextExpiryMs ? new Date(nextExpiryMs).toISOString() : null;
+
+  const effectiveAmount = Number.isFinite(amount) ? amount : finalPlanMeta.amount;
+
+  const nextHistory = existingHistory.slice(-199);
+  nextHistory.push({
+    paymentId: paymentId || null,
+    plan: normalizedPlan,
+    amount: effectiveAmount,
+    purchasedAt: nowIso
+  });
+
+  users[normalizedUserId] = {
+    ...existing,
+    email: email || existing.email || '',
+    plan: finalPlan,
+    paymentId: paymentId || existing.paymentId || null,
+    amount: effectiveAmount,
+    purchasedAt: nowIso,
+    expiresAt: finalPlan === 'lifetime' ? null : nextExpiryIso,
+    isActive: true,
+    paymentHistory: nextHistory
   };
 
   savePremiumUsers(users);
-  return users[userId];
+  return users[normalizedUserId];
 }
 
 /**
@@ -70,21 +155,20 @@ function addPremiumUser(userId, email, plan, paymentId, amount) {
  * @param {string} userId - Discord User ID
  */
 function isPremium(userId) {
+  if (!userId) return false;
+
   const users = loadPremiumUsers();
-  const user = users[userId];
+  const normalizedUserId = String(userId).trim();
+  const user = users[normalizedUserId];
 
   if (!user || !user.isActive) {
     return false;
   }
 
-  // Check if monthly premium has expired
-  if (user.expiresAt) {
-    const expiryDate = new Date(user.expiresAt);
-    if (new Date() > expiryDate) {
-      user.isActive = false;
-      savePremiumUsers(users);
-      return false;
-    }
+  if (isExpiredUser(user)) {
+    user.isActive = false;
+    savePremiumUsers(users);
+    return false;
   }
 
   return true;
@@ -95,8 +179,9 @@ function isPremium(userId) {
  * @param {string} userId - Discord User ID
  */
 function getPremiumUser(userId) {
+  if (!userId) return null;
   const users = loadPremiumUsers();
-  return users[userId] || null;
+  return users[String(userId).trim()] || null;
 }
 
 /**
@@ -104,9 +189,11 @@ function getPremiumUser(userId) {
  * @param {string} userId - Discord User ID
  */
 function removePremiumUser(userId) {
+  if (!userId) return false;
   const users = loadPremiumUsers();
-  if (users[userId]) {
-    users[userId].isActive = false;
+  const normalizedUserId = String(userId).trim();
+  if (users[normalizedUserId]) {
+    users[normalizedUserId].isActive = false;
     savePremiumUsers(users);
     return true;
   }
@@ -121,20 +208,20 @@ function getAllPremiumUsers() {
 }
 
 /**
- * Check and cleanup expired monthly premiums
+ * Check and cleanup expired premiums
  */
 function cleanupExpiredPremiums() {
   const users = loadPremiumUsers();
   let updated = false;
+  const expiredUserIds = [];
+  const nowMs = Date.now();
 
   for (const userId in users) {
     const user = users[userId];
-    if (user.expiresAt && user.isActive) {
-      const expiryDate = new Date(user.expiresAt);
-      if (new Date() > expiryDate) {
-        user.isActive = false;
-        updated = true;
-      }
+    if (user && user.isActive && isExpiredUser(user, nowMs)) {
+      user.isActive = false;
+      expiredUserIds.push(userId);
+      updated = true;
     }
   }
 
@@ -142,7 +229,10 @@ function cleanupExpiredPremiums() {
     savePremiumUsers(users);
   }
 
-  return updated;
+  return {
+    updated,
+    expiredUserIds
+  };
 }
 
 /**
@@ -151,6 +241,7 @@ function cleanupExpiredPremiums() {
 function getPremiumStats() {
   const users = loadPremiumUsers();
   
+  let weekly = 0;
   let monthly = 0;
   let lifetime = 0;
   let active = 0;
@@ -160,6 +251,7 @@ function getPremiumStats() {
   for (const userId in users) {
     const user = users[userId];
     
+    if (user.plan === 'weekly') weekly++;
     if (user.plan === 'monthly') monthly++;
     if (user.plan === 'lifetime') lifetime++;
     if (user.isActive) active++;
@@ -172,6 +264,7 @@ function getPremiumStats() {
     totalUsers: Object.keys(users).length,
     activeUsers: active,
     expiredUsers: expired,
+    weeklySubscribers: weekly,
     monthlySubscribers: monthly,
     lifetimeUsers: lifetime,
     totalRevenue: totalRevenue,

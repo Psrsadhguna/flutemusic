@@ -1,175 +1,229 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Flute Music Premium</title>
 <link rel="stylesheet" href="style.css">
-
 <style>
-body{
-  background:#0b1220;
-  color:white;
-  font-family:Arial;
-  margin:0;
+:root {
+  --bg: #0b1220;
+  --panel: #111827;
+  --gold: #f6c945;
+  --text: #f9fafb;
+  --muted: #b6becd;
 }
 
-.premium-container{
-  max-width:900px;
-  margin:auto;
-  padding:60px 20px;
-  text-align:center;
+* { box-sizing: border-box; }
+
+body {
+  background: radial-gradient(1200px 700px at 10% -10%, #1b2a4d, var(--bg));
+  color: var(--text);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
 }
 
-.premium-title{
-  font-size:42px;
-  color:#FFD700;
+.premium-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 56px 18px 72px;
+  text-align: center;
 }
 
-.cards{
-  display:flex;
-  gap:25px;
-  justify-content:center;
-  flex-wrap:wrap;
-  margin-top:40px;
+.premium-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--gold);
+  margin: 0 0 8px;
 }
 
-.card{
-  background:#111827;
-  padding:30px;
-  border-radius:15px;
-  width:260px;
-  box-shadow:0 0 25px rgba(255,215,0,0.15);
+.subtext {
+  color: var(--muted);
+  margin-bottom: 36px;
 }
 
-.card h3{
-  color:#FFD700;
+.cards {
+  display: flex;
+  gap: 22px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.buy-btn{
-  margin-top:20px;
-  padding:12px 20px;
-  background:#FFD700;
-  border:none;
-  border-radius:8px;
-  font-size:16px;
-  cursor:pointer;
-  font-weight:bold;
-  color:#0b1220;
-  transition:all 0.3s ease;
+.card {
+  background: linear-gradient(180deg, #1a2440, var(--panel));
+  padding: 24px;
+  border-radius: 14px;
+  width: 300px;
+  border: 1px solid rgba(246, 201, 69, 0.35);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+  text-align: left;
 }
 
-.buy-btn:hover{
-  transform:scale(1.05);
-  background:#ffed4e;
+.card h3 {
+  color: var(--gold);
+  margin: 0 0 6px;
+  font-size: 1.35rem;
+}
+
+.price {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 8px 0 14px;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  min-height: 92px;
+}
+
+.buy-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--gold);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-weight: 700;
+  color: #1a1a1a;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.buy-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 32px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--text);
 }
 </style>
 </head>
 
 <body>
-
 <div class="premium-container">
+  <h1 class="premium-title">Flute Music Premium</h1>
+  <p class="subtext">Weekly and monthly subscriptions with instant Discord activation.</p>
 
-<h1 class="premium-title">💎 Flute Music Premium</h1>
-<p>Upgrade your music experience with powerful premium features.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>Weekly</h3>
+      <p class="price">INR 99</p>
+      <ul class="list">
+        <li>7 days premium access</li>
+        <li>All filters and effects</li>
+        <li>Priority support</li>
+      </ul>
+      <button class="buy-btn" onclick="startPayment('weekly')">Buy Weekly Plan</button>
+    </div>
 
-<div class="cards">
+    <div class="card">
+      <h3>Monthly</h3>
+      <p class="price">INR 299</p>
+      <ul class="list">
+        <li>30 days premium access</li>
+        <li>All filters and effects</li>
+        <li>Best value for regular users</li>
+      </ul>
+      <button class="buy-btn" onclick="startPayment('monthly')">Buy Monthly Plan</button>
+    </div>
 
-<div class="card">
-<h3>Basic Premium</h3>
-<p>✔ All Filters</p>
-<p>✔ Effects Access</p>
-<p>✔ Premium Playback</p>
-<p>✔ Priority Support</p>
-<p style="color:#FFD700;font-size:24px;margin:10px 0;">TEST MODE</p>
+    <div class="card">
+      <h3>Lifetime</h3>
+      <p class="price">INR 999</p>
+      <ul class="list">
+        <li>One-time payment</li>
+        <li>Never expires</li>
+        <li>All future premium updates</li>
+      </ul>
+      <button class="buy-btn" onclick="startPayment('lifetime')">Buy Lifetime Plan</button>
+    </div>
+  </div>
 
-<button class="buy-btn" onclick="startPayment('monthly')">Buy ₹299 / month</button>
+  <a class="back-link" href="index.html">Back to Home</a>
 </div>
-
-<div class="card">
-<h3>Lifetime Premium</h3>
-<p>✔ Everything Included</p>
-<p>✔ Lifetime Access</p>
-<p>✔ Future Updates</p>
-<p>✔ VIP Features</p>
-<p style="color:#FFD700;font-size:24px;margin:10px 0;">Custom Price</p>
-
-<button class="buy-btn" onclick="startPayment('lifetime')">Buy ₹999 one-time</button>
-</div>
-
-</div>
-
-<br><br>
-
-<a href="index.html" style="color:#9ca3af;">← Back to Home</a>
-
-</div>
-
-<script>
-function contactForLifetime() {
-  alert('For Lifetime Premium pricing, please join our support server:\nhttps://discord.gg/A5R9HWGkfF');
-}
-</script>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 const plans = {
-  monthly: { amount: 29900, description: '1 month of premium features' },
-  lifetime: { amount: 99900, description: 'Lifetime premium access' }
+  weekly: { amount: 9900, description: "7 days of premium features" },
+  monthly: { amount: 29900, description: "30 days of premium features" },
+  lifetime: { amount: 99900, description: "Lifetime premium access" }
 };
 
+const discordIdPattern = /^\d{15,22}$/;
+
 async function startPayment(plan) {
-  const userId = prompt('Enter your Discord user ID (e.g. 123456789012345678)');
-  if (!userId) return alert('Discord ID is required to grant premium.');
-  const userEmail = prompt('Enter your email (optional)');
+  const userId = prompt("Enter your Discord user ID (for premium activation)");
+  if (!userId) {
+    alert("Discord ID is required.");
+    return;
+  }
+
+  if (!discordIdPattern.test(userId.trim())) {
+    alert("Enter a valid Discord user ID.");
+    return;
+  }
+
+  const userEmail = prompt("Enter your email (optional)") || "";
 
   try {
-    const res = await fetch('/api/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan, userEmail: userEmail || '', userId })
+    const res = await fetch("/api/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan, userEmail, userId: userId.trim() })
     });
+
     const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Order creation failed');
+    if (!data.success) {
+      throw new Error(data.error || "Order creation failed");
+    }
 
     const options = {
       key: data.key,
       amount: data.amount,
       currency: data.currency,
-      name: 'Flute Music Premium',
+      name: "Flute Music Premium",
       description: plans[plan].description,
       order_id: data.orderId,
+      prefill: { email: userEmail },
+      notes: { plan, userId: userId.trim() },
       handler: async function (response) {
-        // verify payment on server
-        const verify = await fetch('/api/verify-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(response)
-        });
-        const v = await verify.json();
-        if (v.success) {
-          alert('Payment successful! You now have premium access.');
-        } else {
-          alert('Payment verified, but something went wrong: ' + (v.error || v.message));
+        try {
+          const verifyRes = await fetch("/api/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response)
+          });
+
+          const verifyData = await verifyRes.json();
+          if (!verifyData.success) {
+            throw new Error(verifyData.error || "Verification failed");
+          }
+
+          alert("Payment successful. Premium is now active on your Discord account.");
+        } catch (verifyError) {
+          alert("Payment captured, but verification failed: " + verifyError.message);
         }
-      },
-      prefill: {
-        email: userEmail || ''
-      },
-      notes: {
-        plan: plan,
-        userId: userId
       }
     };
 
     const rzp = new Razorpay(options);
     rzp.open();
-  } catch (err) {
-    console.error(err);
-    alert('Error starting payment: ' + err.message);
+  } catch (error) {
+    console.error(error);
+    alert("Unable to start payment: " + error.message);
   }
 }
 </script>
-
 </body>
 </html>

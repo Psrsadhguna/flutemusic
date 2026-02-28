@@ -1,172 +1,229 @@
-const express = require('express');
-const path = require('path');
-require('dotenv').config();
+﻿const express = require("express");
+const path = require("path");
+const crypto = require("crypto");
+const Razorpay = require("razorpay");
+require("dotenv").config();
 
-const Razorpay = require('razorpay');
-const paymentUtils = require('./utils/paymentUtils');
-const webhookNotifier = require('./utils/webhookNotifier');
+const paymentUtils = require("./utils/paymentUtils");
+const webhookNotifier = require("./utils/webhookNotifier");
+const { listPlans, normalizePlan } = require("./utils/premiumPlans");
+const webhookRoutes = require("./server/webhook");
 
 const app = express();
 const port = process.env.PORT || 4000;
-const webhookRoutes = require('./server/webhook');
+const premiumPlans = listPlans();
+
+let razorpayClient = null;
+
+function getRazorpayClient() {
+  if (razorpayClient) return razorpayClient;
+
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    throw new Error("RAZORPAY_NOT_CONFIGURED");
+  }
+
+  razorpayClient = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+  });
+
+  return razorpayClient;
+}
+
+function timingSafeHexEqual(left, right) {
+  if (!left || !right) return false;
+
+  const a = Buffer.from(left, "utf8");
+  const b = Buffer.from(right, "utf8");
+
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+function isLikelyDiscordId(userId) {
+  return /^[0-9]{15,22}$/.test(String(userId || "").trim());
+}
+
+app.use(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  webhookRoutes
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'website')));
+app.use(express.static(path.join(__dirname, "website")));
 
-// =======================
-// Razorpay Init
-// =======================
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "website", "index.html"));
 });
 
-// =======================
-// Plans
-// =======================
+app.get("/premium", (req, res) => {
+  res.sendFile(path.join(__dirname, "website", "premium.html"));
+});
+
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "website", "premium-dashboard.html"));
+});
+
 app.post("/api/create-order", async (req, res) => {
   try {
+    const { plan, userId, userEmail } = req.body || {};
+    const selectedPlan = String(plan || "monthly").trim().toLowerCase();
 
-    const { userId, plan } = req.body;
+    if (!premiumPlans[selectedPlan]) {
+      return res.status(400).json({ success: false, error: "Invalid plan" });
+    }
 
-    const order = await razorpay.orders.create({
-      amount: 100, // ₹1 test
-      currency: "INR",
+    if (!isLikelyDiscordId(userId)) {
+      return res.status(400).json({ success: false, error: "Valid Discord ID is required" });
+    }
 
-      notes: {
-        discord_id: String(userId),
-        plan: plan || "monthly"
-      }
-    });
+    const clientForPayment = getRazorpayClient();
+    const planData = premiumPlans[selectedPlan];
 
-    console.log("✅ Order created for:", userId);
-
-    res.json({
-      orderId: order.id,
-      key: process.env.RAZORPAY_KEY_ID,
-      amount: order.amount
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Order failed");
-  }
-});
-// =======================
-// Pages
-// =======================
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'website', 'index.html'));
-});
-
-app.get('/premium', (req, res) => {
-  res.sendFile(path.join(__dirname, 'website', 'premium.html'));
-});
-
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'website', 'premium-dashboard.html'));
-});
-
-// =======================
-// CREATE ORDER ✅ FINAL
-// =======================
-
-app.post('/api/create-order', async (req, res) => {
-  try {
-
-    const { plan, userId, userEmail } = req.body;
-
-    if (!userId)
-      return res.status(400).json({ error: "Discord ID missing" });
-
-    if (!plans[plan])
-      return res.status(400).json({ error: "Invalid plan" });
-
-    const planData = plans[plan];
-
-    const order = await razorpay.orders.create({
+    const order = await clientForPayment.orders.create({
       amount: planData.amount,
       currency: planData.currency,
-      receipt: `receipt_${Date.now()}`,
-
+      receipt: `rcpt_${Date.now()}_${String(userId).slice(-6)}`,
       notes: {
-        discord_id: String(userId), // ⭐ REQUIRED
-        email: userEmail || "unknown",
-        plan: plan
+        discord_id: String(userId),
+        userId: String(userId),
+        email: userEmail || "",
+        plan: selectedPlan
       }
     });
 
-    console.log("✅ Order created for:", userId);
-
-    res.json({
+    return res.json({
       success: true,
       orderId: order.id,
       key: process.env.RAZORPAY_KEY_ID,
       amount: order.amount,
       currency: order.currency
     });
-
-  } catch (err) {
-    console.error("Order Error:", err);
-    res.status(500).json({ error: "Order creation failed" });
+  } catch (error) {
+    console.error("Create order failed:", error.message);
+    const isConfigError = error.message === "RAZORPAY_NOT_CONFIGURED";
+    return res.status(500).json({
+      success: false,
+      error: isConfigError
+        ? "Razorpay is not configured on server"
+        : "Order creation failed"
+    });
   }
 });
-// =======================
-// Premium Stats Webhook
-// =======================
 
-app.post('/api/webhook-premium-users', async (req, res) => {
+app.post("/api/verify-payment", async (req, res) => {
   try {
-    const stats = paymentUtils.getPremiumStats();
+    const {
+      razorpay_order_id: orderId,
+      razorpay_payment_id: paymentId,
+      razorpay_signature: signature
+    } = req.body || {};
 
-    const sent = await webhookNotifier.notifyPremiumStats(
-      process.env.WEBHOOK_URL,
-      stats
+    if (!orderId || !paymentId || !signature) {
+      return res.status(400).json({ success: false, error: "Missing payment verification fields" });
+    }
+
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(500).json({ success: false, error: "Razorpay key secret is missing" });
+    }
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${orderId}|${paymentId}`)
+      .digest("hex");
+
+    if (!timingSafeHexEqual(signature, expectedSignature)) {
+      return res.status(400).json({ success: false, error: "Invalid payment signature" });
+    }
+
+    const clientForPayment = getRazorpayClient();
+    const payment = await clientForPayment.payments.fetch(paymentId);
+    const notes = payment.notes || {};
+    const userId = notes.discord_id || notes.userId || notes.user_id;
+
+    if (!isLikelyDiscordId(userId)) {
+      return res.status(400).json({ success: false, error: "Payment does not include a valid Discord ID" });
+    }
+
+    const premiumUser = paymentUtils.addPremiumUser(
+      userId,
+      payment.email || notes.email || "",
+      normalizePlan(notes.plan),
+      payment.id,
+      payment.amount
     );
 
-    res.json({ success: sent });
+    if (process.env.WEBHOOK_URL) {
+      webhookNotifier.notifyNewPremium(
+        process.env.WEBHOOK_URL,
+        userId,
+        payment.email || notes.email || "",
+        premiumUser.plan,
+        payment.amount
+      ).catch((err) => {
+        console.error("Premium webhook notify failed:", err.message);
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Payment verified and premium activated",
+      plan: premiumUser.plan,
+      expiresAt: premiumUser.expiresAt
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Webhook failed' });
+    console.error("Verify payment failed:", error.message);
+    return res.status(500).json({ success: false, error: "Payment verification failed" });
   }
 });
 
-// =======================
-// Premium Log
-// =======================
+app.get("/api/premium-stats", (req, res) => {
+  try {
+    const stats = paymentUtils.getPremiumStats();
+    return res.json({ success: true, stats });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: "Failed to fetch premium stats" });
+  }
+});
 
-app.get('/api/premium-log', (req, res) => {
+app.post("/api/webhook-premium-users", async (req, res) => {
+  try {
+    const stats = paymentUtils.getPremiumStats();
+    const sent = await webhookNotifier.notifyPremiumStats(process.env.WEBHOOK_URL, stats);
+    return res.json({ success: sent });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: "Webhook failed" });
+  }
+});
+
+app.get("/api/premium-log", (req, res) => {
   try {
     const allUsers = paymentUtils.getAllPremiumUsers();
-
     const log = Object.entries(allUsers).map(([id, user]) => ({
       userId: id,
-      email: user.email,
-      plan: user.plan,
-      status: user.isActive ? '✅ Active' : '❌ Inactive',
+      email: user.email || "",
+      plan: user.plan || "monthly",
+      status: user.isActive ? "Active" : "Inactive",
       purchasedAt: user.purchasedAt,
-      expiresAt: user.expiresAt || 'Lifetime'
+      expiresAt: user.expiresAt || "Never (Lifetime)"
     }));
 
-    res.json({
+    return res.json({
       success: true,
       totalRecords: log.length,
-      log: log.sort((a,b)=> new Date(b.purchasedAt)-new Date(a.purchasedAt))
+      log: log.sort((a, b) => new Date(b.purchasedAt || 0) - new Date(a.purchasedAt || 0))
     });
-
   } catch {
-    res.status(500).json({ error: 'Failed to fetch log' });
+    return res.status(500).json({ success: false, error: "Failed to fetch log" });
   }
 });
 
-// =======================
-// Start Server
-// =======================
-
 app.listen(port, () => {
-  console.log(`🌐 Website running on port ${port}`);
+  console.log(`Website running on port ${port}`);
 
-  if (!process.env.RAZORPAY_KEY_ID)
-    console.warn("⚠ Razorpay keys missing");
+  if (!process.env.RAZORPAY_KEY_ID) {
+    console.warn("Razorpay keys are missing");
+  }
 });
