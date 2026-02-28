@@ -112,12 +112,12 @@ body {
 <body>
 <div class="premium-container">
   <h1 class="premium-title">Flute Music Premium</h1>
-  <p class="subtext">Weekly and monthly subscriptions with instant Discord activation.</p>
+  <p class="subtext" id="plan-subtext">Weekly and monthly subscriptions with instant Discord activation.</p>
 
   <div class="cards">
     <div class="card">
       <h3>Weekly</h3>
-      <p class="price">INR 99</p>
+      <p class="price" id="price-weekly">INR 99</p>
       <ul class="list">
         <li>7 days premium access</li>
         <li>All filters and effects</li>
@@ -128,7 +128,7 @@ body {
 
     <div class="card">
       <h3>Monthly</h3>
-      <p class="price">INR 299</p>
+      <p class="price" id="price-monthly">INR 299</p>
       <ul class="list">
         <li>30 days premium access</li>
         <li>All filters and effects</li>
@@ -139,7 +139,7 @@ body {
 
     <div class="card">
       <h3>Lifetime</h3>
-      <p class="price">INR 999</p>
+      <p class="price" id="price-lifetime">INR 999</p>
       <ul class="list">
         <li>One-time payment</li>
         <li>Never expires</li>
@@ -154,13 +154,46 @@ body {
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-const plans = {
+let plans = {
   weekly: { amount: 9900, description: "7 days of premium features" },
   monthly: { amount: 29900, description: "30 days of premium features" },
   lifetime: { amount: 99900, description: "Lifetime premium access" }
 };
 
 const discordIdPattern = /^\d{15,22}$/;
+
+function formatRupees(amount) {
+  const value = Number(amount || 0) / 100;
+  return `INR ${Number.isInteger(value) ? value.toString() : value.toFixed(2)}`;
+}
+
+async function loadPlanPricing() {
+  try {
+    const response = await fetch("/api/premium-plans");
+    const data = await response.json();
+
+    if (!data.success || !data.plans) {
+      return;
+    }
+
+    plans = data.plans;
+
+    const weekly = plans.weekly?.amount;
+    const monthly = plans.monthly?.amount;
+    const lifetime = plans.lifetime?.amount;
+
+    if (weekly) document.getElementById("price-weekly").textContent = formatRupees(weekly);
+    if (monthly) document.getElementById("price-monthly").textContent = formatRupees(monthly);
+    if (lifetime) document.getElementById("price-lifetime").textContent = formatRupees(lifetime);
+
+    if (data.testMode) {
+      const subtext = document.getElementById("plan-subtext");
+      subtext.textContent = "Test pricing is enabled. Current charge is configured for testing.";
+    }
+  } catch (error) {
+    console.warn("Failed to load plan pricing:", error.message);
+  }
+}
 
 async function startPayment(plan) {
   const userId = prompt("Enter your Discord user ID (for premium activation)");
@@ -224,6 +257,8 @@ async function startPayment(plan) {
     alert("Unable to start payment: " + error.message);
   }
 }
+
+loadPlanPricing();
 </script>
 </body>
 </html>

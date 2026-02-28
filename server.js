@@ -6,7 +6,7 @@ require("dotenv").config();
 
 const paymentUtils = require("./utils/paymentUtils");
 const webhookNotifier = require("./utils/webhookNotifier");
-const { listPlans, normalizePlan } = require("./utils/premiumPlans");
+const { listPlans, normalizePlan, isTestAmountEnabled } = require("./utils/premiumPlans");
 const webhookRoutes = require("./server/webhook");
 
 const app = express();
@@ -64,6 +64,28 @@ app.get("/premium", (req, res) => {
 
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "website", "premium-dashboard.html"));
+});
+
+app.get("/api/premium-plans", (req, res) => {
+  const plans = Object.fromEntries(
+    Object.entries(premiumPlans).map(([key, value]) => [
+      key,
+      {
+        key: value.key,
+        label: value.label,
+        amount: value.amount,
+        amountInRupees: (value.amount / 100).toFixed(2),
+        currency: value.currency,
+        description: value.description
+      }
+    ])
+  );
+
+  return res.json({
+    success: true,
+    testMode: isTestAmountEnabled(),
+    plans
+  });
 });
 
 app.post("/api/create-order", async (req, res) => {

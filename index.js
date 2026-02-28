@@ -12,7 +12,7 @@ const statusRotator = require("./utils/statusRotator.js");
 const { requirePremium } = require("./utils/requirePremium");
 const paymentUtils = require("./utils/paymentUtils");
 const webhookNotifier = require("./utils/webhookNotifier");
-const { listPlans, normalizePlan } = require("./utils/premiumPlans");
+const { listPlans, normalizePlan, isTestAmountEnabled } = require("./utils/premiumPlans");
 const { syncPremiumRoleForUser } = require("./premium/roleSystem");
 const fs = require("fs");
 const path = require("path");
@@ -842,6 +842,28 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.get("/api/premium-plans", (req, res) => {
+    const plans = Object.fromEntries(
+        Object.entries(premiumPlans).map(([key, value]) => [
+            key,
+            {
+                key: value.key,
+                label: value.label,
+                amount: value.amount,
+                amountInRupees: (value.amount / 100).toFixed(2),
+                currency: value.currency,
+                description: value.description
+            }
+        ])
+    );
+
+    return res.json({
+        success: true,
+        testMode: isTestAmountEnabled(),
+        plans
+    });
+});
 
 app.post("/api/create-order", async (req, res) => {
     try {
