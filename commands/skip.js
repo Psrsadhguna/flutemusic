@@ -12,6 +12,7 @@ module.exports = {
         if (!player.queue.length) return messages.error(message.channel, "❌ No more tracks in queue to skip to!");
         
         const skipped = player.queue.current;
+        try { await messages.clearNowPlaying(client, player); } catch (e) {}
         player.stop();
         
         const embed = new EmbedBuilder()

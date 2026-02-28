@@ -1320,6 +1320,7 @@ client.on('interactionCreate', async (interaction) => {
                 currentTrack = player.nowPlaying;
             }
             const skipped = currentTrack;
+            try { await messages.clearNowPlaying(client, player); } catch (e) {}
             await player.stop();
             await interaction.reply({ content: `Skipped: **${skipped?.info?.title || 'Unknown'}**`, flags: 64 });
         } catch (err) {
@@ -1548,6 +1549,8 @@ client.riffy.on("trackStart", async (player, track) => {
             const textChannel = await client.channels.fetch(player.textChannel).catch(() => null);
             if (textChannel && textChannel.isTextBased?.()) {
                 try {
+                    // Ensure previous track embed is removed immediately on song change.
+                    await messages.clearNowPlaying(client, player);
                     await messages.nowPlaying(textChannel, track, player, client);
                 } catch (e) {
                     console.error('Failed to send Now Playing embed:', e.message);
