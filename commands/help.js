@@ -25,6 +25,12 @@ const COMMAND_HELP_NOTES = {
     slowedreverb: [
         'Example:',
         '- `fslowedreverb` (toggle ON/OFF)'
+    ],
+    trial: [
+        'Flow:',
+        '- `ftrial status`: show starter eligibility + tokens',
+        '- `ftrial start`: one-time starter trial',
+        '- `ftrial use`: spend 1 token for a trial extension'
     ]
 };
 

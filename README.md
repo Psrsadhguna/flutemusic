@@ -59,9 +59,6 @@ OWNERS=comma,separated,user_ids
 WEBHOOK_URL=
 FEEDBACK_WEBHOOK_URL=
 
-# Optional (premium enforcement)
-ENFORCE_PREMIUM=false
-```
 
 ### 4. Run
 ```bash

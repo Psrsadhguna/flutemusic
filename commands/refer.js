@@ -59,7 +59,7 @@ module.exports = {
             return message.channel.send({ embeds: [embed] });
         }
 
-        const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&scope=bot&permissions=36724736`;
+        const inviteUrl = `https://discord.com/oauth2/authorize?client_id=1466777461680373820&permissions=281474980236544&scope=bot%20applications.commands`;
         const embed = new EmbedBuilder()
             .setColor("#7C4DFF")
             .setTitle("Your Referral Code")

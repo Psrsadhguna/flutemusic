@@ -23,7 +23,7 @@ async function requirePremium(message) {
       "Core playback commands are always free.\n" +
       `Plans: ${weeklyPlan.label} INR ${weeklyPlan.amount / 100}, ` +
       `${monthlyPlan.label} INR ${monthlyPlan.amount / 100}.\n\n` +
-      "Use `f premium` or open the premium website to buy access."
+      "Try `ftrial start` (one-time) or `ftrial use` (token-based), or use `f premium` to buy access."
     )
     .setFooter({ text: "Premium unlocks advanced filters, 24/7 mode, and extra save slots" });
 

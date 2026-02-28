@@ -1,0 +1,17 @@
+{
+  "users": {
+    "744044949942829127": {
+      "userId": "744044949942829127",
+      "referralCode": "FM829127",
+      "referredBy": null,
+      "referrals": [],
+      "trialTokens": 0,
+      "createdAt": "2026-02-28T08:24:27.678Z",
+      "campaignJoinedAt": null,
+      "lastTrialRedeemedAt": null
+    }
+  },
+  "referralIndex": {
+    "FM829127": "744044949942829127"
+  }
+}

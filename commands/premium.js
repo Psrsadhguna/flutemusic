@@ -79,6 +79,10 @@ module.exports = {
           value: `${lifetimePlan.description}`
         },
         {
+          name: "Free Trial",
+          value: "Use `ftrial start` (one-time) or `ftrial use` (with tokens)."
+        },
+        {
           name: "Purchase Link",
           value: `[Open premium page](${webURL})`
         }

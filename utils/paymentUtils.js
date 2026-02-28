@@ -8,6 +8,9 @@ const path = require('path');
 const { getPlan, normalizePlan, getPlanExpiryMs } = require('./premiumPlans');
 
 const PREMIUM_DB_FILE = path.join(__dirname, '../premium_users.json');
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_TRIAL_DAYS = 3;
+const STARTER_TRIAL_REASON = 'starter_trial';
 
 function parseIsoToMs(iso) {
   if (!iso) return null;
@@ -32,6 +35,41 @@ function parsePositiveInt(value, fallback) {
     return fallback;
   }
   return parsed;
+}
+
+function hasActiveLifetime(user) {
+  return (
+    user?.plan === 'lifetime' &&
+    user?.isActive === true &&
+    !user?.expiresAt
+  );
+}
+
+function isUserActive(user, nowMs = Date.now()) {
+  return Boolean(user?.isActive) && !isExpiredUser(user, nowMs);
+}
+
+function getNormalizedTrialMeta(user) {
+  const source = user && typeof user.trial === 'object'
+    ? user.trial
+    : {};
+
+  const remindersSent = source.remindersSent && typeof source.remindersSent === 'object'
+    ? { ...source.remindersSent }
+    : {};
+
+  return {
+    days: parsePositiveInt(source.days, 0),
+    reason: typeof source.reason === 'string' ? source.reason : '',
+    grantedAt: typeof source.grantedAt === 'string' ? source.grantedAt : null,
+    uses: parsePositiveInt(source.uses, 0),
+    starterUsed: source.starterUsed === true,
+    lastReason: typeof source.lastReason === 'string' ? source.lastReason : null,
+    lastGrantedAt: typeof source.lastGrantedAt === 'string' ? source.lastGrantedAt : null,
+    remindersSent,
+    expiryNotifiedAt: typeof source.expiryNotifiedAt === 'string' ? source.expiryNotifiedAt : null,
+    expiryNotifiedFor: typeof source.expiryNotifiedFor === 'string' ? source.expiryNotifiedFor : null
+  };
 }
 
 function findPaymentOwner(users, paymentId) {
@@ -122,12 +160,9 @@ function addPremiumUser(userId, email, plan, paymentId, amount) {
     ? currentExpiryMs
     : nowMs;
 
-  const hasActiveLifetime =
-    existing.plan === 'lifetime' &&
-    existing.isActive === true &&
-    !existing.expiresAt;
+  const activeLifetime = hasActiveLifetime(existing);
 
-  const finalPlan = hasActiveLifetime ? 'lifetime' : normalizedPlan;
+  const finalPlan = activeLifetime ? 'lifetime' : normalizedPlan;
   const finalPlanMeta = getPlan(finalPlan);
   const nextExpiryMs = getPlanExpiryMs(finalPlan, renewalBaseMs);
   const nextExpiryIso = nextExpiryMs ? new Date(nextExpiryMs).toISOString() : null;
@@ -169,20 +204,21 @@ function grantTrialPremium(userId, days = 3, reason = 'trial') {
     throw new Error('User ID is required');
   }
 
-  const validDays = parsePositiveInt(days, 3);
+  const validDays = parsePositiveInt(days, DEFAULT_TRIAL_DAYS);
   const users = loadPremiumUsers();
   const normalizedUserId = String(userId).trim();
   const nowMs = Date.now();
   const nowIso = new Date(nowMs).toISOString();
+  const normalizedReason = String(reason || 'trial').trim().toLowerCase() || 'trial';
 
   const existing = users[normalizedUserId] || {};
+  const existingTrialMeta = getNormalizedTrialMeta(existing);
 
-  const hasActiveLifetime =
-    existing.plan === 'lifetime' &&
-    existing.isActive === true &&
-    !existing.expiresAt;
+  if (hasActiveLifetime(existing)) {
+    return existing;
+  }
 
-  if (hasActiveLifetime) {
+  if (isUserActive(existing, nowMs) && existing.plan && existing.plan !== 'trial') {
     return existing;
   }
 
@@ -190,7 +226,7 @@ function grantTrialPremium(userId, days = 3, reason = 'trial') {
   const baseMs = currentExpiryMs && currentExpiryMs > nowMs
     ? currentExpiryMs
     : nowMs;
-  const nextExpiryIso = new Date(baseMs + (validDays * 24 * 60 * 60 * 1000)).toISOString();
+  const nextExpiryIso = new Date(baseMs + (validDays * DAY_MS)).toISOString();
 
   const nextHistory = getPaymentHistory(existing).slice(-199);
   nextHistory.push({
@@ -198,8 +234,23 @@ function grantTrialPremium(userId, days = 3, reason = 'trial') {
     plan: 'trial',
     amount: 0,
     purchasedAt: nowIso,
-    reason
+    reason: normalizedReason
   });
+
+  const starterUsed = existingTrialMeta.starterUsed || normalizedReason === STARTER_TRIAL_REASON;
+  const nextTrialMeta = {
+    ...existingTrialMeta,
+    days: validDays,
+    reason: normalizedReason,
+    grantedAt: nowIso,
+    uses: existingTrialMeta.uses + 1,
+    starterUsed,
+    lastReason: normalizedReason,
+    lastGrantedAt: nowIso,
+    remindersSent: {},
+    expiryNotifiedAt: null,
+    expiryNotifiedFor: null
+  };
 
   users[normalizedUserId] = {
     ...existing,
@@ -211,15 +262,56 @@ function grantTrialPremium(userId, days = 3, reason = 'trial') {
     expiresAt: nextExpiryIso,
     isActive: true,
     paymentHistory: nextHistory,
-    trial: {
-      days: validDays,
-      reason,
-      grantedAt: nowIso
-    }
+    trial: nextTrialMeta
   };
 
   savePremiumUsers(users);
   return users[normalizedUserId];
+}
+
+function canUseStarterTrial(userId) {
+  if (!userId) {
+    return {
+      ok: false,
+      reason: 'USER_ID_REQUIRED'
+    };
+  }
+
+  const users = loadPremiumUsers();
+  const normalizedUserId = String(userId).trim();
+  const user = users[normalizedUserId] || null;
+  const trialMeta = getNormalizedTrialMeta(user);
+
+  if (trialMeta.starterUsed) {
+    return {
+      ok: false,
+      reason: 'STARTER_ALREADY_USED',
+      trialMeta
+    };
+  }
+
+  if (hasActiveLifetime(user)) {
+    return {
+      ok: false,
+      reason: 'LIFETIME_ALREADY_ACTIVE',
+      trialMeta
+    };
+  }
+
+  if (isUserActive(user)) {
+    return {
+      ok: false,
+      reason: 'PREMIUM_ALREADY_ACTIVE',
+      plan: user?.plan || null,
+      trialMeta
+    };
+  }
+
+  return {
+    ok: true,
+    reason: 'ELIGIBLE',
+    trialMeta
+  };
 }
 
 /**
@@ -286,11 +378,18 @@ function cleanupExpiredPremiums() {
   const users = loadPremiumUsers();
   let updated = false;
   const expiredUserIds = [];
+  const expiredUsers = [];
   const nowMs = Date.now();
 
   for (const userId in users) {
     const user = users[userId];
     if (user && user.isActive && isExpiredUser(user, nowMs)) {
+      expiredUsers.push({
+        userId,
+        plan: user.plan || null,
+        expiresAt: user.expiresAt || null,
+        trial: getNormalizedTrialMeta(user)
+      });
       user.isActive = false;
       expiredUserIds.push(userId);
       updated = true;
@@ -303,8 +402,90 @@ function cleanupExpiredPremiums() {
 
   return {
     updated,
-    expiredUserIds
+    expiredUserIds,
+    expiredUsers
   };
+}
+
+function listActiveTrialUsers() {
+  const users = loadPremiumUsers();
+  const nowMs = Date.now();
+  const trialUsers = [];
+
+  for (const [userId, user] of Object.entries(users)) {
+    if (!user || user.isActive !== true || user.plan !== 'trial') {
+      continue;
+    }
+
+    const expiryMs = parseIsoToMs(user.expiresAt);
+    if (!Number.isFinite(expiryMs) || expiryMs <= nowMs) {
+      continue;
+    }
+
+    trialUsers.push({
+      userId,
+      expiresAt: user.expiresAt,
+      msRemaining: expiryMs - nowMs,
+      trial: getNormalizedTrialMeta(user)
+    });
+  }
+
+  trialUsers.sort((left, right) => left.msRemaining - right.msRemaining);
+  return trialUsers;
+}
+
+function markTrialReminderSent(userId, reminderKey, sentAtIso = new Date().toISOString()) {
+  if (!userId || !reminderKey) {
+    return false;
+  }
+
+  const users = loadPremiumUsers();
+  const normalizedUserId = String(userId).trim();
+  const user = users[normalizedUserId];
+
+  if (!user) {
+    return false;
+  }
+
+  const trialMeta = getNormalizedTrialMeta(user);
+  trialMeta.remindersSent = {
+    ...trialMeta.remindersSent,
+    [String(reminderKey)]: sentAtIso
+  };
+  user.trial = trialMeta;
+
+  return savePremiumUsers(users);
+}
+
+function markTrialExpiryNotified(userId, expiryIso, sentAtIso = new Date().toISOString()) {
+  if (!userId || !expiryIso) {
+    return false;
+  }
+
+  const users = loadPremiumUsers();
+  const normalizedUserId = String(userId).trim();
+  const user = users[normalizedUserId];
+
+  if (!user) {
+    return false;
+  }
+
+  const trialMeta = getNormalizedTrialMeta(user);
+  trialMeta.expiryNotifiedAt = sentAtIso;
+  trialMeta.expiryNotifiedFor = expiryIso;
+  user.trial = trialMeta;
+
+  return savePremiumUsers(users);
+}
+
+function getTrialMetadata(userId) {
+  if (!userId) {
+    return getNormalizedTrialMeta(null);
+  }
+
+  const users = loadPremiumUsers();
+  const user = users[String(userId).trim()] || null;
+  return getNormalizedTrialMeta(user);
 }
 
 /**
@@ -350,6 +531,11 @@ function getPremiumStats() {
 module.exports = {
   addPremiumUser,
   grantTrialPremium,
+  canUseStarterTrial,
+  listActiveTrialUsers,
+  markTrialReminderSent,
+  markTrialExpiryNotified,
+  getTrialMetadata,
   isPremium,
   getPremiumUser,
   removePremiumUser,
