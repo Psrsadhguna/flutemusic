@@ -235,6 +235,11 @@ async function startPayment(plan) {
         discord_id: userId.trim(),
         email: userEmail
       },
+      modal: {
+        ondismiss: function () {
+          alert("Checkout closed. If amount was debited, wait 1-2 minutes and run `f premium` in Discord.");
+        }
+      },
       handler: async function (response) {
         try {
           const verifyRes = await fetch("/api/verify-payment", {
@@ -256,6 +261,12 @@ async function startPayment(plan) {
     };
 
     const rzp = new Razorpay(options);
+    rzp.on("payment.failed", function (response) {
+      const reason = response?.error?.description || response?.error?.reason || "Unknown reason";
+      alert("Payment failed: " + reason);
+    });
+
+    alert("After UPI payment, wait a few seconds on this page until confirmation appears.");
     rzp.open();
   } catch (error) {
     console.error(error);
