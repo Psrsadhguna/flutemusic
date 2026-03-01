@@ -1,0 +1,22 @@
+<svg width="960" height="540" viewBox="0 0 960 540" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="540" rx="26" fill="url(#bg)"/>
+  <rect x="58" y="62" width="844" height="90" rx="16" fill="#FFFFFF" fill-opacity="0.9"/>
+  <text x="92" y="118" fill="#1E3A8A" font-family="Arial" font-size="30" font-weight="700">Flute Help Commands</text>
+  <rect x="58" y="186" width="844" height="290" rx="18" fill="#FFFFFF" fill-opacity="0.82"/>
+  <rect x="92" y="220" width="240" height="220" rx="14" fill="#EEF2FF"/>
+  <rect x="360" y="220" width="240" height="220" rx="14" fill="#ECFEFF"/>
+  <rect x="628" y="220" width="240" height="220" rx="14" fill="#FFF7ED"/>
+  <text x="122" y="275" fill="#4338CA" font-family="Arial" font-size="28" font-weight="700">fhelp</text>
+  <text x="122" y="322" fill="#334155" font-family="Arial" font-size="20">Show all commands</text>
+  <text x="390" y="275" fill="#0F766E" font-family="Arial" font-size="28" font-weight="700">fplay song</text>
+  <text x="390" y="322" fill="#334155" font-family="Arial" font-size="20">Play your track</text>
+  <text x="658" y="275" fill="#C2410C" font-family="Arial" font-size="28" font-weight="700">fqueue</text>
+  <text x="658" y="322" fill="#334155" font-family="Arial" font-size="20">See queue</text>
+  <defs>
+    <linearGradient id="bg" x1="18" y1="8" x2="944" y2="530" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE68A"/>
+      <stop offset="0.5" stop-color="#BFDBFE"/>
+      <stop offset="1" stop-color="#FBCFE8"/>
+    </linearGradient>
+  </defs>
+</svg>

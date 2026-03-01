@@ -1062,7 +1062,51 @@ function getDefaultServerLogo() {
     if (configuredLogo) {
         return configuredLogo;
     }
-    return "/image.png";
+    return "image.png?v=20260301";
+}
+
+function getGuildInitials(rawName) {
+    const words = String(rawName || "").trim().split(/\s+/).filter(Boolean);
+    let initials = (words[0] && words[0][0]) || "";
+    if (words.length > 1) {
+        initials += (words[1] && words[1][0]) || "";
+    }
+    const cleaned = initials.replace(/[^a-z0-9]/gi, "").toUpperCase();
+    return cleaned || "SV";
+}
+
+function buildGuildPlaceholderLogo(guild, size = 256) {
+    const guildId = String(guild?.id || "0");
+    const guildName = String(guild?.name || "Server");
+    const colorSeed = parseInt(guildId.slice(-6), 10) || Math.floor(Math.random() * 0xffffff);
+    const bg = `#${(colorSeed & 0xFFFFFF).toString(16).padStart(6, "0")}`;
+    const textSize = Math.max(18, Math.floor(size * 0.34));
+    const radius = Math.max(10, Math.floor(size * 0.18));
+    const initials = getGuildInitials(guildName);
+
+    const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  <rect width="${size}" height="${size}" rx="${radius}" fill="${bg}"/>
+  <text x="50%" y="56%" text-anchor="middle" font-size="${textSize}" font-family="Arial, sans-serif" fill="#ffffff" font-weight="700">${initials}</text>
+</svg>`.trim();
+
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function getGuildLogoForWebsite(guild, size = 256) {
+    const iconUrl = typeof guild?.iconURL === "function"
+        ? guild.iconURL({ dynamic: true, size })
+        : "";
+    if (iconUrl) {
+        return iconUrl;
+    }
+
+    const placeholder = buildGuildPlaceholderLogo(guild, size);
+    if (placeholder) {
+        return placeholder;
+    }
+
+    return getDefaultServerLogo();
 }
 
 // Load existing stats
@@ -2163,7 +2207,6 @@ function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
     const guilds = Array.from(client.guilds.cache.values());
     const safeViews = sanitizeNumericMap(stats.websiteGuildViews);
     stats.websiteGuildViews = safeViews;
-    const defaultServerLogo = getDefaultServerLogo();
 
     const servers = guilds.map((guild) => {
         const guildId = String(guild.id);
@@ -2179,7 +2222,7 @@ function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
         return {
             guildId,
             name: guild.name || "Unknown Server",
-            logo: guild.iconURL({ dynamic: true, size: 256 }) || defaultServerLogo,
+            logo: getGuildLogoForWebsite(guild, 256),
             played,
             listeningHours: Number((listenedMs / 3600000).toFixed(2)),
             views: updatedViews,

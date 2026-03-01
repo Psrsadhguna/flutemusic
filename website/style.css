@@ -37,6 +37,7 @@ body {
     linear-gradient(135deg, #fffefb 0%, #f9fffd 45%, #fff8ff 100%);
   min-height: 100vh;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 .bg-shape {
@@ -331,6 +332,25 @@ code {
   border: 1px solid rgba(40, 56, 112, 0.11);
   margin-bottom: 0.8rem;
   display: block;
+}
+
+.help-command-strip {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.command-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.82rem;
+  border-radius: 999px;
+  border: 1px solid rgba(67, 97, 238, 0.25);
+  background: linear-gradient(120deg, rgba(244, 247, 255, 0.96), rgba(240, 255, 251, 0.96));
+  color: var(--ink-700);
+  font-weight: 700;
+  font-size: 0.82rem;
 }
 
 .server-grid {
@@ -785,5 +805,52 @@ select:focus {
 
   .page-shell {
     padding-top: 2.6rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .container {
+    width: min(1120px, calc(100% - 0.85rem));
+  }
+
+  .hero {
+    padding-top: 3.2rem;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .hero-mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .help-card,
+  .server-card,
+  .stat-card,
+  .panel,
+  .dash-card {
+    padding: 0.85rem;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .server-top {
+    align-items: flex-start;
+  }
+
+  .server-name {
+    font-size: 1rem;
+  }
+
+  .site-nav {
+    gap: 0.4rem;
+  }
+
+  .site-nav a {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.9rem;
   }
 }

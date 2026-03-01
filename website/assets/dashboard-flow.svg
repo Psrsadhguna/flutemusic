@@ -1,0 +1,24 @@
+<svg width="960" height="540" viewBox="0 0 960 540" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="540" rx="26" fill="url(#bg)"/>
+  <rect x="68" y="68" width="240" height="404" rx="20" fill="#111827"/>
+  <circle cx="188" cy="130" r="40" fill="#22D3EE"/>
+  <rect x="110" y="190" width="156" height="16" rx="8" fill="#CBD5E1"/>
+  <rect x="110" y="220" width="132" height="16" rx="8" fill="#94A3B8"/>
+  <rect x="110" y="286" width="160" height="38" rx="10" fill="#34D399"/>
+  <rect x="110" y="336" width="160" height="38" rx="10" fill="#FB923C"/>
+  <rect x="342" y="68" width="550" height="184" rx="20" fill="#FFFFFF" fill-opacity="0.9"/>
+  <rect x="370" y="102" width="240" height="26" rx="8" fill="#312E81"/>
+  <rect x="370" y="148" width="180" height="20" rx="8" fill="#334155"/>
+  <rect x="636" y="98" width="228" height="128" rx="14" fill="#F1F5F9"/>
+  <rect x="342" y="284" width="260" height="188" rx="18" fill="#FFFFFF" fill-opacity="0.88"/>
+  <rect x="632" y="284" width="260" height="188" rx="18" fill="#FFFFFF" fill-opacity="0.88"/>
+  <text x="372" y="338" fill="#0F172A" font-family="Arial" font-size="24" font-weight="700">Dashboard</text>
+  <text x="662" y="338" fill="#0F172A" font-family="Arial" font-size="24" font-weight="700">Profile</text>
+  <defs>
+    <linearGradient id="bg" x1="12" y1="4" x2="946" y2="530" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DCFCE7"/>
+      <stop offset="0.5" stop-color="#DBEAFE"/>
+      <stop offset="1" stop-color="#FCE7F3"/>
+    </linearGradient>
+  </defs>
+</svg>

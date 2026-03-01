@@ -1,6 +1,7 @@
 const SESSION_KEY = "flute_dashboard_session_v1";
 const LIVE_STATS_ENDPOINT = "/api/live-server-stats";
-const DEFAULT_SERVER_LOGO = "/image.png";
+const LOGO_ASSET = "image.png?v=20260301";
+const DEFAULT_SERVER_LOGO = LOGO_ASSET;
 
 function formatNumber(value) {
   return Number(value || 0).toLocaleString("en-IN");
@@ -153,20 +154,31 @@ function applyDashboardStats(platform) {
 }
 
 async function fetchLiveServerStats({ trackViews = true } = {}) {
-  const response = await fetch(`${LIVE_STATS_ENDPOINT}?trackViews=${trackViews ? 1 : 0}`, {
-    cache: "no-store"
-  });
+  try {
+    const response = await fetch(`${LIVE_STATS_ENDPOINT}?trackViews=${trackViews ? 1 : 0}`, {
+      cache: "no-store"
+    });
+    if (response.ok) {
+      const payload = await response.json();
+      if (payload?.success) {
+        return payload;
+      }
+    }
+  } catch {
+    // Try static snapshot fallback below.
+  }
 
-  if (!response.ok) {
+  const snapshotResponse = await fetch("live-server-stats.json", { cache: "no-store" });
+  if (!snapshotResponse.ok) {
     throw new Error("Failed to fetch live server stats");
   }
 
-  const payload = await response.json();
-  if (!payload?.success) {
-    throw new Error(payload?.error || "Invalid live server payload");
+  const snapshotPayload = await snapshotResponse.json();
+  if (!snapshotPayload?.success) {
+    throw new Error(snapshotPayload?.error || "Invalid live server payload");
   }
 
-  return payload;
+  return snapshotPayload;
 }
 
 async function loadFallbackLiveCounts() {
@@ -233,7 +245,7 @@ function initLoginPage() {
     saveSession({
       username,
       discordId: discordId || "Not provided",
-      avatar: avatar || "image.png",
+      avatar: avatar || LOGO_ASSET,
       plan,
       joinedAt: new Date().toISOString()
     });
@@ -246,7 +258,7 @@ function initLoginPage() {
     demoButton.addEventListener("click", () => {
       byId("login-name").value = "FluteUser#247";
       byId("login-id").value = "1350045852698435686";
-      byId("login-avatar").value = "image.png";
+      byId("login-avatar").value = LOGO_ASSET;
       byId("login-plan").value = "monthly";
     });
   }
@@ -261,7 +273,7 @@ function renderSessionInCommonPlaces(session) {
 
   const avatarNodes = document.querySelectorAll("[data-session-avatar]");
   avatarNodes.forEach((node) => {
-    node.src = session.avatar || "image.png";
+    node.src = session.avatar || LOGO_ASSET;
   });
 }
 
@@ -316,7 +328,7 @@ function initProfilePage() {
       ...session,
       username: String(nameInput?.value || "").trim() || session.username,
       discordId: String(idInput?.value || "").trim() || session.discordId,
-      avatar: String(avatarInput?.value || "").trim() || "image.png",
+      avatar: String(avatarInput?.value || "").trim() || LOGO_ASSET,
       plan: String(planInput?.value || "free")
     };
     saveSession(nextSession);
