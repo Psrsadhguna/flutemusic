@@ -1,6 +1,8 @@
 const SESSION_KEY = "flute_dashboard_session_v1";
 const LIVE_STATS_ENDPOINT = "/api/live-server-stats";
+const LIVE_STATS_CACHE_KEY = "flute_live_server_stats_v1";
 const LOGO_ASSET = "image.png?v=20260301";
+const GIF_LOGO_ASSET = "logo.gif?v=20260301";
 const DEFAULT_SERVER_LOGO = LOGO_ASSET;
 
 function formatNumber(value) {
@@ -31,6 +33,23 @@ function saveSession(session) {
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }
 
+function getCachedLiveStats() {
+  try {
+    const raw = localStorage.getItem(LIVE_STATS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedLiveStats(payload) {
+  try {
+    localStorage.setItem(LIVE_STATS_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignore cache write failures.
+  }
+}
+
 function requireSession() {
   const session = getSession();
   if (!session) {
@@ -59,6 +78,15 @@ function attachLogoutHandlers() {
       localStorage.removeItem(SESSION_KEY);
       window.location.href = "login.html";
     });
+  });
+}
+
+function initGifLogoTargets() {
+  document.querySelectorAll("[data-gif-logo]").forEach((imageNode) => {
+    imageNode.addEventListener("error", () => {
+      imageNode.src = LOGO_ASSET;
+    }, { once: true });
+    imageNode.src = GIF_LOGO_ASSET;
   });
 }
 
@@ -161,6 +189,7 @@ async function fetchLiveServerStats({ trackViews = true } = {}) {
     if (response.ok) {
       const payload = await response.json();
       if (payload?.success) {
+        setCachedLiveStats(payload);
         return payload;
       }
     }
@@ -178,6 +207,7 @@ async function fetchLiveServerStats({ trackViews = true } = {}) {
     throw new Error(snapshotPayload?.error || "Invalid live server payload");
   }
 
+  setCachedLiveStats(snapshotPayload);
   return snapshotPayload;
 }
 
@@ -205,16 +235,22 @@ async function initHomePage() {
     renderServerCards(livePayload.servers);
     applyPlatformStats(livePayload.platform);
   } catch (error) {
-    renderUnavailableServerCard("Unable to read live endpoint now.");
-    applyPlatformStats({
-      totalSongsPlayed: 0,
-      totalListeningHours: 0,
-      totalServerViews: 0,
-      activeServers: 0,
-      liveServers: 0,
-      liveMembers: 0
-    });
-    await loadFallbackLiveCounts();
+    const cachedPayload = getCachedLiveStats();
+    if (cachedPayload?.success) {
+      renderServerCards(cachedPayload.servers);
+      applyPlatformStats(cachedPayload.platform);
+    } else {
+      renderUnavailableServerCard("Unable to read live endpoint now.");
+      applyPlatformStats({
+        totalSongsPlayed: 0,
+        totalListeningHours: 0,
+        totalServerViews: 0,
+        activeServers: 0,
+        liveServers: 0,
+        liveMembers: 0
+      });
+      await loadFallbackLiveCounts();
+    }
   }
 }
 
@@ -289,12 +325,17 @@ async function initDashboardPage() {
     const livePayload = await fetchLiveServerStats({ trackViews: false });
     applyDashboardStats(livePayload.platform);
   } catch {
-    applyDashboardStats({
-      totalSongsPlayed: 0,
-      totalListeningHours: 0,
-      activeServers: 0,
-      liveServers: 0
-    });
+    const cachedPayload = getCachedLiveStats();
+    if (cachedPayload?.success) {
+      applyDashboardStats(cachedPayload.platform);
+    } else {
+      applyDashboardStats({
+        totalSongsPlayed: 0,
+        totalListeningHours: 0,
+        activeServers: 0,
+        liveServers: 0
+      });
+    }
   }
 }
 
@@ -410,6 +451,7 @@ async function initManagePremiumPage() {
 }
 
 function initPage() {
+  initGifLogoTargets();
   attachNavToggle();
   attachLogoutHandlers();
 

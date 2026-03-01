@@ -51,6 +51,7 @@ const stats = {
     guildActivity: {}, // {guildId: songCount}
     guildPlaytime: {}, // {guildId: playtimeMs}
     websiteGuildViews: {}, // {guildId: website card impressions}
+    guildMeta: {}, // {guildId: {name, logo, memberCount, played, listeningMs, views, lastSeenAt}}
     topArtists: {}, // {artistName: count}
     commandErrors: [] // Track command errors
 };
@@ -68,6 +69,39 @@ function sanitizeNumericMap(rawMap) {
         }
         sanitized[key] = numericValue;
     }
+    return sanitized;
+}
+
+function sanitizeGuildMeta(rawMap) {
+    if (!rawMap || typeof rawMap !== "object") {
+        return {};
+    }
+
+    const sanitized = {};
+    for (const [guildId, rawMeta] of Object.entries(rawMap)) {
+        if (!rawMeta || typeof rawMeta !== "object") {
+            continue;
+        }
+
+        const name = String(rawMeta.name || "").trim() || "Unknown Server";
+        const logo = String(rawMeta.logo || "").trim();
+        const memberCount = Number(rawMeta.memberCount);
+        const played = Number(rawMeta.played);
+        const listeningMs = Number(rawMeta.listeningMs);
+        const views = Number(rawMeta.views);
+        const lastSeenAt = String(rawMeta.lastSeenAt || "").trim();
+
+        sanitized[guildId] = {
+            name,
+            logo,
+            memberCount: Number.isFinite(memberCount) && memberCount >= 0 ? memberCount : 0,
+            played: Number.isFinite(played) && played >= 0 ? played : 0,
+            listeningMs: Number.isFinite(listeningMs) && listeningMs >= 0 ? listeningMs : 0,
+            views: Number.isFinite(views) && views >= 0 ? views : 0,
+            lastSeenAt
+        };
+    }
+
     return sanitized;
 }
 
@@ -1133,6 +1167,7 @@ async function loadStats() {
             stats.guildActivity = data.guildActivity || {};
             stats.guildPlaytime = sanitizeNumericMap(data.guildPlaytime);
             stats.websiteGuildViews = sanitizeNumericMap(data.websiteGuildViews);
+            stats.guildMeta = sanitizeGuildMeta(data.guildMeta);
             stats.topArtists = data.topArtists || {};
             stats.commandErrors = data.commandErrors || [];
         }
@@ -1169,6 +1204,7 @@ async function saveStats() {
             guildActivity: stats.guildActivity,
             guildPlaytime: sanitizeNumericMap(stats.guildPlaytime),
             websiteGuildViews: sanitizeNumericMap(stats.websiteGuildViews),
+            guildMeta: sanitizeGuildMeta(stats.guildMeta),
             topArtists: stats.topArtists,
             commandErrors: stats.commandErrors.slice(-50), // Keep last 50 errors
             lastUpdated: new Date().toISOString()
@@ -2205,29 +2241,66 @@ function getGuildPlaybackStatus(guildId, playedTracks) {
 
 function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
     const guilds = Array.from(client.guilds.cache.values());
+    const guildMap = new Map(guilds.map((guild) => [String(guild.id), guild]));
     const safeViews = sanitizeNumericMap(stats.websiteGuildViews);
     stats.websiteGuildViews = safeViews;
+    stats.guildMeta = sanitizeGuildMeta(stats.guildMeta);
 
-    const servers = guilds.map((guild) => {
-        const guildId = String(guild.id);
-        const played = toNonNegativeNumber(stats.guildActivity?.[guildId]);
-        const listenedMs = getGuildListenedMs(guildId);
+    const trackedGuildIds = new Set([
+        ...Object.keys(stats.guildMeta),
+        ...Object.keys(stats.guildActivity || {}),
+        ...Object.keys(stats.guildPlaytime || {}),
+        ...Object.keys(stats.websiteGuildViews || {}),
+        ...guildMap.keys()
+    ]);
+
+    const servers = Array.from(trackedGuildIds).map((guildId) => {
+        const guild = guildMap.get(guildId) || null;
+        const existingMeta = stats.guildMeta[guildId] || {};
+        const basePlayed = toNonNegativeNumber(stats.guildActivity?.[guildId]);
+        const baseListenedMs = getGuildListenedMs(guildId);
         const previousViews = toNonNegativeNumber(safeViews[guildId]);
-        const updatedViews = incrementViews ? previousViews + 1 : previousViews;
+        const carriedViews = toNonNegativeNumber(existingMeta.views);
+        const currentViews = Math.max(previousViews, carriedViews);
+        const updatedViews = incrementViews ? currentViews + 1 : currentViews;
 
         if (incrementViews) {
             stats.websiteGuildViews[guildId] = updatedViews;
+        } else if (!stats.websiteGuildViews[guildId] && updatedViews > 0) {
+            stats.websiteGuildViews[guildId] = updatedViews;
         }
+
+        const name = guild?.name || existingMeta.name || "Unknown Server";
+        const logo = guild
+            ? getGuildLogoForWebsite(guild, 256)
+            : (existingMeta.logo || getDefaultServerLogo());
+        const memberCount = guild
+            ? toNonNegativeNumber(guild.memberCount)
+            : toNonNegativeNumber(existingMeta.memberCount);
+
+        // Keep per-server counters monotonic for website display even across restarts.
+        const played = Math.max(basePlayed, toNonNegativeNumber(existingMeta.played));
+        const listenedMs = Math.max(baseListenedMs, toNonNegativeNumber(existingMeta.listeningMs));
+
+        stats.guildMeta[guildId] = {
+            name,
+            logo,
+            memberCount,
+            played,
+            listeningMs: listenedMs,
+            views: updatedViews,
+            lastSeenAt: guild ? new Date().toISOString() : (existingMeta.lastSeenAt || "")
+        };
 
         return {
             guildId,
-            name: guild.name || "Unknown Server",
-            logo: getGuildLogoForWebsite(guild, 256),
+            name,
+            logo,
             played,
             listeningHours: Number((listenedMs / 3600000).toFixed(2)),
             views: updatedViews,
-            status: getGuildPlaybackStatus(guildId, played),
-            memberCount: toNonNegativeNumber(guild.memberCount)
+            status: guild ? getGuildPlaybackStatus(guildId, played) : (played > 0 ? "Last Seen" : "Idle"),
+            memberCount
         };
     }).sort((left, right) => {
         return right.played - left.played || right.memberCount - left.memberCount;
@@ -2247,7 +2320,7 @@ function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
             totalListeningHours: Number((toNonNegativeNumber(stats.totalPlaytime) / 3600000).toFixed(2)),
             totalCommandsExecuted: toNonNegativeNumber(stats.totalCommandsExecuted),
             totalServerViews,
-            activeServers: guilds.length,
+            activeServers: servers.length,
             liveServers: guilds.length,
             liveMembers
         }

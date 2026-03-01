@@ -71,11 +71,11 @@ function readLiveServerSnapshot() {
   }
 
   const ageMs = Date.now() - updatedAtMs;
-  if (ageMs > LIVE_SNAPSHOT_MAX_AGE_MS) {
-    throw new Error("LIVE_STATS_STALE");
-  }
-
-  return payload;
+  return {
+    ...payload,
+    stale: ageMs > LIVE_SNAPSHOT_MAX_AGE_MS,
+    staleAgeMs: Math.max(0, ageMs)
+  };
 }
 
 app.use(
@@ -114,10 +114,11 @@ app.get("/manage-premiums", (req, res) => {
 
 app.get("/api/live-server-stats", (req, res) => {
   try {
-    return res.json(readLiveServerSnapshot());
+    const payload = readLiveServerSnapshot();
+    return res.json(payload);
   } catch (error) {
     const code = String(error?.message || "");
-    if (code === "LIVE_STATS_MISSING" || code === "LIVE_STATS_STALE" || code === "LIVE_STATS_INVALID") {
+    if (code === "LIVE_STATS_MISSING" || code === "LIVE_STATS_INVALID") {
       return res.status(503).json({
         success: false,
         error: "Live server data is unavailable. Start `npm start` so bot updates website/live-server-stats.json."
