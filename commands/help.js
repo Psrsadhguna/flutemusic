@@ -2,7 +2,7 @@ const messages = require('../utils/messages.js');
 const config = require('../config.js');
 
 const CATEGORY_MAP = {
-    normal: ['botinfo', 'feedback', 'help', 'invite', 'ping', 'premium', 'report', 'servers', 'status', 'uptime'],
+    normal: ['botinfo', 'feedback', 'help', 'invite', 'ping', 'premium', 'report', 'servers', 'status', 'uptime', 'website'],
     music: ['247', 'autoplay', 'clear', 'clearqueue', 'loop', 'move', 'nowplaying', 'pause', 'play', 'previous', 'queue', 'remove', 'replay', 'resume', 'seek', 'shuffle', 'skip', 'stop', 'volume'],
     playlist: ['deleteplaylist', 'loadplaylist', 'myplaylists', 'saveplaylist'],
     user: ['campaign', 'favorite', 'history', 'refer', 'topac', 'trial'],

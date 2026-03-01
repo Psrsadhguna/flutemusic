@@ -1057,6 +1057,14 @@ const userDataPath = path.join(__dirname, 'userdata.json');
 const websiteStatusPath = path.join(__dirname, "website", "status.json");
 const websiteLiveStatsPath = path.join(__dirname, "website", "live-server-stats.json");
 
+function getDefaultServerLogo() {
+    const configuredLogo = String(process.env.SERVER_LOGO_FALLBACK || "").trim();
+    if (configuredLogo) {
+        return configuredLogo;
+    }
+    return "/image.png";
+}
+
 // Load existing stats
 async function loadStats() {
     try {
@@ -2155,6 +2163,7 @@ function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
     const guilds = Array.from(client.guilds.cache.values());
     const safeViews = sanitizeNumericMap(stats.websiteGuildViews);
     stats.websiteGuildViews = safeViews;
+    const defaultServerLogo = getDefaultServerLogo();
 
     const servers = guilds.map((guild) => {
         const guildId = String(guild.id);
@@ -2170,7 +2179,7 @@ function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
         return {
             guildId,
             name: guild.name || "Unknown Server",
-            logo: guild.iconURL({ dynamic: true, size: 256 }) || "/image.png",
+            logo: guild.iconURL({ dynamic: true, size: 256 }) || defaultServerLogo,
             played,
             listeningHours: Number((listenedMs / 3600000).toFixed(2)),
             views: updatedViews,

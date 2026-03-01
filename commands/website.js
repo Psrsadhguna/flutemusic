@@ -5,31 +5,28 @@ function getWebsiteUrl() {
 }
 
 module.exports = {
-    name: "invite",
-    description: "Get bot invite link",
-    usage: "finvite",
+    name: "website",
+    aliases: ["web", "site", "dashboard"],
+    description: "Get Flute Music website link",
+    usage: "fwebsite",
     cooldownMs: 1500,
     execute: async (message, args, client) => {
+        const websiteUrl = getWebsiteUrl();
         const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&scope=bot&permissions=36724736`;
 
         const embed = new EmbedBuilder()
-            .setColor("#0061ff")
-            .setTitle("Invite Flute Music Bot")
-            .setDescription("Invite the bot to your server and join the growth campaign.")
+            .setColor("#00a884")
+            .setTitle("Flute Music Website")
+            .setDescription("Open website for live server stats, premium pages, profile and dashboard.")
             .addFields(
                 {
-                    name: "Features",
-                    value: "Music playback, filters, effects, queue controls",
+                    name: "Website",
+                    value: websiteUrl,
                     inline: false
                 },
                 {
-                    name: "Growth Campaign",
-                    value: "Use `fcampaign join` and `frefer` to earn trial tokens.",
-                    inline: false
-                },
-                {
-                    name: "Permissions",
-                    value: "Send Messages, Embed Links, Connect, Speak",
+                    name: "Contains",
+                    value: "Server name/logo, played, listening time, view statistics, premium and dashboard.",
                     inline: false
                 }
             )
@@ -42,13 +39,13 @@ module.exports = {
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
+                .setLabel("Open Website")
+                .setStyle(ButtonStyle.Link)
+                .setURL(websiteUrl),
+            new ButtonBuilder()
                 .setLabel("Invite Bot")
                 .setStyle(ButtonStyle.Link)
                 .setURL(inviteUrl),
-            new ButtonBuilder()
-                .setLabel("Website")
-                .setStyle(ButtonStyle.Link)
-                .setURL(getWebsiteUrl()),
             new ButtonBuilder()
                 .setLabel("Support Server")
                 .setStyle(ButtonStyle.Link)

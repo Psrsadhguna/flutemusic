@@ -1,5 +1,6 @@
 const SESSION_KEY = "flute_dashboard_session_v1";
 const LIVE_STATS_ENDPOINT = "/api/live-server-stats";
+const DEFAULT_SERVER_LOGO = "/image.png";
 
 function formatNumber(value) {
   return Number(value || 0).toLocaleString("en-IN");
@@ -69,7 +70,7 @@ function renderUnavailableServerCard(message) {
   wrapper.innerHTML = `
     <article class="server-card">
       <header class="server-top">
-        <img src="image.png" alt="Flute logo" class="server-logo">
+        <img src="${DEFAULT_SERVER_LOGO}" alt="Flute logo" class="server-logo">
         <div>
           <h3 class="server-name">Live data unavailable</h3>
           <p class="server-sub">${message}</p>
@@ -90,13 +91,17 @@ function renderServerCards(servers) {
     return;
   }
 
-  wrapper.innerHTML = servers.map((server) => `
+  wrapper.innerHTML = servers.map((server) => {
+    const logo = String(server?.logo || "").trim() || DEFAULT_SERVER_LOGO;
+    const name = String(server?.name || "Unknown Server");
+    const status = String(server?.status || "Active");
+    return `
     <article class="server-card">
       <header class="server-top">
-        <img src="${server.logo || "image.png"}" alt="${server.name || "Server"} logo" class="server-logo">
+        <img src="${logo}" data-fallback-logo="${DEFAULT_SERVER_LOGO}" alt="${name} logo" class="server-logo">
         <div>
-          <h3 class="server-name">${server.name || "Unknown Server"}</h3>
-          <p class="server-sub">${server.status || "Active"}</p>
+          <h3 class="server-name">${name}</h3>
+          <p class="server-sub">${status}</p>
         </div>
       </header>
       <div class="metric-grid">
@@ -114,7 +119,19 @@ function renderServerCards(servers) {
         </div>
       </div>
     </article>
-  `).join("");
+  `;
+  }).join("");
+
+  // If any server icon URL fails, fall back to default bot logo.
+  wrapper.querySelectorAll(".server-logo").forEach((imageNode) => {
+    imageNode.addEventListener("error", () => {
+      const fallbackLogo = imageNode.getAttribute("data-fallback-logo") || DEFAULT_SERVER_LOGO;
+      if (imageNode.src.endsWith(fallbackLogo)) {
+        return;
+      }
+      imageNode.src = fallbackLogo;
+    }, { once: true });
+  });
 }
 
 function applyPlatformStats(platform) {
