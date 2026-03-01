@@ -3155,8 +3155,6 @@ async function shutdown() {
     process.exit(0);
 }
 
-client.login(config.botToken);
-
 client.once("clientReady", async () => {
 
     const readyTime = Date.now() - startupTime;
@@ -3220,6 +3218,15 @@ client.once("clientReady", async () => {
 });
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
+
+if (!String(config.botToken || "").trim()) {
+    console.error("BOT_TOKEN is missing. Set BOT_TOKEN in environment variables.");
+} else {
+    console.log("Starting Discord login...");
+    client.login(config.botToken).catch((error) => {
+        console.error("Discord login failed:", error?.message || error);
+    });
+}
 /////client.once('ready', async () => {
   ///console.log(`Logged in as ${client.user.tag}`);
 
