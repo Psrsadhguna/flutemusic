@@ -3,6 +3,9 @@ const LIVE_STATS_ENDPOINT = "/api/live-server-stats";
 const LIVE_STATS_CACHE_KEY = "flute_live_server_stats_v1";
 const LOGO_ASSET = "image.png?v=20260301";
 const GIF_LOGO_ASSET = "logo.gif?v=20260301b";
+const GIF_MIN_LOOP_REFRESH_MS = 5000;
+const DEFAULT_GIF_LOOP_REFRESH_MS = 12000;
+const GIF_LOOP_TIMERS = new WeakMap();
 const DEFAULT_SERVER_LOGO = LOGO_ASSET;
 
 function formatNumber(value) {
@@ -81,15 +84,50 @@ function attachLogoutHandlers() {
   });
 }
 
+function buildLoopedGifUrl() {
+  const joiner = GIF_LOGO_ASSET.includes("?") ? "&" : "?";
+  return `${GIF_LOGO_ASSET}${joiner}loop=${Date.now()}`;
+}
+
+function stopForcedGifLoop(imageNode) {
+  const timerId = GIF_LOOP_TIMERS.get(imageNode);
+  if (timerId) {
+    clearInterval(timerId);
+    GIF_LOOP_TIMERS.delete(imageNode);
+  }
+}
+
+function startForcedGifLoop(imageNode) {
+  stopForcedGifLoop(imageNode);
+
+  const rawRefresh = Number(imageNode.getAttribute("data-gif-refresh-ms"));
+  const refreshMs = Number.isFinite(rawRefresh) && rawRefresh >= GIF_MIN_LOOP_REFRESH_MS
+    ? rawRefresh
+    : DEFAULT_GIF_LOOP_REFRESH_MS;
+
+  const timerId = setInterval(() => {
+    if (document.hidden) {
+      return;
+    }
+    imageNode.src = buildLoopedGifUrl();
+  }, refreshMs);
+
+  GIF_LOOP_TIMERS.set(imageNode, timerId);
+}
+
 function initGifLogoTargets() {
   document.querySelectorAll("[data-gif-logo]").forEach((imageNode) => {
     imageNode.classList.add("gif-live");
     imageNode.decoding = "async";
     imageNode.loading = "eager";
     imageNode.addEventListener("error", () => {
+      stopForcedGifLoop(imageNode);
       imageNode.src = LOGO_ASSET;
     }, { once: true });
-    imageNode.src = GIF_LOGO_ASSET;
+    imageNode.src = buildLoopedGifUrl();
+    if (imageNode.hasAttribute("data-gif-force-loop")) {
+      startForcedGifLoop(imageNode);
+    }
   });
 }
 
