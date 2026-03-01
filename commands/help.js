@@ -7,9 +7,10 @@ const CATEGORY_MAP = {
     playlist: ['deleteplaylist', 'loadplaylist', 'myplaylists', 'saveplaylist'],
     user: ['campaign', 'favorite', 'history', 'refer', 'topac', 'trial'],
     filter: ['8d', 'chipmunkfilter', 'clearfilters', 'daycore', 'darthvader', 'doubletime', 'equalizer', 'karaoke', 'nightcore', 'pop', 'slowedreverb', 'slowmode', 'soft', 'treblebass', 'tremolo', 'vaporwave', 'vibrato'],
-    effect: ['cinema', 'cleareffects', 'echo', 'earrape', 'lofi', 'party', 'radio', 'telephone', 'underwater', 'vocalboost'],
-    play: 'play <link>'
+    effect: ['cinema', 'cleareffects', 'echo', 'earrape', 'lofi', 'party', 'radio', 'telephone', 'underwater', 'vocalboost']
 };
+
+
 
 const COMMAND_HELP_NOTES = {
     autoplay: [
