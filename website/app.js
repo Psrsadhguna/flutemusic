@@ -74,6 +74,37 @@ function attachNavToggle() {
   });
 }
 
+function buildMobileBottomNav() {
+  if (document.querySelector("[data-mobile-bottom-nav]")) {
+    return;
+  }
+
+  const session = getSession();
+  const currentPage = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+  const accountHref = session ? "premium-dashboard.html" : "login.html";
+  const accountLabel = session ? "Dashboard" : "Login";
+
+  const items = [
+    { href: "index.html", label: "Home", page: "index.html" },
+    { href: "index.html#help", label: "Help", page: "index.html" },
+    { href: "index.html#servers", label: "Servers", page: "index.html" },
+    { href: "index.html#statistics", label: "Stats", page: "index.html" },
+    { href: accountHref, label: accountLabel, page: accountHref.toLowerCase() }
+  ];
+
+  const nav = document.createElement("nav");
+  nav.className = "mobile-bottom-nav";
+  nav.setAttribute("data-mobile-bottom-nav", "1");
+  nav.setAttribute("aria-label", "Mobile quick links");
+  nav.innerHTML = items.map((item) => {
+    const isActive = currentPage === item.page;
+    return `<a href="${item.href}" class="${isActive ? "is-active" : ""}">${item.label}</a>`;
+  }).join("");
+
+  document.body.appendChild(nav);
+  document.body.classList.add("mobile-nav-enabled");
+}
+
 function attachLogoutHandlers() {
   document.querySelectorAll("[data-logout]").forEach((button) => {
     button.addEventListener("click", (event) => {
@@ -540,6 +571,7 @@ async function initManagePremiumPage() {
 function initPage() {
   initGifLogoTargets();
   attachNavToggle();
+  buildMobileBottomNav();
   attachLogoutHandlers();
 
   const page = document.body.getAttribute("data-page");

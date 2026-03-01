@@ -749,6 +749,10 @@ select:focus {
   display: none !important;
 }
 
+.mobile-bottom-nav {
+  display: none;
+}
+
 @media (max-width: 980px) {
   .hero {
     grid-template-columns: 1fr;
@@ -873,6 +877,43 @@ select:focus {
   .site-nav a {
     padding: 0.35rem 0.5rem;
     font-size: 0.9rem;
+  }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 80;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.35rem;
+    padding: 0.45rem 0.55rem calc(0.55rem + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(53, 76, 145, 0.22);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+  }
+
+  .mobile-bottom-nav a {
+    text-align: center;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--ink-700);
+    border: 1px solid rgba(53, 76, 145, 0.2);
+    border-radius: 11px;
+    padding: 0.5rem 0.25rem;
+    background: rgba(255, 255, 255, 0.96);
+  }
+
+  .mobile-bottom-nav a.is-active {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(120deg, #ff7a29, #ff5b33);
+    box-shadow: 0 8px 14px rgba(255, 91, 51, 0.3);
+  }
+
+  body.mobile-nav-enabled {
+    padding-bottom: 5.6rem;
   }
 }
 
