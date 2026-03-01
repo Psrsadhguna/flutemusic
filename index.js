@@ -3155,7 +3155,18 @@ async function shutdown() {
     process.exit(0);
 }
 
-client.once("clientReady", async () => {
+let hasHandledDiscordReady = false;
+let discordLoginProbeTimer = null;
+
+async function handleDiscordReady() {
+    if (hasHandledDiscordReady) {
+        return;
+    }
+    hasHandledDiscordReady = true;
+    if (discordLoginProbeTimer) {
+        clearTimeout(discordLoginProbeTimer);
+        discordLoginProbeTimer = null;
+    }
 
     const readyTime = Date.now() - startupTime;
 
@@ -3215,6 +3226,33 @@ client.once("clientReady", async () => {
 
     console.log("Premium systems initialized");
 
+}
+
+client.once("clientReady", handleDiscordReady);
+client.once("ready", handleDiscordReady);
+client.on("error", (error) => {
+    console.error("Discord client error:", error?.message || error);
+});
+client.on("shardError", (error, shardId) => {
+    console.error(`Discord shard ${shardId} error:`, error?.message || error);
+});
+client.on("shardDisconnect", (event, shardId) => {
+    console.warn(
+        `Discord shard ${shardId} disconnected: code=${event?.code ?? "unknown"} ` +
+        `reason=${event?.reason || "unknown"}`
+    );
+});
+client.on("shardReconnecting", (shardId) => {
+    console.warn(`Discord shard ${shardId} reconnecting...`);
+});
+client.on("shardResume", (shardId, replayedEvents) => {
+    console.log(`Discord shard ${shardId} resumed (replayed ${replayedEvents || 0} events)`);
+});
+client.on("shardReady", (shardId, unavailableGuilds) => {
+    console.log(`Discord shard ${shardId} ready (unavailable guilds: ${unavailableGuilds?.size || 0})`);
+});
+client.on("invalidated", () => {
+    console.error("Discord session invalidated. Re-login required.");
 });
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
@@ -3223,7 +3261,17 @@ if (!String(config.botToken || "").trim()) {
     console.error("BOT_TOKEN is missing. Set BOT_TOKEN in environment variables.");
 } else {
     console.log("Starting Discord login...");
+    discordLoginProbeTimer = setTimeout(() => {
+        if (client.isReady()) {
+            return;
+        }
+        console.warn(`Discord login still pending after 30s (ws status: ${client.ws?.status ?? "unknown"}).`);
+    }, 30000);
     client.login(config.botToken).catch((error) => {
+        if (discordLoginProbeTimer) {
+            clearTimeout(discordLoginProbeTimer);
+            discordLoginProbeTimer = null;
+        }
         console.error("Discord login failed:", error?.message || error);
     });
 }
