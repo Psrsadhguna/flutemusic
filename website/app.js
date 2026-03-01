@@ -7,6 +7,14 @@ const GIF_MIN_LOOP_REFRESH_MS = 5000;
 const DEFAULT_GIF_LOOP_REFRESH_MS = 12000;
 const GIF_LOOP_TIMERS = new WeakMap();
 const DEFAULT_SERVER_LOGO = LOGO_ASSET;
+const SERVER_PAGE_SIZE_DESKTOP = 6;
+const SERVER_PAGE_SIZE_MOBILE = 4;
+const serverPaginationState = {
+  allServers: [],
+  currentPage: 1
+};
+let serverResizeTimerId = null;
+let hasBoundServerResizeHandler = false;
 
 function formatNumber(value) {
   return Number(value || 0).toLocaleString("en-IN");
@@ -205,11 +213,116 @@ function sanitizeServers(servers) {
   return Array.from(unique.values());
 }
 
+function formatAddedOnDate(rawValue) {
+  const raw = String(rawValue || "").trim();
+  if (!raw) {
+    return "--";
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return "--";
+  }
+
+  return parsed.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function getServerPageSize() {
+  return window.matchMedia("(max-width: 720px)").matches
+    ? SERVER_PAGE_SIZE_MOBILE
+    : SERVER_PAGE_SIZE_DESKTOP;
+}
+
+function getServerPaginationNode() {
+  return byId("server-pagination");
+}
+
+function hideServerPagination() {
+  const paginationNode = getServerPaginationNode();
+  if (!paginationNode) {
+    return;
+  }
+  paginationNode.innerHTML = "";
+  paginationNode.classList.add("hidden");
+}
+
+function renderServerPagination(totalPages, currentPage) {
+  const paginationNode = getServerPaginationNode();
+  if (!paginationNode) {
+    return;
+  }
+
+  if (totalPages <= 1) {
+    hideServerPagination();
+    return;
+  }
+
+  const maxButtons = 7;
+  let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+  let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+  startPage = Math.max(1, endPage - maxButtons + 1);
+
+  const numberButtons = [];
+  if (startPage > 1) {
+    numberButtons.push(`<button type="button" data-server-page="1">1</button>`);
+    if (startPage > 2) {
+      numberButtons.push(`<span class="server-page-dots">...</span>`);
+    }
+  }
+
+  for (let page = startPage; page <= endPage; page += 1) {
+    numberButtons.push(`
+      <button
+        type="button"
+        data-server-page="${page}"
+        class="${page === currentPage ? "is-active" : ""}"
+      >${page}</button>
+    `);
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      numberButtons.push(`<span class="server-page-dots">...</span>`);
+    }
+    numberButtons.push(`<button type="button" data-server-page="${totalPages}">${totalPages}</button>`);
+  }
+
+  paginationNode.innerHTML = `
+    <button type="button" data-server-page="${Math.max(1, currentPage - 1)}" ${currentPage <= 1 ? "disabled" : ""}>&lt;</button>
+    ${numberButtons.join("")}
+    <button type="button" data-server-page="${Math.min(totalPages, currentPage + 1)}" ${currentPage >= totalPages ? "disabled" : ""}>&gt;</button>
+  `;
+  paginationNode.classList.remove("hidden");
+
+  paginationNode.querySelectorAll("button[data-server-page]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextPage = Number(button.getAttribute("data-server-page"));
+      if (!Number.isFinite(nextPage) || nextPage < 1 || nextPage > totalPages || nextPage === serverPaginationState.currentPage) {
+        return;
+      }
+
+      serverPaginationState.currentPage = nextPage;
+      renderServerCards(serverPaginationState.allServers);
+      const serverSection = byId("servers");
+      if (serverSection) {
+        serverSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
+}
+
 function renderUnavailableServerCard(message) {
   const wrapper = byId("server-list");
   if (!wrapper) {
     return;
   }
+  serverPaginationState.allServers = [];
+  serverPaginationState.currentPage = 1;
+  hideServerPagination();
 
   wrapper.innerHTML = `
     <article class="server-card">
@@ -231,23 +344,37 @@ function renderServerCards(servers) {
   }
 
   const safeServers = sanitizeServers(servers);
+  serverPaginationState.allServers = safeServers;
   if (safeServers.length === 0) {
     renderUnavailableServerCard("Start the bot process to fetch active guild names and logos.");
     return;
   }
 
-  wrapper.innerHTML = safeServers.map((server) => {
+  const pageSize = getServerPageSize();
+  const totalPages = Math.max(1, Math.ceil(safeServers.length / pageSize));
+  if (serverPaginationState.currentPage > totalPages) {
+    serverPaginationState.currentPage = totalPages;
+  }
+  if (serverPaginationState.currentPage < 1) {
+    serverPaginationState.currentPage = 1;
+  }
+
+  const startIndex = (serverPaginationState.currentPage - 1) * pageSize;
+  const pageServers = safeServers.slice(startIndex, startIndex + pageSize);
+
+  wrapper.innerHTML = pageServers.map((server) => {
     const name = String(server?.name || "Server");
     const fallbackLogo = buildServerFallbackLogo(name);
     const logo = String(server?.logo || "").trim() || fallbackLogo;
     const status = String(server?.status || "Active");
+    const addedOn = formatAddedOnDate(server?.addedAt);
     return `
     <article class="server-card">
       <header class="server-top">
         <img src="${logo}" data-fallback-logo="${fallbackLogo}" alt="${name} logo" class="server-logo">
         <div>
           <h3 class="server-name">${name}</h3>
-          <p class="server-sub">${status}</p>
+          <p class="server-sub">${status} • Bot Added: ${addedOn}</p>
         </div>
       </header>
       <div class="metric-grid">
@@ -278,6 +405,31 @@ function renderServerCards(servers) {
       imageNode.dataset.fallbackApplied = "1";
       imageNode.src = fallbackLogo;
     }, { once: true });
+  });
+
+  renderServerPagination(totalPages, serverPaginationState.currentPage);
+}
+
+function bindServerPaginationResizeHandler() {
+  if (hasBoundServerResizeHandler) {
+    return;
+  }
+  hasBoundServerResizeHandler = true;
+
+  window.addEventListener("resize", () => {
+    if (!Array.isArray(serverPaginationState.allServers) || serverPaginationState.allServers.length === 0) {
+      return;
+    }
+
+    clearTimeout(serverResizeTimerId);
+    serverResizeTimerId = setTimeout(() => {
+      const pageSize = getServerPageSize();
+      const totalPages = Math.max(1, Math.ceil(serverPaginationState.allServers.length / pageSize));
+      if (serverPaginationState.currentPage > totalPages) {
+        serverPaginationState.currentPage = totalPages;
+      }
+      renderServerCards(serverPaginationState.allServers);
+    }, 180);
   });
 }
 
@@ -572,6 +724,7 @@ function initPage() {
   initGifLogoTargets();
   attachNavToggle();
   buildMobileBottomNav();
+  bindServerPaginationResizeHandler();
   attachLogoutHandlers();
 
   const page = document.body.getAttribute("data-page");
