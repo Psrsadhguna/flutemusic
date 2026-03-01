@@ -1,6 +1,9 @@
 const SESSION_KEY = "flute_dashboard_session_v1";
 const LIVE_STATS_ENDPOINT = "/api/live-server-stats";
 const LIVE_STATS_CACHE_KEY = "flute_live_server_stats_v1";
+const AUTH_SESSION_ENDPOINT = "/api/auth/session";
+const AUTH_LOGOUT_ENDPOINT = "/api/auth/logout";
+const DISCORD_LOGIN_ENDPOINT = "/auth/discord";
 const LOGO_ASSET = "image.png?v=20260301";
 const GIF_LOGO_ASSET = "logo.gif?v=20260301b";
 const GIF_MIN_LOOP_REFRESH_MS = 5000;
@@ -46,6 +49,14 @@ function saveSession(session) {
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }
 
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+  } catch {
+    // Ignore cache remove failures.
+  }
+}
+
 function getCachedLiveStats() {
   try {
     const raw = localStorage.getItem(LIVE_STATS_CACHE_KEY);
@@ -63,13 +74,62 @@ function setCachedLiveStats(payload) {
   }
 }
 
-function requireSession() {
-  const session = getSession();
-  if (!session) {
-    window.location.href = "login.html";
+function normalizeRemoteSession(payload) {
+  const user = payload?.user || payload || {};
+  const discordId = String(user.discordId || "").trim();
+  if (!discordId) {
     return null;
   }
-  return session;
+
+  return {
+    username: String(user.username || user.discordUsername || "Discord User").trim() || "Discord User",
+    discordUsername: String(user.discordUsername || user.username || "Discord User").trim() || "Discord User",
+    discordId,
+    avatar: String(user.avatar || LOGO_ASSET).trim() || LOGO_ASSET,
+    plan: String(user.plan || "free").trim() || "free",
+    joinedAt: String(user.joinedAt || new Date().toISOString()).trim()
+  };
+}
+
+async function fetchRemoteSession() {
+  try {
+    const response = await fetch(AUTH_SESSION_ENDPOINT, {
+      cache: "no-store",
+      credentials: "same-origin"
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = await response.json();
+    if (!payload?.success || !payload?.authenticated) {
+      return null;
+    }
+
+    return normalizeRemoteSession(payload);
+  } catch {
+    return null;
+  }
+}
+
+async function requireSession() {
+  const remoteSession = await fetchRemoteSession();
+  if (remoteSession) {
+    saveSession(remoteSession);
+    return remoteSession;
+  }
+
+  clearSession();
+  window.location.href = "login.html";
+  return null;
+}
+
+async function syncSessionCacheForNav() {
+  const remoteSession = await fetchRemoteSession();
+  if (remoteSession) {
+    saveSession(remoteSession);
+  }
 }
 
 function attachNavToggle() {
@@ -117,9 +177,20 @@ function buildMobileBottomNav() {
 
 function attachLogoutHandlers() {
   document.querySelectorAll("[data-logout]").forEach((button) => {
-    button.addEventListener("click", (event) => {
+    button.addEventListener("click", async (event) => {
       event.preventDefault();
-      localStorage.removeItem(SESSION_KEY);
+      try {
+        await fetch(AUTH_LOGOUT_ENDPOINT, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+      } catch {
+        // Proceed with local cleanup even if API call fails.
+      }
+      clearSession();
       window.location.href = "login.html";
     });
   });
@@ -550,49 +621,50 @@ async function initHomePage() {
   startHomeStatsAutoRefresh();
 }
 
-function initLoginPage() {
-  const form = byId("login-form");
-  if (!form) {
+function getOAuthErrorMessage(reason) {
+  const code = String(reason || "").trim().toLowerCase();
+  if (!code) return "Discord login failed. Please try again.";
+  if (code === "oauth_not_configured") return "Discord OAuth is not configured on server.";
+  if (code === "invalid_or_expired_state") return "Login session expired. Start Discord login again.";
+  if (code === "missing_code_or_state") return "Discord did not return login code. Try once more.";
+  if (code === "oauth_callback_failed") return "Discord callback failed. Check OAuth credentials and redirect URI.";
+  if (code === "oauth_start_failed") return "Unable to start Discord login flow right now.";
+  return "Discord login failed. Please try again.";
+}
+
+async function initLoginPage() {
+  const loginButton = byId("discord-login-btn");
+  const statusNode = byId("oauth-status");
+  const errorNode = byId("oauth-error");
+
+  if (loginButton) {
+    loginButton.addEventListener("click", () => {
+      loginButton.disabled = true;
+      loginButton.textContent = "Redirecting to Discord...";
+      window.location.href = `${DISCORD_LOGIN_ENDPOINT}?redirect=premium-dashboard.html`;
+    });
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const authStatus = String(params.get("auth") || "").trim().toLowerCase();
+  const reason = String(params.get("reason") || "").trim();
+
+  if (authStatus === "failed" && errorNode) {
+    errorNode.textContent = getOAuthErrorMessage(reason);
+    errorNode.classList.remove("hidden");
+  }
+
+  const remoteSession = await fetchRemoteSession();
+  if (remoteSession) {
+    saveSession(remoteSession);
+    window.location.href = "premium-dashboard.html";
     return;
   }
 
-  const existing = getSession();
-  if (existing && byId("already-login")) {
-    byId("already-login").classList.remove("hidden");
-  }
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const username = String(byId("login-name")?.value || "").trim();
-    const discordId = String(byId("login-id")?.value || "").trim();
-    const avatar = String(byId("login-avatar")?.value || "").trim();
-    const plan = String(byId("login-plan")?.value || "free").trim();
-
-    if (!username) {
-      alert("Enter Discord username.");
-      return;
-    }
-
-    saveSession({
-      username,
-      discordId: discordId || "Not provided",
-      avatar: avatar || LOGO_ASSET,
-      plan,
-      joinedAt: new Date().toISOString()
-    });
-
-    window.location.href = "premium-dashboard.html";
-  });
-
-  const demoButton = byId("demo-discord");
-  if (demoButton) {
-    demoButton.addEventListener("click", () => {
-      byId("login-name").value = "FluteUser#247";
-      byId("login-id").value = "1350045852698435686";
-      byId("login-avatar").value = LOGO_ASSET;
-      byId("login-plan").value = "monthly";
-    });
+  clearSession();
+  if (statusNode) {
+    statusNode.classList.remove("hidden");
+    statusNode.textContent = "Continue with Discord to access Dashboard, Profile and Manage Premiums.";
   }
 }
 
@@ -610,7 +682,7 @@ function renderSessionInCommonPlaces(session) {
 }
 
 async function initDashboardPage() {
-  const session = requireSession();
+  const session = await requireSession();
   if (!session) {
     return;
   }
@@ -635,8 +707,8 @@ async function initDashboardPage() {
   }
 }
 
-function initProfilePage() {
-  const session = requireSession();
+async function initProfilePage() {
+  const session = await requireSession();
   if (!session) {
     return;
   }
@@ -654,6 +726,8 @@ function initProfilePage() {
   if (idInput) idInput.value = session.discordId || "";
   if (avatarInput) avatarInput.value = session.avatar || "";
   if (planInput) planInput.value = session.plan || "free";
+  if (idInput) idInput.setAttribute("readonly", "readonly");
+  if (planInput) planInput.setAttribute("disabled", "disabled");
 
   if (!form) {
     return;
@@ -664,9 +738,9 @@ function initProfilePage() {
     const nextSession = {
       ...session,
       username: String(nameInput?.value || "").trim() || session.username,
-      discordId: String(idInput?.value || "").trim() || session.discordId,
+      discordId: session.discordId,
       avatar: String(avatarInput?.value || "").trim() || LOGO_ASSET,
-      plan: String(planInput?.value || "free")
+      plan: session.plan
     };
     saveSession(nextSession);
     renderSessionInCommonPlaces(nextSession);
@@ -723,7 +797,7 @@ async function loadPremiumPlans() {
 }
 
 async function initManagePremiumPage() {
-  const session = requireSession();
+  const session = await requireSession();
   if (!session) {
     return;
   }
@@ -738,18 +812,15 @@ async function initManagePremiumPage() {
   selectButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const selectedPlan = button.getAttribute("data-select-plan");
-      const nextSession = { ...session, plan: selectedPlan || session.plan };
-      saveSession(nextSession);
-      setText("current-plan", String(nextSession.plan || "free").toUpperCase());
-      alert(`Plan updated to ${selectedPlan}.`);
+      const targetPlan = String(selectedPlan || "monthly").trim().toLowerCase();
+      window.location.href = `premium.html?plan=${encodeURIComponent(targetPlan)}`;
     });
   });
 }
 
-function initPage() {
+async function initPage() {
   initGifLogoTargets();
   attachNavToggle();
-  buildMobileBottomNav();
   bindServerPaginationResizeHandler();
   attachLogoutHandlers();
 
@@ -758,11 +829,18 @@ function initPage() {
     return;
   }
 
-  if (page === "home") initHomePage();
-  if (page === "login") initLoginPage();
-  if (page === "dashboard") initDashboardPage();
-  if (page === "profile") initProfilePage();
-  if (page === "manage-premiums") initManagePremiumPage();
+  if (page === "home") await initHomePage();
+  if (page === "login") await initLoginPage();
+  if (page === "dashboard") await initDashboardPage();
+  if (page === "profile") await initProfilePage();
+  if (page === "manage-premiums") await initManagePremiumPage();
+
+  await syncSessionCacheForNav();
+  buildMobileBottomNav();
 }
 
-document.addEventListener("DOMContentLoaded", initPage);
+document.addEventListener("DOMContentLoaded", () => {
+  initPage().catch((error) => {
+    console.error("Page initialization failed:", error?.message || error);
+  });
+});

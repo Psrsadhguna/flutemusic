@@ -2226,6 +2226,205 @@ function isLikelyDiscordId(userId) {
 }
 
 const premiumPlans = listPlans();
+const DISCORD_API_BASE = "https://discord.com/api/v10";
+const DISCORD_OAUTH_SCOPE = String(process.env.DISCORD_OAUTH_SCOPE || "identify").trim() || "identify";
+const DISCORD_OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+const AUTH_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const AUTH_COOKIE_NAME = "flute_auth_sid";
+const AUTH_REDIRECT_FALLBACK = "premium-dashboard.html";
+const oauthStateStore = new Map();
+const authSessionStore = new Map();
+
+function getDiscordOAuthConfig() {
+    const clientId = String(process.env.DISCORD_OAUTH_CLIENT_ID || process.env.DISCORD_CLIENT_ID || "").trim();
+    const clientSecret = String(process.env.DISCORD_OAUTH_CLIENT_SECRET || process.env.DISCORD_CLIENT_SECRET || "").trim();
+    const explicitRedirect = String(process.env.DISCORD_OAUTH_REDIRECT_URI || "").trim();
+    const publicBaseUrl = String(process.env.PUBLIC_BASE_URL || "").trim().replace(/\/+$/, "");
+    const redirectUri = explicitRedirect || (publicBaseUrl ? `${publicBaseUrl}/auth/discord/callback` : "");
+
+    return {
+        clientId,
+        clientSecret,
+        redirectUri,
+        scope: DISCORD_OAUTH_SCOPE
+    };
+}
+
+function isDiscordOAuthReady(oauthConfig = getDiscordOAuthConfig()) {
+    return Boolean(
+        oauthConfig.clientId &&
+        oauthConfig.clientSecret &&
+        oauthConfig.redirectUri
+    );
+}
+
+function parseCookieHeader(headerValue) {
+    const cookies = {};
+    const raw = String(headerValue || "");
+    if (!raw) return cookies;
+
+    const pairs = raw.split(";");
+    for (const pair of pairs) {
+        const separatorIndex = pair.indexOf("=");
+        if (separatorIndex <= 0) continue;
+        const key = pair.slice(0, separatorIndex).trim();
+        const value = pair.slice(separatorIndex + 1).trim();
+        if (!key) continue;
+        try {
+            cookies[key] = decodeURIComponent(value);
+        } catch {
+            cookies[key] = value;
+        }
+    }
+
+    return cookies;
+}
+
+function getAuthSessionIdFromRequest(req) {
+    const cookies = parseCookieHeader(req?.headers?.cookie);
+    return String(cookies[AUTH_COOKIE_NAME] || "").trim();
+}
+
+function shouldUseSecureAuthCookie(req) {
+    if (parseBoolean(process.env.AUTH_COOKIE_SECURE, false)) {
+        return true;
+    }
+
+    const forwardedProto = String(req?.headers?.["x-forwarded-proto"] || "").toLowerCase();
+    return Boolean(req?.secure || forwardedProto.includes("https"));
+}
+
+function setAuthSessionCookie(res, sessionId, req) {
+    res.cookie(AUTH_COOKIE_NAME, sessionId, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: shouldUseSecureAuthCookie(req),
+        maxAge: AUTH_SESSION_TTL_MS,
+        path: "/"
+    });
+}
+
+function clearAuthSessionCookie(res, req) {
+    res.clearCookie(AUTH_COOKIE_NAME, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: shouldUseSecureAuthCookie(req),
+        path: "/"
+    });
+}
+
+function sanitizeRedirectPath(rawPath, fallbackPath = AUTH_REDIRECT_FALLBACK) {
+    const candidate = String(rawPath || "").trim();
+    if (!candidate) return fallbackPath;
+    if (candidate.startsWith("http://") || candidate.startsWith("https://") || candidate.startsWith("//")) {
+        return fallbackPath;
+    }
+
+    const normalized = candidate.startsWith("/") ? candidate.slice(1) : candidate;
+    if (!normalized || normalized.includes("..")) {
+        return fallbackPath;
+    }
+
+    return normalized;
+}
+
+function buildLoginRedirectUrl(params = {}) {
+    const query = new URLSearchParams(params);
+    const suffix = query.toString();
+    return suffix ? `login.html?${suffix}` : "login.html";
+}
+
+function pruneExpiredAuthState() {
+    const nowMs = Date.now();
+
+    for (const [state, entry] of oauthStateStore.entries()) {
+        if (!entry || !Number.isFinite(entry.expiresAt) || entry.expiresAt <= nowMs) {
+            oauthStateStore.delete(state);
+        }
+    }
+
+    for (const [sessionId, entry] of authSessionStore.entries()) {
+        if (!entry || !Number.isFinite(entry.expiresAt) || entry.expiresAt <= nowMs) {
+            authSessionStore.delete(sessionId);
+        }
+    }
+}
+
+const authStoreCleanupInterval = setInterval(pruneExpiredAuthState, 5 * 60 * 1000);
+activeIntervals.push(authStoreCleanupInterval);
+
+function createAuthSession(user) {
+    const sessionId = crypto.randomBytes(32).toString("hex");
+    authSessionStore.set(sessionId, {
+        user,
+        expiresAt: Date.now() + AUTH_SESSION_TTL_MS
+    });
+    return sessionId;
+}
+
+function getAuthSessionEntry(sessionId, { refreshExpiry = true } = {}) {
+    if (!sessionId) return null;
+    const entry = authSessionStore.get(sessionId);
+    if (!entry) return null;
+
+    if (!Number.isFinite(entry.expiresAt) || entry.expiresAt <= Date.now()) {
+        authSessionStore.delete(sessionId);
+        return null;
+    }
+
+    if (refreshExpiry) {
+        entry.expiresAt = Date.now() + AUTH_SESSION_TTL_MS;
+        authSessionStore.set(sessionId, entry);
+    }
+
+    return entry;
+}
+
+function buildDiscordAvatarUrl(discordUser) {
+    const discordId = String(discordUser?.id || "").trim();
+    const avatarHash = String(discordUser?.avatar || "").trim();
+
+    if (discordId && avatarHash) {
+        const extension = avatarHash.startsWith("a_") ? "gif" : "png";
+        return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.${extension}?size=256`;
+    }
+
+    let fallbackIndex = 0;
+    try {
+        fallbackIndex = Number(BigInt(discordId || "0") % 6n);
+    } catch {
+        fallbackIndex = 0;
+    }
+    return `https://cdn.discordapp.com/embed/avatars/${fallbackIndex}.png`;
+}
+
+function getSessionPlanForUser(discordId) {
+    if (!discordId) return "free";
+    if (!paymentUtils.isPremium(discordId)) return "free";
+
+    const premiumUser = paymentUtils.getPremiumUser(discordId);
+    const plan = String(premiumUser?.plan || "").trim().toLowerCase();
+    return plan || "free";
+}
+
+function buildWebsiteSessionUser(discordUser) {
+    const discordId = String(discordUser?.id || "").trim();
+    const usernameRaw = String(discordUser?.username || "").trim();
+    const discriminator = String(discordUser?.discriminator || "").trim();
+    const displayName = String(discordUser?.global_name || usernameRaw || "Discord User").trim();
+    const discordUsername = discriminator && discriminator !== "0"
+        ? `${usernameRaw}#${discriminator}`
+        : (usernameRaw || displayName);
+
+    return {
+        username: displayName || "Discord User",
+        discordUsername,
+        discordId,
+        avatar: buildDiscordAvatarUrl(discordUser),
+        plan: getSessionPlanForUser(discordId),
+        joinedAt: new Date().toISOString()
+    };
+}
 
 function toNonNegativeNumber(value) {
     const numericValue = Number(value);
@@ -2425,6 +2624,149 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.get("/api/auth/config", (req, res) => {
+    try {
+        return res.json({
+            success: true,
+            configured: isDiscordOAuthReady()
+        });
+    } catch {
+        return res.json({ success: true, configured: false });
+    }
+});
+
+app.get("/auth/discord", (req, res) => {
+    try {
+        const oauthConfig = getDiscordOAuthConfig();
+        if (!isDiscordOAuthReady(oauthConfig)) {
+            return res.redirect(buildLoginRedirectUrl({ auth: "failed", reason: "oauth_not_configured" }));
+        }
+
+        pruneExpiredAuthState();
+        const state = crypto.randomBytes(20).toString("hex");
+        const redirectPath = sanitizeRedirectPath(req.query.redirect, AUTH_REDIRECT_FALLBACK);
+        oauthStateStore.set(state, {
+            expiresAt: Date.now() + DISCORD_OAUTH_STATE_TTL_MS,
+            redirectPath
+        });
+
+        const params = new URLSearchParams({
+            client_id: oauthConfig.clientId,
+            redirect_uri: oauthConfig.redirectUri,
+            response_type: "code",
+            scope: oauthConfig.scope,
+            state
+        });
+
+        return res.redirect(`https://discord.com/oauth2/authorize?${params.toString()}`);
+    } catch (error) {
+        console.error("Discord OAuth start failed:", error.message);
+        return res.redirect(buildLoginRedirectUrl({ auth: "failed", reason: "oauth_start_failed" }));
+    }
+});
+
+app.get("/auth/discord/callback", async (req, res) => {
+    try {
+        const oauthConfig = getDiscordOAuthConfig();
+        if (!isDiscordOAuthReady(oauthConfig)) {
+            return res.redirect(buildLoginRedirectUrl({ auth: "failed", reason: "oauth_not_configured" }));
+        }
+
+        const code = String(req.query.code || "").trim();
+        const state = String(req.query.state || "").trim();
+        if (!code || !state) {
+            return res.redirect(buildLoginRedirectUrl({ auth: "failed", reason: "missing_code_or_state" }));
+        }
+
+        pruneExpiredAuthState();
+        const stateEntry = oauthStateStore.get(state) || null;
+        oauthStateStore.delete(state);
+        if (!stateEntry || !Number.isFinite(stateEntry.expiresAt) || stateEntry.expiresAt <= Date.now()) {
+            return res.redirect(buildLoginRedirectUrl({ auth: "failed", reason: "invalid_or_expired_state" }));
+        }
+
+        const tokenPayload = new URLSearchParams({
+            client_id: oauthConfig.clientId,
+            client_secret: oauthConfig.clientSecret,
+            grant_type: "authorization_code",
+            code,
+            redirect_uri: oauthConfig.redirectUri
+        });
+
+        const tokenResponse = await axios.post(
+            `${DISCORD_API_BASE}/oauth2/token`,
+            tokenPayload.toString(),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }
+        );
+
+        const accessToken = String(tokenResponse?.data?.access_token || "").trim();
+        const tokenType = String(tokenResponse?.data?.token_type || "Bearer").trim();
+        if (!accessToken) {
+            throw new Error("DISCORD_ACCESS_TOKEN_MISSING");
+        }
+
+        const userResponse = await axios.get(`${DISCORD_API_BASE}/users/@me`, {
+            headers: {
+                Authorization: `${tokenType} ${accessToken}`
+            }
+        });
+
+        const sessionUser = buildWebsiteSessionUser(userResponse?.data || {});
+        if (!sessionUser.discordId) {
+            throw new Error("DISCORD_USER_ID_MISSING");
+        }
+
+        const sessionId = createAuthSession(sessionUser);
+        setAuthSessionCookie(res, sessionId, req);
+
+        const redirectPath = sanitizeRedirectPath(stateEntry.redirectPath, AUTH_REDIRECT_FALLBACK);
+        return res.redirect(`/${redirectPath}`);
+    } catch (error) {
+        console.error("Discord OAuth callback failed:", error.message);
+        return res.redirect(buildLoginRedirectUrl({ auth: "failed", reason: "oauth_callback_failed" }));
+    }
+});
+
+app.get("/api/auth/session", (req, res) => {
+    pruneExpiredAuthState();
+
+    const sessionId = getAuthSessionIdFromRequest(req);
+    const sessionEntry = getAuthSessionEntry(sessionId);
+    if (!sessionEntry || !sessionEntry.user) {
+        clearAuthSessionCookie(res, req);
+        return res.json({ success: true, authenticated: false });
+    }
+
+    const refreshedUser = {
+        ...sessionEntry.user,
+        plan: getSessionPlanForUser(sessionEntry.user.discordId)
+    };
+    authSessionStore.set(sessionId, {
+        ...sessionEntry,
+        user: refreshedUser
+    });
+
+    return res.json({
+        success: true,
+        authenticated: true,
+        user: refreshedUser
+    });
+});
+
+app.post("/api/auth/logout", (req, res) => {
+    const sessionId = getAuthSessionIdFromRequest(req);
+    if (sessionId) {
+        authSessionStore.delete(sessionId);
+    }
+
+    clearAuthSessionCookie(res, req);
+    return res.json({ success: true });
+});
 
 app.post("/api/topgg-vote", async (req, res) => {
     try {

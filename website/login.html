@@ -39,7 +39,7 @@
       <section class="sub-hero">
         <p class="eyebrow">Discord Login</p>
         <h1>Login and continue to dashboard</h1>
-        <p>Fill details once, then use Dashboard, Profile and Manage Premiums pages separately.</p>
+        <p>Use official Discord OAuth2 login to access Dashboard, Profile and Manage Premiums pages.</p>
       </section>
 
       <section class="login-layout">
@@ -49,46 +49,24 @@
           <p>2) Profile page</p>
           <p>3) Manage Premiums page</p>
           <p class="text-muted">
-            For production OAuth, connect Discord client ID + callback on backend.
-            This page currently stores a local session for website flow preview.
+            Real Discord authentication is now enabled through backend OAuth2 flow.
+            Your login session is handled by secure HTTP-only cookie.
           </p>
-          <button class="btn discord-btn" type="button" id="demo-discord">
-            Fill Demo Discord Data
-          </button>
         </article>
 
         <article class="panel">
-          <form id="login-form" class="login-form">
-            <label>
-              Discord Username
-              <input id="login-name" name="username" type="text" placeholder="FluteUser#247" required>
-            </label>
-
-            <label>
-              Discord ID
-              <input id="login-id" name="discordId" type="text" placeholder="123456789012345678">
-            </label>
-
-            <label>
-              Avatar URL (optional)
-              <input id="login-avatar" name="avatar" type="text" placeholder="https://cdn.../avatar.png">
-            </label>
-
-            <label>
-              Current Plan
-              <select id="login-plan" name="plan">
-                <option value="free">Free</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="lifetime">Lifetime</option>
-              </select>
-            </label>
-
-            <button class="btn btn-primary" type="submit">Login To Dashboard</button>
-          </form>
-
-          <p id="already-login" class="pill hidden">
-            Existing session detected. Submitting this form updates your session.
+          <h3>Continue with Discord</h3>
+          <p class="text-muted">
+            Click below and approve access in Discord. You will be redirected back automatically.
+          </p>
+          <button class="btn discord-btn" type="button" id="discord-login-btn">
+            Login With Discord
+          </button>
+          <p id="oauth-status" class="pill hidden">
+            Checking login status...
+          </p>
+          <p id="oauth-error" class="pill hidden" style="color: #a3204c;">
+            Login failed.
           </p>
         </article>
       </section>

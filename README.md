@@ -52,6 +52,16 @@ LAVALINK_SECURE=true
 SPOTIFY_CLIENT_ID=your_spotify_client_id
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 
+# Website Discord OAuth2 (real login)
+DISCORD_OAUTH_CLIENT_ID=your_discord_application_client_id
+DISCORD_OAUTH_CLIENT_SECRET=your_discord_application_client_secret
+DISCORD_OAUTH_REDIRECT_URI=https://your-domain.com/auth/discord/callback
+# Optional if DISCORD_OAUTH_REDIRECT_URI is not set
+PUBLIC_BASE_URL=https://your-domain.com
+# Optional (default: identify)
+DISCORD_OAUTH_SCOPE=identify
+# Optional (set true behind HTTPS reverse proxy)
+AUTH_COOKIE_SECURE=true
 
 ```
 
