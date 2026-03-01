@@ -10,6 +10,10 @@ const CATEGORY_MAP = {
     effect: ['cinema', 'cleareffects', 'echo', 'earrape', 'lofi', 'party', 'radio', 'telephone', 'underwater', 'vocalboost']
 };
 
+const USAGE_MAP = {
+    play: 'play <link>'
+};
+
 const COMMAND_HELP_NOTES = {
     autoplay: [
         'Modes:',
