@@ -90,9 +90,8 @@ function buildEmbed(client, bootedAtIso, channelId) {
       { name: "Uptime", value: formatUptime(client.uptime), inline: true },
       { name: "Latency", value: `${Math.round(client.ws.ping)}ms`, inline: true },
       { name: "Restarted At", value: bootText, inline: false },
-      { name: "Channel ID", value: channelId, inline: false }
     )
-    .setFooter({ text: "Uptime tracker message (single embed mode)" })
+    .setFooter({ text: "ADD A BOT FOR MUSIC" })
     .setTimestamp();
 }
 
