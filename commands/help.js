@@ -120,6 +120,7 @@ module.exports = {
 
         const helpData = {
             prefix,
+            quickStart: QUICK_START,
             normalCommands,
             musicCommands,
             playlistCommands,
