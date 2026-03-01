@@ -1,463 +1,83 @@
 {
-  "totalSongsPlayed": 517,
-  "totalPlaytime": 249732456,
-  "totalCommandsExecuted": 621,
+  "totalSongsPlayed": 1,
+  "totalPlaytime": 267000,
+  "totalCommandsExecuted": 1,
   "twentyFourSevenServers": [],
   "autoplayServers": [],
   "autoplayModesByGuild": {},
   "autoplaySetByGuild": {},
   "recentlyPlayed": [
     {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772113855118,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
-      "author": "Brown Editz",
-      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
-      "requester": "744044949942829127",
-      "timestamp": 1772113839033,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
-      "author": "Brown Editz",
-      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
-      "requester": "744044949942829127",
-      "timestamp": 1772113832593,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
-      "author": "Brown Editz",
-      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
-      "requester": "744044949942829127",
-      "timestamp": 1772113806078,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "I Am Rider Satisfya | Slowed+Reverb | Lofi Song | Rider Song| #slowed #reverb #lufi #rider #satisfya",
-      "author": "Brown Editz",
-      "uri": "https://www.youtube.com/watch?v=L-GTZqYYNTg",
-      "requester": "744044949942829127",
-      "timestamp": 1772112683536,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Humnava | (Slowed + Reverb) by SLOWED-ERA",
-      "author": "SLOWED-ERA",
-      "uri": "https://www.youtube.com/watch?v=0fPWYNbBQCk",
-      "requester": "744044949942829127",
-      "timestamp": 1772112272425,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772111958598,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772111806047,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Ya lili[ slowed+reverb ] || Sohail Musics || Feel The Music",
-      "author": "Feel The Music",
-      "uri": "https://www.youtube.com/watch?v=qrCao5Hn6nY",
-      "requester": "744044949942829127",
-      "timestamp": 1772111617020,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772109743796,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772109570367,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772109348772,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772108454238,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772107849945,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772107770090,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Boom Boom",
-      "author": "Sai Abhyankkar",
-      "uri": "https://open.spotify.com/track/1vm734I96RBUt1kTpCyw3C",
-      "requester": "744044949942829127",
-      "timestamp": 1772107585555,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772107478385,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772107291552,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772106819905,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Viral Vayyari ( From \"Junior\")",
-      "author": "Devi Sri Prasad",
-      "uri": "https://open.spotify.com/track/6cd9eJFXIl72tDwLguJxSp",
-      "requester": "744044949942829127",
-      "timestamp": 1772106748015,
-      "guildId": "1367087087005990962"
-    },
-    {
-      "title": "Yedhalo Oka Mounam (The Innocence of Love)",
-      "author": "Anirudh Ravichander",
-      "uri": "https://www.youtube.com/watch?v=PmFqM_XDB3Y",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772265151634
-    },
-    {
-      "title": "Daripontothundu (DJ Song)",
-      "author": "Mamidi Mounika",
-      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772265389800
-    },
-    {
-      "title": "Daripontothundu (DJ Song)",
-      "author": "Mamidi Mounika",
-      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772265447876
-    },
-    {
-      "title": "Daripontothundu (DJ Song)",
-      "author": "Mamidi Mounika - Topic",
-      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772265520565
-    },
-    {
-      "title": "Daripontothundu (DJ Song)",
-      "author": "Mamidi Mounika - Topic",
-      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772265649601
-    },
-    {
-      "title": "Shivaratri Paata",
-      "author": "Nallagonda Gaddaar",
-      "uri": "https://www.youtube.com/watch?v=4v03--WWfwc",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772265885048
-    },
-    {
-      "title": "O Na Ramayya",
-      "author": "Nalgonda Gaddar Narsanna",
-      "uri": "https://www.youtube.com/watch?v=3UqGZqeJxfA",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772265910596
-    },
-    {
-      "title": "Shivaratri Paata",
-      "author": "Nallagonda Gaddaar",
-      "uri": "https://www.youtube.com/watch?v=4v03--WWfwc",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772266024853
-    },
-    {
-      "title": "O Na Ramayya",
-      "author": "Nalgonda Gaddar Narsanna",
-      "uri": "https://www.youtube.com/watch?v=3UqGZqeJxfA",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772266290212
-    },
-    {
-      "title": "Daripontothundu (DJ Song)",
-      "author": "Mamidi Mounika - Topic",
-      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772280037556
-    },
-    {
-      "title": "Nemaleeya Raja",
-      "author": "Mamidi Mounika",
-      "uri": "https://www.youtube.com/watch?v=xEZMLwVBQ-c",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772280223780
-    },
-    {
-      "title": "Abbabba Emandhame",
-      "author": "Mamidi Mounika",
-      "uri": "https://www.youtube.com/watch?v=-IwRMDdDKaI",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772280410473
-    },
-    {
-      "title": "Abbabba Emi Andame",
-      "author": "A. Devayya",
-      "uri": "https://www.youtube.com/watch?v=G475Jii7NqI",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772280702014
-    },
-    {
-      "title": "Daripontothundu (DJ Song)",
-      "author": "Mamidi Mounika - Topic",
-      "uri": "https://www.youtube.com/watch?v=SuXZlo6jM6s",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772280761059
-    },
-    {
-      "title": "Alone, Pt. II",
-      "author": "Ava Max",
-      "uri": "https://www.youtube.com/watch?v=ciwx8yJPX54",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772280798440
-    },
-    {
-      "title": "Kumkumala (From \"Brahmastra (Telugu)\")",
-      "author": "Pritam",
-      "uri": "https://www.youtube.com/watch?v=_Keinp6SZ7w",
-      "guildId": "1367087087005990962",
-      "timestamp": 1772280819424
+      "title": "Hello Hi",
+      "author": "Dladla Mshunqisi - Topic",
+      "uri": "https://www.youtube.com/watch?v=M6KZ7NKq12M",
+      "guildId": "1466778869834191026",
+      "timestamp": 1772387385199
     }
   ],
-  "errorCount": 4,
+  "errorCount": 0,
   "guildActivity": {
-    "1466778869834191026": 52,
-    "1469974428908654818": 71,
-    "1475011449834176543": 266,
-    "1475911093330251990": 77,
-    "1367087087005990962": 51
+    "1466778869834191026": 1
   },
-  "guildPlaytime": {},
+  "guildPlaytime": {
+    "1466778869834191026": 267000
+  },
   "websiteGuildViews": {},
   "guildMeta": {
-    "1367087087005990962": {
-      "name": "assam gang",
-      "logo": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22256%22%20height%3D%22256%22%20viewBox%3D%220%200%20256%20256%22%3E%0A%20%20%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2246%22%20fill%3D%22%230f1ef2%22%2F%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%2256%25%22%20text-anchor%3D%22middle%22%20font-size%3D%2287%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22%23ffffff%22%20font-weight%3D%22700%22%3EAG%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
-      "memberCount": 5,
-      "played": 51,
-      "listeningMs": 24635117,
+    "785843796180992000": {
+      "name": "Rᴇᴅᴅʏ Bʜᴀɪ Gᴀᴍɪɴɢ",
+      "logo": "https://cdn.discordapp.com/icons/785843796180992000/93b926edd6cbd042ecf5bda4b3b0cd88.webp?size=256",
+      "memberCount": 1296,
+      "played": 0,
+      "listeningMs": 0,
       "views": 0,
-      "lastSeenAt": "2026-03-01T16:14:09.030Z"
+      "lastSeenAt": "2026-03-01T17:49:45.200Z",
+      "addedAt": "2026-02-21T16:11:30.821Z"
+    },
+    "1353004072688554116": {
+      "name": "saddupsr's server",
+      "logo": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22256%22%20height%3D%22256%22%20viewBox%3D%220%200%20256%20256%22%3E%0A%20%20%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2246%22%20fill%3D%22%23087484%22%2F%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%2256%25%22%20text-anchor%3D%22middle%22%20font-size%3D%2287%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22%23ffffff%22%20font-weight%3D%22700%22%3ESS%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
+      "memberCount": 2,
+      "played": 0,
+      "listeningMs": 0,
+      "views": 0,
+      "lastSeenAt": "2026-03-01T17:49:45.201Z",
+      "addedAt": "2026-02-28T06:47:49.955Z"
+    },
+    "1466778869834191026": {
+      "name": "Flute Community",
+      "logo": "https://cdn.discordapp.com/icons/1466778869834191026/a_358ad7ef87d1113dd3e802ef8ce98b75.gif?size=256",
+      "memberCount": 32,
+      "played": 1,
+      "listeningMs": 267000,
+      "views": 0,
+      "lastSeenAt": "2026-03-01T17:49:45.201Z",
+      "addedAt": "2026-02-01T11:21:48.765Z"
     },
     "1475011449834176543": {
       "name": "Bot setting",
       "logo": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22256%22%20height%3D%22256%22%20viewBox%3D%220%200%20256%20256%22%3E%0A%20%20%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2246%22%20fill%3D%22%2302b19f%22%2F%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%2256%25%22%20text-anchor%3D%22middle%22%20font-size%3D%2287%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22%23ffffff%22%20font-weight%3D%22700%22%3EBS%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
       "memberCount": 8,
-      "played": 266,
-      "listeningMs": 128489039,
+      "played": 0,
+      "listeningMs": 0,
       "views": 0,
-      "lastSeenAt": "2026-03-01T16:14:09.030Z"
+      "lastSeenAt": "2026-03-01T17:49:45.201Z",
+      "addedAt": "2026-02-22T06:35:50.258Z"
     },
     "1475911093330251990": {
       "name": "all bots !! 🔥",
       "logo": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22256%22%20height%3D%22256%22%20viewBox%3D%220%200%20256%20256%22%3E%0A%20%20%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2246%22%20fill%3D%22%2303d856%22%2F%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%2256%25%22%20text-anchor%3D%22middle%22%20font-size%3D%2287%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22%23ffffff%22%20font-weight%3D%22700%22%3EAB%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
       "memberCount": 13,
-      "played": 77,
-      "listeningMs": 37194196,
+      "played": 0,
+      "listeningMs": 0,
       "views": 0,
-      "lastSeenAt": "2026-03-01T16:14:09.030Z"
+      "lastSeenAt": "2026-03-01T17:49:45.201Z",
+      "addedAt": "2026-02-26T07:52:37.949Z"
     }
   },
   "topArtists": {
-    "AKASA": 3,
-    "Adnan Sami": 3,
-    "RATHOD TUNES": 2,
-    "Silent Rhythm": 2,
-    "Jason Stephenson": 1,
-    "Music Body and Spirit": 1,
-    "Aesthetic Lofi Vibes": 4,
-    "tills chills": 1,
-    "Palm Tree Lounge": 1,
-    "Ruhaan Arshad": 1,
-    "Javed-Mohsin": 1,
-    "Anirudh Ravichander": 6,
-    "Shilpa Rao": 1,
-    "Vengaboys": 4,
-    "Ramu Rathod": 1,
-    "Guru Randhawa": 5,
-    "Anup Rubens": 3,
-    "Vijay Prakash": 1,
-    "Yuvan Shankar Raja": 5,
-    "Khasa Aala Chahar": 5,
-    "SLOWED-ERA": 3,
-    "wiv": 4,
-    "Yazin Nizar": 5,
-    "Peter McPoland": 3,
-    "Ezra Bell": 2,
-    "Devi Sri Prasad": 52,
-    "Mohit Chauhan": 32,
-    "A.R. Rahman": 7,
-    "Mallu ai": 6,
-    "Vadlakonda Anilkumar": 1,
-    "Mounika.": 1,
-    "Lil Skies": 53,
-    "Bappi Lahiri, K.K., Anushka Manchanda, Kamal Khan, Aishwarya, Hrithik Roshan, Diljit, Farhan Akhtar, Keerthi Sagathia, Abhishek Nainwal, Abhay Deol, Amrita Kak, Bob, Akon, Shreya Ghoshal, Earl Edgar D, Hamsika Iyer, Arijit, and Javed Ali": 10,
-    "Mano": 1,
-    "Sagar & Sumangali (Humming)": 1,
-    "Atif Aslam": 3,
-    "Pharrell Williams": 1,
-    "Dladla Mshunqisi": 4,
-    "Kaka": 4,
-    "Dj Sam GOLD & dj drico": 1,
-    "Feel The Music": 16,
-    "TOOL": 1,
-    "Fontaines D.C.": 1,
-    "Wardruna": 2,
-    "Kobo Kanaeru": 1,
-    "Devi Sri Prasad - Topic": 5,
-    "Karunya": 8,
-    "N. C. Karunya": 4,
-    "Release - Topic": 1,
-    "Jr.N.T.R & Karunya": 1,
-    "Chithra Arun": 1,
-    "Karunya & Ranina Reddy": 2,
-    "Darshan Raval": 1,
-    "Various Artists - Topic": 8,
-    "Nature Sounds": 1,
-    "M.M. Sreelekha": 12,
-    "Acoustic Guitar Music & Guitar Relaxing Music": 1,
-    "Shahil Hada": 27,
-    "SHAIL HADA": 2,
-    "Shail Hada": 1,
-    "Shail Hada | Rakesh Pandit": 1,
-    "Chitra": 17,
-    "Mohit Chauhan - Topic": 3,
-    "MOHIT CHAUHAN": 2,
-    "M.M.Srilekha": 1,
-    "M. M. Srilekha": 1,
-    "Suman Badanakal": 1,
-    "Jennifer Lopez": 3,
-    "Jennifer Lopez - Topic": 12,
-    "Ramajogayya Sastry": 3,
-    "S.P.Balasubramanyam": 9,
-    "Udit Narayan": 5,
-    "Bharatt-Saurabh": 2,
-    "Anuradha Paudwal": 4,
-    "Jagjit Singh": 2,
-    "Rajalakshmee Sanjay": 3,
-    "Folk Hyderabad": 2,
-    "Veeramanidaasan": 1,
-    "Thaman S": 1,
-    "MM Sreelekha": 1,
-    "Ren": 1,
-    "Nakash Aziz": 13,
-    "Shahil Hada & Chinmayee": 12,
-    "Prasanna": 1,
-    "Ajay-Atul": 1,
-    "Pratt & McClain": 1,
-    "Hari Haran": 3,
-    "SIENNA SPIRO": 2,
-    "Jagjit Singh - Topic": 1,
-    "CHITRA": 1,
-    "Anuradha Paudwal - Topic": 1,
-    "William Augusto": 1,
-    "Pandit Pulse": 6,
-    "Ui": 1,
-    "Sid Sriram": 19,
-    "Sid Sriram - Topic": 6,
-    "DILIP DEVAGAN": 4,
-    "Dilip Devgan - Topic": 1,
-    "Swami": 1,
-    "Sai Abhyankkar": 7,
-    "Brown Editz": 4,
-    "Mamidi Mounika": 4,
-    "Mamidi Mounika - Topic": 4,
-    "Nallagonda Gaddaar": 2,
-    "Nalgonda Gaddar Narsanna": 2,
-    "A. Devayya": 1,
-    "Ava Max": 1,
-    "Pritam": 1
+    "Dladla Mshunqisi - Topic": 1
   },
-  "commandErrors": [
-    {
-      "command": "h",
-      "error": "Invalid URL",
-      "userId": "744044949942829127",
-      "guildId": "1475011449834176543",
-      "timestamp": 1771798949733
-    },
-    {
-      "command": "h",
-      "error": "Invalid URL",
-      "userId": "744044949942829127",
-      "guildId": "1475011449834176543",
-      "timestamp": 1771799097638
-    },
-    {
-      "command": "h",
-      "error": "Invalid URL",
-      "userId": "744044949942829127",
-      "guildId": "1475011449834176543",
-      "timestamp": 1771799281546
-    },
-    {
-      "command": "h",
-      "error": "Invalid URL",
-      "userId": "744044949942829127",
-      "guildId": "1475011449834176543",
-      "timestamp": 1771801007273
-    }
-  ],
-  "lastUpdated": "2026-03-01T16:14:11.574Z"
+  "commandErrors": [],
+  "lastUpdated": "2026-03-01T17:49:52.966Z"
 }

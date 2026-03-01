@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "updatedAt": "2026-03-01T17:49:45.201Z",
+  "servers": [
+    {
+      "guildId": "1466778869834191026",
+      "name": "Flute Community",
+      "logo": "https://cdn.discordapp.com/icons/1466778869834191026/a_358ad7ef87d1113dd3e802ef8ce98b75.gif?size=256",
+      "played": 1,
+      "listeningHours": 0.07,
+      "views": 0,
+      "status": "Playing Now",
+      "memberCount": 32,
+      "addedAt": "2026-02-01T11:21:48.765Z"
+    },
+    {
+      "guildId": "785843796180992000",
+      "name": "Rᴇᴅᴅʏ Bʜᴀɪ Gᴀᴍɪɴɢ",
+      "logo": "https://cdn.discordapp.com/icons/785843796180992000/93b926edd6cbd042ecf5bda4b3b0cd88.webp?size=256",
+      "played": 0,
+      "listeningHours": 0,
+      "views": 0,
+      "status": "Idle",
+      "memberCount": 1296,
+      "addedAt": "2026-02-21T16:11:30.821Z"
+    },
+    {
+      "guildId": "1475911093330251990",
+      "name": "all bots !! 🔥",
+      "logo": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22256%22%20height%3D%22256%22%20viewBox%3D%220%200%20256%20256%22%3E%0A%20%20%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2246%22%20fill%3D%22%2303d856%22%2F%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%2256%25%22%20text-anchor%3D%22middle%22%20font-size%3D%2287%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22%23ffffff%22%20font-weight%3D%22700%22%3EAB%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
+      "played": 0,
+      "listeningHours": 0,
+      "views": 0,
+      "status": "Idle",
+      "memberCount": 13,
+      "addedAt": "2026-02-26T07:52:37.949Z"
+    },
+    {
+      "guildId": "1475011449834176543",
+      "name": "Bot setting",
+      "logo": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22256%22%20height%3D%22256%22%20viewBox%3D%220%200%20256%20256%22%3E%0A%20%20%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2246%22%20fill%3D%22%2302b19f%22%2F%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%2256%25%22%20text-anchor%3D%22middle%22%20font-size%3D%2287%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22%23ffffff%22%20font-weight%3D%22700%22%3EBS%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
+      "played": 0,
+      "listeningHours": 0,
+      "views": 0,
+      "status": "Idle",
+      "memberCount": 8,
+      "addedAt": "2026-02-22T06:35:50.258Z"
+    },
+    {
+      "guildId": "1353004072688554116",
+      "name": "saddupsr's server",
+      "logo": "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22256%22%20height%3D%22256%22%20viewBox%3D%220%200%20256%20256%22%3E%0A%20%20%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2246%22%20fill%3D%22%23087484%22%2F%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%2256%25%22%20text-anchor%3D%22middle%22%20font-size%3D%2287%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22%23ffffff%22%20font-weight%3D%22700%22%3ESS%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
+      "played": 0,
+      "listeningHours": 0,
+      "views": 0,
+      "status": "Idle",
+      "memberCount": 2,
+      "addedAt": "2026-02-28T06:47:49.955Z"
+    }
+  ],
+  "platform": {
+    "totalSongsPlayed": 1,
+    "totalListeningHours": 0.07,
+    "totalCommandsExecuted": 1,
+    "totalServerViews": 0,
+    "activeServers": 5,
+    "liveServers": 5,
+    "liveMembers": 1351
+  }
+}

@@ -1098,10 +1098,55 @@ const advancedPremiumCommands = new Set([
     "vocalboost"
 ]);
 
-const statsPath = path.join(__dirname, 'stats.json');
-const userDataPath = path.join(__dirname, 'userdata.json');
+function resolveDataFilePath(fileName, explicitEnvKey) {
+    const explicitPath = String(process.env[explicitEnvKey] || "").trim();
+    if (explicitPath) {
+        return path.isAbsolute(explicitPath)
+            ? explicitPath
+            : path.join(__dirname, explicitPath);
+    }
+
+    const dataDir = String(
+        process.env.DATA_DIR ||
+        process.env.RAILWAY_VOLUME_MOUNT_PATH ||
+        ""
+    ).trim();
+
+    if (dataDir) {
+        return path.join(dataDir, fileName);
+    }
+
+    return path.join(__dirname, fileName);
+}
+
+const statsPath = resolveDataFilePath("stats.json", "STATS_FILE_PATH");
+const userDataPath = resolveDataFilePath("userdata.json", "USERDATA_FILE_PATH");
 const websiteStatusPath = path.join(__dirname, "website", "status.json");
 const websiteLiveStatsPath = path.join(__dirname, "website", "live-server-stats.json");
+const playlistsPath = resolveDataFilePath("playlists.json", "PLAYLISTS_FILE_PATH");
+
+function seedDataFileFromLegacy(targetPath, legacyFileName) {
+    const legacyPath = path.join(__dirname, legacyFileName);
+    try {
+        if (path.resolve(targetPath) === path.resolve(legacyPath)) {
+            return;
+        }
+
+        if (fs.existsSync(targetPath) || !fs.existsSync(legacyPath)) {
+            return;
+        }
+
+        fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+        fs.copyFileSync(legacyPath, targetPath);
+        console.log(`Seeded data file from legacy path: ${legacyFileName} -> ${targetPath}`);
+    } catch (error) {
+        console.warn(`Unable to seed ${legacyFileName} to ${targetPath}:`, error.message);
+    }
+}
+
+seedDataFileFromLegacy(statsPath, "stats.json");
+seedDataFileFromLegacy(userDataPath, "userdata.json");
+seedDataFileFromLegacy(playlistsPath, "playlists.json");
 
 function getDefaultServerLogo() {
     const configuredLogo = String(process.env.SERVER_LOGO_FALLBACK || "").trim();
@@ -1203,6 +1248,7 @@ async function loadUserData() {
 // Save stats to file (async, non-blocking)
 async function saveStats() {
     try {
+        await fsp.mkdir(path.dirname(statsPath), { recursive: true });
         const data = {
             totalSongsPlayed: stats.totalSongsPlayed,
             totalPlaytime: stats.totalPlaytime,
@@ -1230,6 +1276,7 @@ async function saveStats() {
 // Save user data (favorites and history) - async, non-blocking
 async function saveUserData() {
     try {
+        await fsp.mkdir(path.dirname(userDataPath), { recursive: true });
         await fsp.writeFile(userDataPath, JSON.stringify(userData, null, 2), 'utf8');
     } catch (err) {
         console.error('Failed to save userdata.json:', err.message);
@@ -1237,7 +1284,6 @@ async function saveUserData() {
 }
 
 // Load playlists data
-const playlistsPath = path.join(__dirname, 'playlists.json');
 async function loadPlaylists() {
     try {
         if (fs.existsSync(playlistsPath)) {
@@ -1257,6 +1303,7 @@ async function loadPlaylists() {
 // Export stats to global for access from commands (load in background)
 Promise.all([loadStats(), loadUserData(), loadPlaylists()]).then(() => {
     console.log(`Loaded user and stats data in ${Date.now() - startupTime}ms`);
+    console.log(`Data files -> stats: ${statsPath}, userdata: ${userDataPath}, playlists: ${playlistsPath}`);
     // Clear 247 mode on restart
     const serversBefore = stats.twentyFourSevenServers.size;
     console.log(`Clearing 24/7 mode from ${serversBefore} server(s)...`);
