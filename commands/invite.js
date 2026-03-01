@@ -44,7 +44,7 @@ module.exports = {
             new ButtonBuilder()
                 .setLabel("Support Server")
                 .setStyle(ButtonStyle.Link)
-                .setURL("https://discord.gg/mnXgb5bAUP")
+                .setURL("https://discord.gg/v7StyEvCCC")
         );
 
         return message.channel.send({ embeds: [embed], components: [row] });

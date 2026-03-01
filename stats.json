@@ -1,10 +1,11 @@
 {
   "totalSongsPlayed": 517,
   "totalPlaytime": 249732456,
-  "totalCommandsExecuted": 616,
+  "totalCommandsExecuted": 621,
   "twentyFourSevenServers": [],
   "autoplayServers": [],
   "autoplayModesByGuild": {},
+  "autoplaySetByGuild": {},
   "recentlyPlayed": [
     {
       "title": "Viral Vayyari ( From \"Junior\")",
@@ -427,5 +428,5 @@
       "timestamp": 1771801007273
     }
   ],
-  "lastUpdated": "2026-02-28T18:07:08.063Z"
+  "lastUpdated": "2026-03-01T13:32:47.671Z"
 }

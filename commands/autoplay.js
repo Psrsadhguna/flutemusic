@@ -1,10 +1,11 @@
 const { EmbedBuilder } = require("discord.js");
 const messages = require("../utils/messages.js");
+const { requireReferralAccess } = require("../utils/referralAccess");
 
 module.exports = {
     name: "autoplay",
     aliases: ["ap"],
-    description: "Toggle autoplay and set mode (similar/artist/random)",
+    description: "Toggle autoplay (Referral/Premium required to enable)",
     usage: "fautoplay [on/off/status/similar/artist/random]",
     cooldownMs: 1500,
     execute: async (message, args, client) => {
@@ -19,6 +20,7 @@ module.exports = {
         const option = optionAliases[rawOption] || rawOption;
         const guildId = message.guild.id;
         const validModes = new Set(["similar", "artist", "random"]);
+        const restrictedModes = new Set(["similar", "artist", "random"]);
 
         if (!global.stats || !(global.stats.autoplayServers instanceof Set)) {
             return messages.error(message.channel, "Autoplay system is not initialized yet.");
@@ -26,6 +28,9 @@ module.exports = {
 
         if (!global.stats.autoplayModesByGuild || typeof global.stats.autoplayModesByGuild !== "object") {
             global.stats.autoplayModesByGuild = {};
+        }
+        if (!global.stats.autoplaySetByGuild || typeof global.stats.autoplaySetByGuild !== "object") {
+            global.stats.autoplaySetByGuild = {};
         }
 
         const currentlyEnabled = global.stats.autoplayServers.has(guildId);
@@ -49,15 +54,28 @@ module.exports = {
             nextEnabled = !currentlyEnabled;
         }
 
+        if (nextEnabled && restrictedModes.has(nextMode)) {
+            const allowed = await requireReferralAccess(message, { feature: `Autoplay ${nextMode} Mode` });
+            if (!allowed) return;
+        }
+
         if (option !== "status") {
             if (nextEnabled) {
                 global.stats.autoplayServers.add(guildId);
                 global.stats.autoplayModesByGuild[guildId] = nextMode;
+                global.stats.autoplaySetByGuild[guildId] = message.author.id;
             } else {
                 global.stats.autoplayServers.delete(guildId);
+                delete global.stats.autoplaySetByGuild[guildId];
+                delete global.stats.autoplayModesByGuild[guildId];
             }
-        } else if (nextEnabled && !global.stats.autoplayModesByGuild[guildId]) {
-            global.stats.autoplayModesByGuild[guildId] = nextMode;
+        } else if (nextEnabled) {
+            if (!global.stats.autoplayModesByGuild[guildId]) {
+                global.stats.autoplayModesByGuild[guildId] = nextMode;
+            }
+            if (!global.stats.autoplaySetByGuild[guildId]) {
+                global.stats.autoplaySetByGuild[guildId] = message.author.id;
+            }
         }
 
         const player = client.riffy.players.get(guildId);

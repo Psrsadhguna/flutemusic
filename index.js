@@ -1,4 +1,4 @@
-require("dotenv").config();
+﻿require("dotenv").config();
 const { Client, GatewayDispatchEvents, Collection, ActivityType, AttachmentBuilder, EmbedBuilder } = require("discord.js");
 const express = require('express');
 const crypto = require("crypto");
@@ -18,6 +18,7 @@ const webhookNotifier = require("./utils/webhookNotifier");
 const autoCaption = require("./utils/autoCaption");
 const { listPlans, normalizePlan, isTestAmountEnabled } = require("./utils/premiumPlans");
 const { syncPremiumRoleForUser } = require("./premium/roleSystem");
+const { startUptimeReporter } = require("./utils/uptimeReporter");
 const fs = require("fs");
 const path = require("path");
 const fsp = require('fs').promises;
@@ -44,6 +45,7 @@ const stats = {
     twentyFourSevenServers: new Set(),
     autoplayServers: new Set(),
     autoplayModesByGuild: {}, // { guildId: "similar" | "artist" | "random" }
+    autoplaySetByGuild: {}, // { guildId: userId }
     recentlyPlayed: [], // Last 20 songs
     errorCount: 0,
     guildActivity: {}, // {guildId: songCount}
@@ -1003,7 +1005,6 @@ const coreFreeCommands = new Set([
 ]);
 
 const advancedPremiumCommands = new Set([
-    "247",
     "8d",
     "chipmunkfilter",
     "cinema",
@@ -1050,6 +1051,9 @@ async function loadStats() {
                 sanitizedAutoplayModes[guildId] = sanitizeAutoplayMode(mode);
             }
             stats.autoplayModesByGuild = sanitizedAutoplayModes;
+            stats.autoplaySetByGuild = data.autoplaySetByGuild && typeof data.autoplaySetByGuild === "object"
+                ? data.autoplaySetByGuild
+                : {};
             stats.recentlyPlayed = data.recentlyPlayed || [];
             stats.errorCount = data.errorCount || 0;
             stats.guildActivity = data.guildActivity || {};
@@ -1083,6 +1087,7 @@ async function saveStats() {
             twentyFourSevenServers: Array.from(stats.twentyFourSevenServers),
             autoplayServers: Array.from(stats.autoplayServers || []),
             autoplayModesByGuild: stats.autoplayModesByGuild || {},
+            autoplaySetByGuild: stats.autoplaySetByGuild || {},
             recentlyPlayed: stats.recentlyPlayed,
             errorCount: stats.errorCount,
             guildActivity: stats.guildActivity,
@@ -1136,6 +1141,7 @@ Promise.all([loadStats(), loadUserData(), loadPlaylists()]).then(() => {
     console.log(`Clearing autoplay mode from ${autoplayBefore} server(s)...`);
     stats.autoplayServers.clear();
     stats.autoplayModesByGuild = {};
+    stats.autoplaySetByGuild = {};
     console.log("Autoplay reset complete - all servers are OFF");
     global.stats = stats;
     global.userData = userData;
@@ -1877,8 +1883,61 @@ client.riffy.on("queueEnd", async (player) => {
             const guildHistory = songHistory[player.guildId] || [];
             const seedTrack = guildHistory[guildHistory.length - 1] || null;
             const autoplayMode = getGuildAutoplayMode(player.guildId);
+            const restrictedAutoplayModes = new Set(["similar", "artist", "random"]);
+            let autoplayAllowed = true;
 
-            if (seedTrack) {
+            if (restrictedAutoplayModes.has(autoplayMode)) {
+                const autoplayOwnerId = String(stats.autoplaySetByGuild?.[player.guildId] || "").trim();
+                const ownerHasPremium = autoplayOwnerId ? paymentUtils.isPremium(autoplayOwnerId) : false;
+                const ownerReferral = autoplayOwnerId
+                    ? growthUtils.getReferralPassStatus(autoplayOwnerId)
+                    : { hasAccess: false, expiresAt: null, expiryNotifiedFor: null };
+
+                autoplayAllowed = ownerHasPremium || ownerReferral.hasAccess;
+
+                if (!autoplayAllowed) {
+                    stats.autoplayServers.delete(player.guildId);
+                    delete stats.autoplayModesByGuild[player.guildId];
+                    delete stats.autoplaySetByGuild[player.guildId];
+
+                    const textChannel = player.textChannel
+                        ? (
+                            client.channels.cache.get(player.textChannel) ||
+                            await client.channels.fetch(player.textChannel).catch(() => null)
+                        )
+                        : null;
+
+                    if (textChannel && textChannel.isTextBased?.()) {
+                        const accessEmbed = new EmbedBuilder()
+                            .setColor("#FFB300")
+                            .setTitle("Autoplay Disabled")
+                            .setDescription("Restricted autoplay mode stopped because referral weekly pass/premium is inactive.")
+                            .addFields(
+                                { name: "Join Server", value: config.supportURL || "Support link not configured", inline: false }
+                            )
+                            .setTimestamp();
+                        await textChannel.send({ embeds: [accessEmbed] }).catch(() => {});
+                    }
+
+                    if (
+                        autoplayOwnerId &&
+                        ownerReferral.expiresAt &&
+                        ownerReferral.expiryNotifiedFor !== ownerReferral.expiresAt
+                    ) {
+                        const ownerUser = await client.users.fetch(autoplayOwnerId).catch(() => null);
+                        if (ownerUser) {
+                            await ownerUser.send({
+                                content:
+                                    `Your weekly referral pass expired on ${new Date(ownerReferral.expiresAt).toLocaleString()}.\n` +
+                                    "Restricted autoplay mode has been turned off."
+                            }).catch(() => {});
+                        }
+                        growthUtils.markReferralPassExpiryNotified(autoplayOwnerId, ownerReferral.expiresAt);
+                    }
+                }
+            }
+
+            if (autoplayAllowed && seedTrack) {
                 try {
                     const nextTrack = await resolveAutoplayTrack(client, player, seedTrack, autoplayMode);
                     if (nextTrack) {
@@ -2306,12 +2365,12 @@ app.get("/dashboard", (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Website server listening on port ${port}`);
+    console.log(`✅ Website server listening on port ${port}`);
 });
 
 
 async function shutdown() {
-    console.log("Shutting down bot properly...");
+    console.log("✅ Shutting down bot properly...");
 
     try {
         await saveStats().catch(() => {});
@@ -2322,7 +2381,7 @@ async function shutdown() {
             const vc = guild.members.me?.voice?.channel;
             if (vc) {
                 await setVoiceStatus(vc, null);
-                console.log(`Cleared voice status in ${guild.name}`);
+                console.log(`✅ Cleared voice status in ${guild.name}`);
             }
         }
 
@@ -2339,7 +2398,7 @@ async function shutdown() {
         // Disconnect bot
         await client.destroy();
 
-        console.log("Bot disconnected cleanly");
+        console.log("✅ Bot disconnected cleanly");
 
     } catch (err) {
         console.error("Shutdown error:", err);
@@ -2354,8 +2413,8 @@ client.once("clientReady", async () => {
 
     const readyTime = Date.now() - startupTime;
 
-    console.log(`Logged in as ${client.user.tag}`);
-    console.log(`Bot ready in ${readyTime}ms`);
+    console.log(`✅ Logged in as ${client.user.tag}`);
+    console.log(`✅ Bot ready in ${readyTime}ms`);
 
     // Global access for webhook
     global.discordClient = client;
@@ -2366,6 +2425,12 @@ client.once("clientReady", async () => {
     // Status rotator
     const statusInterval = statusRotator.initializeStatusRotator(client);
     activeIntervals.push(statusInterval);
+
+    // Single-message uptime monitor (edits same embed on every restart/update)
+    const uptimeInterval = startUptimeReporter(client);
+    if (uptimeInterval) {
+        activeIntervals.push(uptimeInterval);
+    }
 
     const persistenceInterval = setInterval(() => {
         const nowMs = Date.now();

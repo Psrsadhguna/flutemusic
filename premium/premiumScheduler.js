@@ -1,5 +1,6 @@
 const paymentUtils = require("../utils/paymentUtils");
 const { syncPremiumRoleForUser } = require("./roleSystem");
+const config = require("../config");
 
 const HOUR_MS = 60 * 60 * 1000;
 const CHECK_INTERVAL_MS = 60 * 1000;
@@ -37,6 +38,11 @@ function formatExpiry(iso) {
     return "soon";
   }
   return when.toLocaleString();
+}
+
+function buildJoinServerLine() {
+  const supportUrl = String(config.supportURL || process.env.SUPPORT_SERVER_URL || "").trim();
+  return supportUrl ? `\nJoin support server: ${supportUrl}` : "";
 }
 
 async function sendDirectMessage(client, userId, content) {
@@ -85,9 +91,9 @@ async function processActiveTrialReminders(client, reminderHours) {
   }
 }
 
-async function processExpiredTrialNotices(client, expiredUsers) {
+async function processExpiredPremiumNotices(client, expiredUsers) {
   for (const expired of expiredUsers) {
-    if (!expired || expired.plan !== "trial") {
+    if (!expired) {
       continue;
     }
 
@@ -96,16 +102,17 @@ async function processExpiredTrialNotices(client, expiredUsers) {
       continue;
     }
 
-    const sent = await sendDirectMessage(
-      client,
-      expired.userId,
-      `Your Flute Music premium trial has expired (${formatExpiry(expired.expiresAt)}).\nYou can still use free core music commands. Use \`ftrial use\` or \`fpremium\` when ready.`
-    );
+    const joinLine = buildJoinServerLine();
+    const message = expired.plan === "trial"
+      ? `Your Flute Music premium trial has expired (${formatExpiry(expired.expiresAt)}).\nYou can still use free core music commands. Use \`ftrial use\` or \`fpremium\` when ready.${joinLine}`
+      : `Your Flute Music premium plan (${expired.plan || "premium"}) expired on ${formatExpiry(expired.expiresAt)}.\nRenew with \`fpremium\` to restore premium features.${joinLine}`;
+
+    const sent = await sendDirectMessage(client, expired.userId, message);
 
     paymentUtils.markTrialExpiryNotified(expired.userId, expired.expiresAt);
 
     if (sent) {
-      console.log(`Sent trial expiry notice to user ${expired.userId}`);
+      console.log(`Sent premium expiry notice to user ${expired.userId}`);
     }
   }
 }
@@ -130,7 +137,7 @@ function startPremiumExpiryChecker(client) {
       }
 
       if (expiredUsers.length > 0) {
-        await processExpiredTrialNotices(client, expiredUsers);
+        await processExpiredPremiumNotices(client, expiredUsers);
       }
 
       if (expiredUserIds.length > 0) {

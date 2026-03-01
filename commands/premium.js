@@ -1,6 +1,7 @@
 ﻿const { EmbedBuilder } = require("discord.js");
 const paymentUtils = require("../utils/paymentUtils");
 const { getPlan } = require("../utils/premiumPlans");
+const config = require("../config");
 
 function formatPlanName(planKey) {
   if (planKey === "trial") return "Trial";
@@ -88,6 +89,11 @@ module.exports = {
         }
       );
     }
+
+    embed.addFields({
+      name: "Join Server",
+      value: config.supportURL || "Support link not configured"
+    });
 
     message.reply({ embeds: [embed] });
   }

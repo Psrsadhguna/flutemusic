@@ -8,10 +8,19 @@
       "trialTokens": 0,
       "createdAt": "2026-02-28T08:24:27.678Z",
       "campaignJoinedAt": null,
-      "lastTrialRedeemedAt": null
+      "lastTrialRedeemedAt": null,
+      "inviteRewardGuilds": [],
+      "voteRewards": 0,
+      "lastVoteRewardAt": null,
+      "referralPassExpiresAt": null,
+      "referralPassGrantedAt": null,
+      "referralPassGrants": 0,
+      "referralPassExpiryNotifiedFor": null,
+      "referralPassExpiryNotifiedAt": null
     }
   },
   "referralIndex": {
     "FM829127": "744044949942829127"
-  }
+  },
+  "inviteRewards": {}
 }

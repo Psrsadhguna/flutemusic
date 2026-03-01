@@ -1,6 +1,21 @@
 const { EmbedBuilder } = require("discord.js");
 const growthUtils = require("../utils/growthUtils");
 const messages = require("../utils/messages.js");
+const config = require("../config");
+
+function formatPassStatus(summary) {
+    if (!summary?.referralPassExpiresAt) {
+        return "No active weekly pass";
+    }
+    const expiry = new Date(summary.referralPassExpiresAt);
+    if (Number.isNaN(expiry.getTime())) {
+        return "Active (expiry unknown)";
+    }
+    if (summary.hasActiveReferralPass) {
+        return `Active until ${expiry.toLocaleString()}`;
+    }
+    return `Expired on ${expiry.toLocaleString()}`;
+}
 
 module.exports = {
     name: "refer",
@@ -36,7 +51,12 @@ module.exports = {
                 .addFields(
                     { name: "Inviter ID", value: result.ownerId, inline: true },
                     { name: "Your Tokens", value: String(result.claimantTokens), inline: true },
-                    { name: "Reward", value: `+${result.rewardTokens} trial token`, inline: true }
+                    { name: "Reward", value: `+${result.rewardTokens} trial token`, inline: true },
+                    {
+                        name: "Weekly Referral Pass",
+                        value: `+${result.referralPassDays} days (until ${new Date(result.claimantPassExpiresAt).toLocaleString()})`,
+                        inline: false
+                    }
                 )
                 .setTimestamp();
 
@@ -53,7 +73,9 @@ module.exports = {
                     { name: "Your Code", value: `\`${summary.referralCode}\``, inline: true },
                     { name: "Referral Count", value: String(summary.referralCount), inline: true },
                     { name: "Trial Tokens", value: String(summary.trialTokens), inline: true },
-                    { name: "Referred By", value: summary.referredBy || "None", inline: false }
+                    { name: "Referred By", value: summary.referredBy || "None", inline: false },
+                    { name: "Weekly Referral Pass", value: formatPassStatus(summary), inline: false },
+                    { name: "Join Server", value: config.supportURL || "Support link not configured", inline: false }
                 )
                 .setTimestamp();
             return message.channel.send({ embeds: [embed] });
@@ -68,7 +90,9 @@ module.exports = {
                 { name: "Code", value: `\`${summary.referralCode}\``, inline: true },
                 { name: "Trial Tokens", value: String(summary.trialTokens), inline: true },
                 { name: "How to Claim", value: "`frefer claim <code>`", inline: true },
-                { name: "Invite Bot", value: inviteUrl, inline: false }
+                { name: "Weekly Referral Pass", value: formatPassStatus(summary), inline: false },
+                { name: "Invite Bot", value: inviteUrl, inline: false },
+                { name: "Join Server", value: config.supportURL || "Support link not configured", inline: false }
             )
             .setTimestamp();
 

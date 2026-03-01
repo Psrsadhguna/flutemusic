@@ -6,11 +6,50 @@ const DEFAULT_TRIAL_TOKEN_REWARD = 1;
 const DEFAULT_VOTE_REWARD_TOKENS = 1;
 const DEFAULT_VOTE_WEEKEND_REWARD_TOKENS = 2;
 const DEFAULT_VOTE_REWARD_COOLDOWN_MINUTES = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_REFERRAL_PASS_DAYS = 7;
 
 function parsePositiveInt(value, fallback) {
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
   return parsed;
+}
+
+function parseIsoToMs(iso) {
+  if (!iso) return null;
+  const parsed = Date.parse(iso);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function getReferralPassDays() {
+  return parsePositiveInt(process.env.REFERRAL_PASS_DAYS, DEFAULT_REFERRAL_PASS_DAYS);
+}
+
+function hasActiveReferralPass(profile, nowMs = Date.now()) {
+  if (!profile || !profile.referralPassExpiresAt) return false;
+  const expiryMs = parseIsoToMs(profile.referralPassExpiresAt);
+  if (!Number.isFinite(expiryMs)) return false;
+  return expiryMs > nowMs;
+}
+
+function grantReferralPass(profile, nowMs = Date.now()) {
+  const passDays = getReferralPassDays();
+  const currentExpiryMs = parseIsoToMs(profile.referralPassExpiresAt);
+  const baseMs = Number.isFinite(currentExpiryMs) && currentExpiryMs > nowMs
+    ? currentExpiryMs
+    : nowMs;
+  const nextExpiryMs = baseMs + (passDays * DAY_MS);
+  const nextExpiryIso = new Date(nextExpiryMs).toISOString();
+
+  profile.referralPassExpiresAt = nextExpiryIso;
+  profile.referralPassGrants = Number(profile.referralPassGrants || 0) + 1;
+  profile.referralPassGrantedAt = new Date(nowMs).toISOString();
+  profile.referralPassExpiryNotifiedFor = null;
+
+  return {
+    passDays,
+    expiresAt: nextExpiryIso
+  };
 }
 
 function ensureDBFile() {
@@ -78,7 +117,12 @@ function getOrCreateProfile(userId, db = null) {
       lastTrialRedeemedAt: null,
       inviteRewardGuilds: [],
       voteRewards: 0,
-      lastVoteRewardAt: null
+      lastVoteRewardAt: null,
+      referralPassExpiresAt: null,
+      referralPassGrantedAt: null,
+      referralPassGrants: 0,
+      referralPassExpiryNotifiedFor: null,
+      referralPassExpiryNotifiedAt: null
     };
     data.referralIndex[referralCode] = normalizedUserId;
   }
@@ -94,6 +138,11 @@ function getOrCreateProfile(userId, db = null) {
   if (!Array.isArray(profile.inviteRewardGuilds)) profile.inviteRewardGuilds = [];
   if (!Number.isFinite(profile.voteRewards)) profile.voteRewards = 0;
   if (typeof profile.lastVoteRewardAt !== "string") profile.lastVoteRewardAt = null;
+  if (typeof profile.referralPassExpiresAt !== "string") profile.referralPassExpiresAt = null;
+  if (typeof profile.referralPassGrantedAt !== "string") profile.referralPassGrantedAt = null;
+  if (!Number.isFinite(profile.referralPassGrants)) profile.referralPassGrants = 0;
+  if (typeof profile.referralPassExpiryNotifiedFor !== "string") profile.referralPassExpiryNotifiedFor = null;
+  if (typeof profile.referralPassExpiryNotifiedAt !== "string") profile.referralPassExpiryNotifiedAt = null;
 
   return profile;
 }
@@ -109,6 +158,9 @@ function getUserGrowthSummary(userId) {
   const data = loadGrowthDB();
   const profile = getOrCreateProfile(userId, data);
   saveGrowthDB(data);
+  const nowMs = Date.now();
+  const passExpiryMs = parseIsoToMs(profile.referralPassExpiresAt);
+  const hasPass = Number.isFinite(passExpiryMs) && passExpiryMs > nowMs;
 
   return {
     referralCode: profile.referralCode,
@@ -117,7 +169,9 @@ function getUserGrowthSummary(userId) {
     referralCount: profile.referrals.length,
     trialTokens: profile.trialTokens,
     campaignJoinedAt: profile.campaignJoinedAt,
-    lastTrialRedeemedAt: profile.lastTrialRedeemedAt
+    lastTrialRedeemedAt: profile.lastTrialRedeemedAt,
+    referralPassExpiresAt: profile.referralPassExpiresAt,
+    hasActiveReferralPass: hasPass
   };
 }
 
@@ -152,14 +206,57 @@ function claimReferral(userId, referralCode) {
   }
   owner.trialTokens += DEFAULT_TRIAL_TOKEN_REWARD;
 
+  const nowMs = Date.now();
+  const claimantPass = grantReferralPass(claimant, nowMs);
+  const ownerPass = grantReferralPass(owner, nowMs);
+
   saveGrowthDB(data);
   return {
     ok: true,
     ownerId: owner.userId,
     rewardTokens: DEFAULT_TRIAL_TOKEN_REWARD,
     claimantTokens: claimant.trialTokens,
-    ownerTokens: owner.trialTokens
+    ownerTokens: owner.trialTokens,
+    referralPassDays: claimantPass.passDays,
+    claimantPassExpiresAt: claimantPass.expiresAt,
+    ownerPassExpiresAt: ownerPass.expiresAt
   };
+}
+
+function getReferralPassStatus(userId) {
+  const data = loadGrowthDB();
+  const profile = getOrCreateProfile(userId, data);
+  saveGrowthDB(data);
+
+  const nowMs = Date.now();
+  const expiryMs = parseIsoToMs(profile.referralPassExpiresAt);
+  const active = Number.isFinite(expiryMs) && expiryMs > nowMs;
+
+  return {
+    hasAccess: active,
+    expiresAt: profile.referralPassExpiresAt,
+    msRemaining: active ? expiryMs - nowMs : 0,
+    grants: Number(profile.referralPassGrants || 0),
+    referredBy: profile.referredBy || null,
+    referralCount: Array.isArray(profile.referrals) ? profile.referrals.length : 0,
+    expiryNotifiedFor: profile.referralPassExpiryNotifiedFor || null
+  };
+}
+
+function markReferralPassExpiryNotified(userId, expiryIso, sentAtIso = new Date().toISOString()) {
+  const normalizedUserId = String(userId || "").trim();
+  const normalizedExpiryIso = String(expiryIso || "").trim();
+  if (!normalizedUserId || !normalizedExpiryIso) {
+    return false;
+  }
+
+  const data = loadGrowthDB();
+  const profile = getOrCreateProfile(normalizedUserId, data);
+
+  profile.referralPassExpiryNotifiedFor = normalizedExpiryIso;
+  profile.referralPassExpiryNotifiedAt = sentAtIso;
+
+  return saveGrowthDB(data);
 }
 
 function grantCampaignTrialToken(userId) {
@@ -321,6 +418,8 @@ module.exports = {
   grantInviteJoinTrialToken,
   grantVoteTrialToken,
   consumeTrialToken,
+  getReferralPassStatus,
+  markReferralPassExpiryNotified,
   loadGrowthDB,
   saveGrowthDB
 };

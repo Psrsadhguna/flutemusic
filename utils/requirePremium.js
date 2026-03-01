@@ -1,6 +1,7 @@
 ﻿const { EmbedBuilder } = require("discord.js");
 const paymentUtils = require("./paymentUtils");
 const { getPlan } = require("./premiumPlans");
+const config = require("../config");
 
 async function requirePremium(message) {
   if (process.env.ENFORCE_PREMIUM !== "true") {
@@ -24,6 +25,9 @@ async function requirePremium(message) {
       `Plans: ${weeklyPlan.label} INR ${weeklyPlan.amount / 100}, ` +
       `${monthlyPlan.label} INR ${monthlyPlan.amount / 100}.\n\n` +
       "Try `ftrial start` (one-time) or `ftrial use` (token-based), or use `f premium` to buy access."
+    )
+    .addFields(
+      { name: "Join Server", value: config.supportURL || "Support link not configured", inline: false }
     )
     .setFooter({ text: "Premium unlocks advanced filters, 24/7 mode, and extra save slots" });
 
