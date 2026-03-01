@@ -5,7 +5,6 @@ A Discord music bot with YouTube + Spotify support, filters/effects, playlists, 
 ## Invite
 - Bot: https://discord.com/oauth2/authorize?client_id=1466777461680373820&permissions=281474980236544&scope=bot%20applications.commands
 - Support: https://discord.gg/v7StyEvCCC
-- Top.gg: https://top.gg/bot/1466777461680373820
 
 ## Demo
 Short GIF demo:
