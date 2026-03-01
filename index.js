@@ -1,5 +1,5 @@
 ﻿require("dotenv").config();
-const { Client, GatewayDispatchEvents, Collection, ActivityType, AttachmentBuilder, EmbedBuilder } = require("discord.js");
+const { Client, GatewayDispatchEvents, Collection, ActivityType, AttachmentBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const express = require('express');
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
@@ -1403,8 +1403,15 @@ client.on('guildCreate', async (guild) => {
                     if (invites.size > 0) {
                         inviteUrl = invites.first().url;
                     } else {
-                        // Try to create one
-                        const firstChannel = guild.channels.cache.find(ch => ch.isTextBased() && ch.permissionsFor(guild.members.me).has('CreateInvite'));
+                        // Try to create one if bot has CreateInstantInvite in a text channel.
+                        const me = guild.members.me || await guild.members.fetchMe().catch(() => null);
+                        const firstChannel = guild.channels.cache.find(ch => {
+                            if (!ch.isTextBased() || !me) {
+                                return false;
+                            }
+                            const perms = ch.permissionsFor(me);
+                            return perms?.has(PermissionFlagsBits.CreateInstantInvite) || false;
+                        });
                         if (firstChannel) {
                             const invite = await firstChannel.createInvite({ maxAge: 0 });
                             inviteUrl = invite.url;
@@ -1480,11 +1487,11 @@ client.on('guildDelete', (guild) => {
                 const webhook = new WebhookClient({ url: config.webhookUrl });
                 
                 // Get server owner if available
-                let ownerName = 'Unknown';
+                let ownerName = guild?.ownerId ? `ID: ${guild.ownerId}` : 'Unknown';
                 try {
                     if (guild && guild.ownerId) {
-                        const owner = await guild.fetchOwner();
-                        ownerName = owner?.user?.tag || 'Unknown';
+                        const owner = await client.users.fetch(guild.ownerId).catch(() => null);
+                        ownerName = owner?.tag || ownerName;
                     }
                 } catch (e) {
                     console.error('Could not fetch owner:', e.message);
