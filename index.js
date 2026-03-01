@@ -49,9 +49,27 @@ const stats = {
     recentlyPlayed: [], // Last 20 songs
     errorCount: 0,
     guildActivity: {}, // {guildId: songCount}
+    guildPlaytime: {}, // {guildId: playtimeMs}
+    websiteGuildViews: {}, // {guildId: website card impressions}
     topArtists: {}, // {artistName: count}
     commandErrors: [] // Track command errors
 };
+
+function sanitizeNumericMap(rawMap) {
+    if (!rawMap || typeof rawMap !== "object") {
+        return {};
+    }
+
+    const sanitized = {};
+    for (const [key, rawValue] of Object.entries(rawMap)) {
+        const numericValue = Number(rawValue);
+        if (!Number.isFinite(numericValue) || numericValue < 0) {
+            continue;
+        }
+        sanitized[key] = numericValue;
+    }
+    return sanitized;
+}
 
 // User data (favorites and history)
 const userData = {}; // {userId: {favorites: [], history: []}}
@@ -811,9 +829,11 @@ function pushGuildSongHistory(guildId, track) {
 function recordTrackAnalytics(guildId, track) {
     if (!track || !track.info) return;
 
+    const trackLengthMs = Number(track.info.length) || 0;
     stats.totalSongsPlayed += 1;
-    stats.totalPlaytime += Number(track.info.length) || 0;
+    stats.totalPlaytime += trackLengthMs;
     stats.guildActivity[guildId] = (stats.guildActivity[guildId] || 0) + 1;
+    stats.guildPlaytime[guildId] = (stats.guildPlaytime[guildId] || 0) + trackLengthMs;
 
     const artistName = String(track.info.author || "Unknown").trim();
     if (artistName) {
@@ -1034,6 +1054,8 @@ const advancedPremiumCommands = new Set([
 
 const statsPath = path.join(__dirname, 'stats.json');
 const userDataPath = path.join(__dirname, 'userdata.json');
+const websiteStatusPath = path.join(__dirname, "website", "status.json");
+const websiteLiveStatsPath = path.join(__dirname, "website", "live-server-stats.json");
 
 // Load existing stats
 async function loadStats() {
@@ -1057,6 +1079,8 @@ async function loadStats() {
             stats.recentlyPlayed = data.recentlyPlayed || [];
             stats.errorCount = data.errorCount || 0;
             stats.guildActivity = data.guildActivity || {};
+            stats.guildPlaytime = sanitizeNumericMap(data.guildPlaytime);
+            stats.websiteGuildViews = sanitizeNumericMap(data.websiteGuildViews);
             stats.topArtists = data.topArtists || {};
             stats.commandErrors = data.commandErrors || [];
         }
@@ -1091,6 +1115,8 @@ async function saveStats() {
             recentlyPlayed: stats.recentlyPlayed,
             errorCount: stats.errorCount,
             guildActivity: stats.guildActivity,
+            guildPlaytime: sanitizeNumericMap(stats.guildPlaytime),
+            websiteGuildViews: sanitizeNumericMap(stats.websiteGuildViews),
             topArtists: stats.topArtists,
             commandErrors: stats.commandErrors.slice(-50), // Keep last 50 errors
             lastUpdated: new Date().toISOString()
@@ -1205,7 +1231,8 @@ client.riffy = new Riffy(client, config.nodes, {
 client.on('guildCreate', async (guild) => {
     // Fire and forget - don't block
     setImmediate(async () => {
-        try { await fsp.writeFile(path.join(__dirname, 'website', 'status.json'), JSON.stringify({ servers: client.guilds.cache.size, members: client.users.cache.size, updated: new Date().toISOString() }, null, 2), 'utf8'); } catch(e){/*ignore*/}
+        await writeWebsiteStatusSnapshot();
+        await writeLiveServerStatsSnapshot();
     });
 
     let inviteReward = null;
@@ -1341,7 +1368,8 @@ client.on('guildCreate', async (guild) => {
 client.on('guildDelete', (guild) => {
     // Fire and forget - don't block
     setImmediate(async () => {
-        try { await fsp.writeFile(path.join(__dirname, 'website', 'status.json'), JSON.stringify({ servers: client.guilds.cache.size, members: client.users.cache.size, updated: new Date().toISOString() }, null, 2), 'utf8'); } catch(e){/*ignore*/}
+        await writeWebsiteStatusSnapshot();
+        await writeLiveServerStatsSnapshot();
     });
 
     // Send webhook notification when bot is removed from a server
@@ -2083,6 +2111,122 @@ function isLikelyDiscordId(userId) {
 
 const premiumPlans = listPlans();
 
+function toNonNegativeNumber(value) {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue) || numericValue < 0) {
+        return 0;
+    }
+    return numericValue;
+}
+
+function getGuildListenedMs(guildId) {
+    const directPlaytimeMs = toNonNegativeNumber(stats.guildPlaytime?.[guildId]);
+    if (directPlaytimeMs > 0) {
+        return directPlaytimeMs;
+    }
+
+    const playedTracks = toNonNegativeNumber(stats.guildActivity?.[guildId]);
+    const totalSongs = toNonNegativeNumber(stats.totalSongsPlayed);
+    const totalPlaytimeMs = toNonNegativeNumber(stats.totalPlaytime);
+    if (playedTracks <= 0 || totalSongs <= 0 || totalPlaytimeMs <= 0) {
+        return 0;
+    }
+
+    // Real fallback from existing counters: average track length * played tracks.
+    const averageTrackMs = totalPlaytimeMs / totalSongs;
+    return Math.round(averageTrackMs * playedTracks);
+}
+
+function getGuildPlaybackStatus(guildId, playedTracks) {
+    const playerStore = client?.riffy?.players;
+    const hasLivePlayer = Boolean(
+        playerStore && (
+            (typeof playerStore.has === "function" && playerStore.has(guildId)) ||
+            (typeof playerStore.get === "function" && playerStore.get(guildId))
+        )
+    );
+
+    if (hasLivePlayer) return "Playing Now";
+    if (playedTracks > 0) return "Active";
+    return "Idle";
+}
+
+function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
+    const guilds = Array.from(client.guilds.cache.values());
+    const safeViews = sanitizeNumericMap(stats.websiteGuildViews);
+    stats.websiteGuildViews = safeViews;
+
+    const servers = guilds.map((guild) => {
+        const guildId = String(guild.id);
+        const played = toNonNegativeNumber(stats.guildActivity?.[guildId]);
+        const listenedMs = getGuildListenedMs(guildId);
+        const previousViews = toNonNegativeNumber(safeViews[guildId]);
+        const updatedViews = incrementViews ? previousViews + 1 : previousViews;
+
+        if (incrementViews) {
+            stats.websiteGuildViews[guildId] = updatedViews;
+        }
+
+        return {
+            guildId,
+            name: guild.name || "Unknown Server",
+            logo: guild.iconURL({ dynamic: true, size: 256 }) || "/image.png",
+            played,
+            listeningHours: Number((listenedMs / 3600000).toFixed(2)),
+            views: updatedViews,
+            status: getGuildPlaybackStatus(guildId, played),
+            memberCount: toNonNegativeNumber(guild.memberCount)
+        };
+    }).sort((left, right) => {
+        return right.played - left.played || right.memberCount - left.memberCount;
+    });
+
+    const liveMembers = guilds.reduce((sum, guild) => sum + toNonNegativeNumber(guild.memberCount), 0);
+    const totalServerViews = Object.values(stats.websiteGuildViews).reduce((sum, value) => {
+        return sum + toNonNegativeNumber(value);
+    }, 0);
+
+    return {
+        success: true,
+        updatedAt: new Date().toISOString(),
+        servers,
+        platform: {
+            totalSongsPlayed: toNonNegativeNumber(stats.totalSongsPlayed),
+            totalListeningHours: Number((toNonNegativeNumber(stats.totalPlaytime) / 3600000).toFixed(2)),
+            totalCommandsExecuted: toNonNegativeNumber(stats.totalCommandsExecuted),
+            totalServerViews,
+            activeServers: guilds.length,
+            liveServers: guilds.length,
+            liveMembers
+        }
+    };
+}
+
+async function writeWebsiteStatusSnapshot() {
+    try {
+        await fsp.writeFile(
+            websiteStatusPath,
+            JSON.stringify({
+                servers: client.guilds.cache.size,
+                members: client.users.cache.size,
+                updated: new Date().toISOString()
+            }, null, 2),
+            "utf8"
+        );
+    } catch {
+        // Ignore website status file errors.
+    }
+}
+
+async function writeLiveServerStatsSnapshot() {
+    try {
+        const payload = buildLiveServerStatsPayload({ incrementViews: false });
+        await fsp.writeFile(websiteLiveStatsPath, JSON.stringify(payload, null, 2), "utf8");
+    } catch {
+        // Ignore snapshot write errors.
+    }
+}
+
 // Razorpay webhook route must receive raw payload
 app.use(
     "/webhook",
@@ -2128,6 +2272,20 @@ app.post("/api/topgg-vote", async (req, res) => {
     } catch (error) {
         console.error("Top.gg vote webhook failed:", error.message);
         return res.status(500).json({ success: false, error: "Vote webhook failed" });
+    }
+});
+
+app.get("/api/live-server-stats", (req, res) => {
+    try {
+        const trackViews = String(req.query.trackViews ?? "1").trim() !== "0";
+        const payload = buildLiveServerStatsPayload({ incrementViews: trackViews });
+        saveStats().catch(() => {});
+        writeWebsiteStatusSnapshot().catch(() => {});
+        writeLiveServerStatsSnapshot().catch(() => {});
+        return res.json(payload);
+    } catch (error) {
+        console.error("Live server stats failed:", error.message);
+        return res.status(500).json({ success: false, error: "Failed to fetch live server stats" });
     }
 });
 
@@ -2364,6 +2522,18 @@ app.get("/dashboard", (req, res) => {
     res.sendFile(path.join(__dirname, "website", "premium-dashboard.html"));
 });
 
+app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "website", "login.html"));
+});
+
+app.get("/profile", (req, res) => {
+    res.sendFile(path.join(__dirname, "website", "profile.html"));
+});
+
+app.get("/manage-premiums", (req, res) => {
+    res.sendFile(path.join(__dirname, "website", "manage-premiums.html"));
+});
+
 app.listen(port, () => {
     console.log(`✅ Website server listening on port ${port}`);
 });
@@ -2426,6 +2596,9 @@ client.once("clientReady", async () => {
     const statusInterval = statusRotator.initializeStatusRotator(client);
     activeIntervals.push(statusInterval);
 
+    writeWebsiteStatusSnapshot().catch(() => {});
+    writeLiveServerStatsSnapshot().catch(() => {});
+
     // Single-message uptime monitor (edits same embed on every restart/update)
     const uptimeInterval = startUptimeReporter(client);
     if (uptimeInterval) {
@@ -2455,6 +2628,8 @@ client.once("clientReady", async () => {
 
         saveStats().catch(() => {});
         saveUserData().catch(() => {});
+        writeWebsiteStatusSnapshot().catch(() => {});
+        writeLiveServerStatsSnapshot().catch(() => {});
     }, 60 * 1000);
     activeIntervals.push(persistenceInterval);
 

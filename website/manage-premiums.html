@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage Premiums | Flute</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="manage-premiums">
+  <div class="bg-shape bg-shape-b"></div>
+
+  <header class="site-header">
+    <div class="container header-wrap">
+      <a href="index.html" class="brand">
+        <img src="image.png" alt="Flute Music Bot Logo" class="brand-logo">
+        <span>Flute Music</span>
+      </a>
+      <button class="nav-toggle" type="button" data-nav-toggle>Menu</button>
+      <nav class="site-nav" data-nav-menu>
+        <a href="premium-dashboard.html">Dashboard</a>
+        <a href="profile.html">Profile</a>
+        <a href="premium.html">Premium Page</a>
+        <a href="#" data-logout class="btn btn-small btn-outline">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <div class="container">
+      <section class="sub-hero">
+        <p class="eyebrow">Manage Premiums</p>
+        <h1>Premium control center for <span id="session-name">User</span></h1>
+        <p>Current Plan: <strong id="current-plan">FREE</strong></p>
+      </section>
+
+      <section class="booster-card">
+        <h3>Server Booster</h3>
+        <p>Pink glow booster card as requested. Add exclusive benefits here.</p>
+        <ul>
+          <li>Booster-only autoplay rooms</li>
+          <li>Exclusive high-bass presets</li>
+          <li>Booster badge in dashboard</li>
+          <li>Priority support queue</li>
+        </ul>
+      </section>
+
+      <section class="dash-grid" id="plan-list"></section>
+
+      <section class="panel">
+        <h3>Recent premium activity</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Action</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2026-03-01</td>
+              <td>Plan viewed</td>
+              <td class="success">OK</td>
+            </tr>
+            <tr>
+              <td>2026-02-28</td>
+              <td>Dashboard login</td>
+              <td class="success">OK</td>
+            </tr>
+            <tr>
+              <td>2026-02-27</td>
+              <td>Server booster section enabled</td>
+              <td class="success">OK</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-note">Flute Premium Management</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

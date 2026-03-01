@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flute Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="profile">
+  <div class="bg-shape bg-shape-a"></div>
+
+  <header class="site-header">
+    <div class="container header-wrap">
+      <a href="index.html" class="brand">
+        <img src="image.png" alt="Flute Music Bot Logo" class="brand-logo">
+        <span>Flute Music</span>
+      </a>
+      <button class="nav-toggle" type="button" data-nav-toggle>Menu</button>
+      <nav class="site-nav" data-nav-menu>
+        <a href="premium-dashboard.html">Dashboard</a>
+        <a href="manage-premiums.html">Manage Premiums</a>
+        <a href="#" data-logout class="btn btn-small btn-outline">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <div class="container">
+      <section class="sub-hero">
+        <p class="eyebrow">Profile</p>
+        <h1>Edit profile for <span id="session-name">User</span></h1>
+        <p>Discord ID: <span id="session-id">-</span></p>
+      </section>
+
+      <section class="page-grid">
+        <article class="panel">
+          <h3>User Preview</h3>
+          <div class="avatar-block">
+            <img src="image.png" alt="Avatar" data-session-avatar>
+            <div>
+              <p><strong id="profile-preview-name">User</strong></p>
+              <p class="text-muted">Plan: <span id="session-plan">FREE</span></p>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h3>Update Details</h3>
+          <form id="profile-form" class="login-form">
+            <label>
+              Username
+              <input id="profile-name" type="text" required>
+            </label>
+            <label>
+              Discord ID
+              <input id="profile-id" type="text">
+            </label>
+            <label>
+              Avatar URL
+              <input id="profile-avatar" type="text">
+            </label>
+            <label>
+              Plan
+              <select id="profile-plan">
+                <option value="free">Free</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="lifetime">Lifetime</option>
+              </select>
+            </label>
+            <button type="submit" class="btn btn-primary">Save Profile</button>
+          </form>
+          <p id="profile-saved" class="pill hidden success">Profile saved successfully.</p>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-note">Flute Profile Page</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

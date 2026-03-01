@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flute Login | Discord Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="login">
+  <div class="bg-shape bg-shape-a"></div>
+  <div class="bg-shape bg-shape-c"></div>
+
+  <header class="site-header">
+    <div class="container header-wrap">
+      <a href="index.html" class="brand">
+        <img src="image.png" alt="Flute Music Bot Logo" class="brand-logo">
+        <span>Flute Music</span>
+      </a>
+      <button class="nav-toggle" type="button" data-nav-toggle>Menu</button>
+      <nav class="site-nav" data-nav-menu>
+        <a href="index.html">Home</a>
+        <a href="premium.html">Premium</a>
+        <a href="premium-dashboard.html">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <div class="container">
+      <section class="sub-hero">
+        <p class="eyebrow">Discord Login</p>
+        <h1>Login and continue to dashboard</h1>
+        <p>Fill details once, then use Dashboard, Profile and Manage Premiums pages separately.</p>
+      </section>
+
+      <section class="login-layout">
+        <article class="login-side">
+          <h3>After login you get</h3>
+          <p>1) Dashboard page</p>
+          <p>2) Profile page</p>
+          <p>3) Manage Premiums page</p>
+          <p class="text-muted">
+            For production OAuth, connect Discord client ID + callback on backend.
+            This page currently stores a local session for website flow preview.
+          </p>
+          <button class="btn discord-btn" type="button" id="demo-discord">
+            Fill Demo Discord Data
+          </button>
+        </article>
+
+        <article class="panel">
+          <form id="login-form" class="login-form">
+            <label>
+              Discord Username
+              <input id="login-name" name="username" type="text" placeholder="FluteUser#247" required>
+            </label>
+
+            <label>
+              Discord ID
+              <input id="login-id" name="discordId" type="text" placeholder="123456789012345678">
+            </label>
+
+            <label>
+              Avatar URL (optional)
+              <input id="login-avatar" name="avatar" type="text" placeholder="https://cdn.../avatar.png">
+            </label>
+
+            <label>
+              Current Plan
+              <select id="login-plan" name="plan">
+                <option value="free">Free</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="lifetime">Lifetime</option>
+              </select>
+            </label>
+
+            <button class="btn btn-primary" type="submit">Login To Dashboard</button>
+          </form>
+
+          <p id="already-login" class="pill hidden">
+            Existing session detected. Submitting this form updates your session.
+          </p>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-note">Discord login and dashboard flow for Flute website</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 const path = require("path");
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
+const fs = require("fs");
 require("dotenv").config();
 
 const paymentUtils = require("./utils/paymentUtils");
@@ -44,6 +45,39 @@ function isLikelyDiscordId(userId) {
   return /^[0-9]{15,22}$/.test(String(userId || "").trim());
 }
 
+const liveStatsSnapshotPath = path.join(__dirname, "website", "live-server-stats.json");
+const LIVE_SNAPSHOT_MAX_AGE_MS = 2 * 60 * 1000;
+
+function readLiveServerSnapshot() {
+  if (!fs.existsSync(liveStatsSnapshotPath)) {
+    throw new Error("LIVE_STATS_MISSING");
+  }
+
+  const payload = JSON.parse(fs.readFileSync(liveStatsSnapshotPath, "utf8"));
+  const isValid =
+    payload &&
+    payload.success === true &&
+    Array.isArray(payload.servers) &&
+    payload.platform &&
+    typeof payload.platform === "object";
+
+  if (!isValid) {
+    throw new Error("LIVE_STATS_INVALID");
+  }
+
+  const updatedAtMs = Date.parse(payload.updatedAt || "");
+  if (!Number.isFinite(updatedAtMs)) {
+    throw new Error("LIVE_STATS_INVALID");
+  }
+
+  const ageMs = Date.now() - updatedAtMs;
+  if (ageMs > LIVE_SNAPSHOT_MAX_AGE_MS) {
+    throw new Error("LIVE_STATS_STALE");
+  }
+
+  return payload;
+}
+
 app.use(
   "/webhook",
   express.raw({ type: "application/json" }),
@@ -64,6 +98,33 @@ app.get("/premium", (req, res) => {
 
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "website", "premium-dashboard.html"));
+});
+
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "website", "login.html"));
+});
+
+app.get("/profile", (req, res) => {
+  res.sendFile(path.join(__dirname, "website", "profile.html"));
+});
+
+app.get("/manage-premiums", (req, res) => {
+  res.sendFile(path.join(__dirname, "website", "manage-premiums.html"));
+});
+
+app.get("/api/live-server-stats", (req, res) => {
+  try {
+    return res.json(readLiveServerSnapshot());
+  } catch (error) {
+    const code = String(error?.message || "");
+    if (code === "LIVE_STATS_MISSING" || code === "LIVE_STATS_STALE" || code === "LIVE_STATS_INVALID") {
+      return res.status(503).json({
+        success: false,
+        error: "Live server data is unavailable. Start `npm start` so bot updates website/live-server-stats.json."
+      });
+    }
+    return res.status(500).json({ success: false, error: "Failed to fetch live server stats" });
+  }
 });
 
 app.get("/api/premium-plans", (req, res) => {

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flute Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="dashboard">
+  <div class="bg-shape bg-shape-b"></div>
+  <div class="bg-shape bg-shape-c"></div>
+
+  <header class="site-header">
+    <div class="container header-wrap">
+      <a href="index.html" class="brand">
+        <img src="image.png" alt="Flute Music Bot Logo" class="brand-logo">
+        <span>Flute Music</span>
+      </a>
+      <button class="nav-toggle" type="button" data-nav-toggle>Menu</button>
+      <nav class="site-nav" data-nav-menu>
+        <a href="index.html">Home</a>
+        <a href="premium.html">Premium</a>
+        <a href="profile.html">Profile</a>
+        <a href="manage-premiums.html">Manage Premiums</a>
+        <a href="#" data-logout class="btn btn-small btn-outline">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <div class="container">
+      <section class="sub-hero">
+        <p class="eyebrow">Dashboard</p>
+        <h1>Welcome back, <span id="session-name">User</span></h1>
+        <p>Track bot usage and jump to profile or premium management quickly.</p>
+      </section>
+
+      <section class="dash-grid">
+        <article class="dash-card">
+          <p class="pill">Identity</p>
+          <div class="avatar-block">
+            <img src="image.png" alt="User Avatar" data-session-avatar>
+            <div>
+              <p><strong id="session-name-card">User</strong></p>
+              <p class="text-muted">Discord ID: <span id="session-id">-</span></p>
+            </div>
+          </div>
+        </article>
+
+        <article class="dash-card">
+          <p class="pill">Plan</p>
+          <p class="dash-value" id="session-plan">FREE</p>
+          <p class="text-muted">Upgrade in Manage Premiums page.</p>
+        </article>
+
+        <article class="dash-card">
+          <p class="pill">Server Count</p>
+          <p class="dash-value" id="dash-servers">0</p>
+          <p class="text-muted">Configured servers in website code data.</p>
+        </article>
+
+        <article class="dash-card">
+          <p class="pill">Songs Played</p>
+          <p class="dash-value" id="dash-songs">0</p>
+        </article>
+
+        <article class="dash-card">
+          <p class="pill">Listening Time</p>
+          <p class="dash-value" id="dash-hours">0h</p>
+        </article>
+
+        <article class="dash-card">
+          <p class="pill">Live Servers</p>
+          <p class="dash-value" id="live-servers">0</p>
+          <p class="text-muted">Realtime from <code>status.json</code></p>
+        </article>
+      </section>
+
+      <section class="dash-actions">
+        <a href="profile.html" class="btn btn-outline">Open Profile</a>
+        <a href="manage-premiums.html" class="btn btn-primary">Manage Premiums</a>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p class="footer-note">Flute Dashboard</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

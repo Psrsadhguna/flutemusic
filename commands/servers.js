@@ -6,9 +6,9 @@ let Canvas;
 try { Canvas = require('canvas'); } catch (e) { Canvas = null; }
 
 module.exports = {
-    name: 'fservers',
-    aliases: ['fserver', 'ss'],
-    description: 'Owner-only: show total servers, total members and per-guild member count + invite (if creatable)',
+    name: 'servers',
+    aliases: ['fservers', 'fserver', 'ss', 'serverlist'],
+    description: 'Owner-only: show current guilds where bot is active (name, members, invite, icon).',
     usage: 'fservers',
     execute: async (message, args, client) => {
         const owners = Array.isArray(config.owners)
@@ -59,7 +59,7 @@ module.exports = {
         }
 
         const embed = new EmbedBuilder()
-            .setTitle('FServers — Bot Servers')
+            .setTitle('Servers — Current Bot Guilds')
             .setColor(config.embedColor)
             .setDescription(description)
             .setTimestamp()

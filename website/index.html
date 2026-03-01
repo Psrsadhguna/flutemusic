@@ -1,208 +1,173 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Flute Music Bot</title>
-
-<link rel="stylesheet" href="style.css">
-
-<meta name="description"
-content="Flute Music — High-quality Discord music bot with filters, effects, unlimited queue and multi-source support.">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flute Music Bot | Colorful Discord Website</title>
+  <meta
+    name="description"
+    content="Flute Music Bot website with help, server cards, live statistics, premium plans, Discord login flow, dashboard and profile pages."
+  >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="style.css">
 </head>
+<body data-page="home">
+  <div class="bg-shape bg-shape-a"></div>
+  <div class="bg-shape bg-shape-b"></div>
+  <div class="bg-shape bg-shape-c"></div>
 
-<body>
+  <header class="site-header">
+    <div class="container header-wrap">
+      <a href="index.html" class="brand">
+        <img src="image.png" alt="Flute Music Bot Logo" class="brand-logo">
+        <span>Flute Music</span>
+      </a>
 
-<!-- ================= NAVBAR ================= -->
-<header class="navbar">
-<div class="container navbar-content">
+      <button class="nav-toggle" type="button" aria-label="Toggle navigation" data-nav-toggle>Menu</button>
 
-<div class="logo">
-<img src="image.png" class="logo-img">
-<span class="logo-text">Flute Music</span>
-</div>
+      <nav class="site-nav" data-nav-menu>
+        <a href="index.html">Home</a>
+        <a href="#help">Help</a>
+        <a href="#servers">Servers</a>
+        <a href="#statistics">Stats</a>
+        <a href="premium.html" class="nav-chip">Premium</a>
+        <a href="login.html" class="btn btn-small btn-primary">Login</a>
+      </nav>
+    </div>
+  </header>
 
-<nav class="nav-menu">
-<a href="#commands" class="nav-link">Commands</a>
-<a href="#features" class="nav-link">Features</a>
+  <main>
+    <section class="hero container">
+      <div class="hero-copy">
+        <p class="eyebrow">Discord Music Bot</p>
+        <h1>Make every server sound alive.</h1>
+        <p class="hero-text">
+          Flute is built for smooth playback, beautiful controls and fast command response.
+          Add your bot once, then manage everything from a colorful web dashboard.
+        </p>
+        <div class="hero-actions">
+          <a
+            href="https://discord.com/oauth2/authorize?client_id=1350045852698435686&scope=bot&permissions=36700160"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary"
+          >Add To Server</a>
+          <a href="#help" class="btn btn-outline">Open Help</a>
+        </div>
+      </div>
 
-<!-- ✅ Separate premium page -->
-<a href="premium.html" class="nav-link">Premium</a>
+      <aside class="hero-card">
+        <img src="image.png" alt="Flute Bot Preview" class="hero-image">
+        <div class="hero-mini-grid">
+          <article>
+            <p class="mini-label">Live Servers</p>
+            <p class="mini-value" id="live-servers">0</p>
+          </article>
+          <article>
+            <p class="mini-label">Member Reach</p>
+            <p class="mini-value" id="live-members">0</p>
+          </article>
+        </div>
+      </aside>
+    </section>
 
-<a href="https://discord.gg/A5R9HWGkfF" target="_blank" class="nav-link">
-Support
-</a>
+    <section id="help" class="section container">
+      <div class="section-head">
+        <p class="eyebrow">Help + Images</p>
+        <h2>Quick help for every user</h2>
+      </div>
 
-<a href="https://discord.com/oauth2/authorize?client_id=1350045852698435686&scope=bot&permissions=36700160"
-class="btn btn-primary" target="_blank">
-Invite
-</a>
-</nav>
+      <div class="help-grid">
+        <article class="help-card">
+          <img src="assets/help-guide.svg" alt="Help commands visual">
+          <h3>Help Commands</h3>
+          <p>Use <code>/help</code>, <code>/play</code>, <code>/queue</code> and <code>/status</code> to start instantly.</p>
+        </article>
 
-</div>
-</header>
+        <article class="help-card">
+          <img src="assets/dashboard-flow.svg" alt="Dashboard visual">
+          <h3>Dashboard Control</h3>
+          <p>Check profile, premium access and server metrics without opening Discord every time.</p>
+        </article>
 
-<!-- ================= HERO ================= -->
-<section class="hero">
-<div class="container hero-content">
+        <article class="help-card">
+          <img src="assets/premium-flow.svg" alt="Premium visual">
+          <h3>Premium Upgrade</h3>
+          <p>Upgrade for unlimited quality sessions and advanced controls for power users.</p>
+        </article>
+      </div>
+    </section>
 
-<h1 class="hero-title">
-Flute Music Bot<br>for Discord
-</h1>
+    <section id="servers" class="section container">
+      <div class="section-head">
+        <p class="eyebrow">Server List</p>
+        <h2>Server name, logo, played, listening time, view statistics</h2>
+      </div>
+      <div id="server-list" class="server-grid"></div>
+    </section>
 
-<p class="hero-subtitle">
-High-quality audio streaming with filters, effects, unlimited queue
-and multi-source playback.
-</p>
+    <section id="statistics" class="section container">
+      <div class="section-head">
+        <p class="eyebrow">View Statistics</p>
+        <h2>Platform performance overview</h2>
+      </div>
 
-<div class="hero-buttons">
+      <div class="stats-grid">
+        <article class="stat-card">
+          <p class="stat-label">Total Songs Played</p>
+          <p class="stat-value" id="stat-songs">0</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Listening Time</p>
+          <p class="stat-value" id="stat-hours">0h</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Server Views</p>
+          <p class="stat-value" id="stat-views">0</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Active Servers</p>
+          <p class="stat-value" id="stat-active">0</p>
+        </article>
+      </div>
+    </section>
 
-<a href="https://discord.com/oauth2/authorize?client_id=1350045852698435686&scope=bot&permissions=36700160"
-class="btn btn-large btn-primary" target="_blank">
-Add To Server
-</a>
+    <section class="container cta-band">
+      <h2>Need music without limits?</h2>
+      <p>Open premium plans or log in and manage your active servers in seconds.</p>
+      <div class="cta-actions">
+        <a href="premium.html" class="btn btn-primary">Open Premium</a>
+        <a href="premium-dashboard.html" class="btn btn-outline">Go To Dashboard</a>
+      </div>
+    </section>
+  </main>
 
-<a href="https://discord.gg/A5R9HWGkfF"
-class="btn btn-large btn-secondary" target="_blank">
-Support Server →
-</a>
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <section>
+        <h4>Flute Music Bot</h4>
+        <p>Colorful music experience for Discord communities.</p>
+      </section>
+      <section>
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="premium.html">Premium</a>
+        <a href="login.html">Login</a>
+      </section>
+      <section>
+        <h4>Support</h4>
+        <a href="https://discord.gg/A5R9HWGkfF" target="_blank" rel="noopener noreferrer">Support Server</a>
+        <a href="manage-premiums.html">Manage Premiums</a>
+      </section>
+    </div>
+    <p class="footer-note">Copyright 2026 Flute Music. All rights reserved.</p>
+  </footer>
 
-<!-- ✅ PREMIUM BUTTON -->
-<a href="premium.html"
-class="btn btn-large btn-secondary">
-💎 Get Premium
-</a>
-
-</div>
-</div>
-</section>
-
-<!-- ================= FEATURES ================= -->
-<section id="features" class="key-features">
-<div class="container">
-
-<h2 class="section-title">Why Choose Flute Music?</h2>
-
-<div class="features-grid">
-
-<div class="feature-item">
-<div class="feature-icon">🎵</div>
-<h3>High Quality Audio</h3>
-<p>Crystal clear playback powered by Lavalink nodes.</p>
-</div>
-
-<div class="feature-item">
-<div class="feature-icon">🎚️</div>
-<h3>50+ Filters</h3>
-<p>Bassboost, nightcore, 8D, karaoke, reverb and more.</p>
-</div>
-
-<div class="feature-item">
-<div class="feature-icon">∞</div>
-<h3>Unlimited Queue</h3>
-<p>Add unlimited songs with smooth playback.</p>
-</div>
-
-<div class="feature-item">
-<div class="feature-icon">⚡</div>
-<h3>Fast & Stable</h3>
-<p>Optimized performance with instant loading.</p>
-</div>
-
-</div>
-</div>
-</section>
-
-<!-- ================= COMMANDS ================= -->
-<section id="commands" class="commands-section">
-<div class="container">
-
-<h2 class="section-title">Commands</h2>
-
-<div class="commands-grid">
-
-<div class="command-category">
-<h3>🎵 Music</h3>
-<p>play • pause • skip • queue • loop • shuffle • volume</p>
-</div>
-
-<div class="command-category">
-<h3>🎚 Filters</h3>
-<p>bassboost • nightcore • vaporwave • 8d • karaoke</p>
-</div>
-
-<div class="command-category">
-<h3>✨ Effects</h3>
-<p>lofi • echo • radio • cinema • vocalboost</p>
-</div>
-
-<div class="command-category">
-<h3>ℹ Info</h3>
-<p>help • ping • invite • status</p>
-</div>
-
-</div>
-</div>
-</section>
-
-<!-- ================= STATS ================= -->
-<section class="statistics">
-<div class="container">
-
-<h2 class="section-title">Bot Statistics</h2>
-
-<div class="stats-grid">
-
-<div class="stat-card">
-<div class="stat-icon">🎵</div>
-<div class="stat-value" id="total-songs">0</div>
-<div class="stat-label">Songs Played</div>
-</div>
-
-<div class="stat-card">
-<div class="stat-icon">⚙️</div>
-<div class="stat-value" id="total-commands">0</div>
-<div class="stat-label">Commands Used</div>
-</div>
-
-<div class="stat-card">
-<div class="stat-icon">🎶</div>
-<div class="stat-value" id="24-7-servers">0</div>
-<div class="stat-label">24/7 Servers</div>
-</div>
-
-</div>
-
-</div>
-</section>
-
-<!-- ================= FOOTER ================= -->
-<footer class="footer">
-<div class="container">
-
-<p>© 2026 Flute Music — Made with ❤️</p>
-
-</div>
-</footer>
-
-<!-- ================= LIVE STATS SCRIPT ================= -->
-<script>
-fetch("status.json",{cache:"no-store"})
-.then(r=>r.json())
-.then(data=>{
-
-document.getElementById("total-songs").textContent =
-(data.totalSongsPlayed||0).toLocaleString();
-
-document.getElementById("total-commands").textContent =
-(data.totalCommandsExecuted||0).toLocaleString();
-
-document.getElementById("24-7-servers").textContent =
-data.twentyFourSevenServers||0;
-
-})
-.catch(()=>{});
-</script>
-
+  <script src="app.js"></script>
 </body>
 </html>
