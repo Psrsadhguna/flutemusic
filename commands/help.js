@@ -12,7 +12,7 @@ const CATEGORY_MAP = {
 
 const QUICK_START = `
 🎵 **Quick Start**
-Join a voice channel → type \`/play <song name>\`
+Join a voice channel → type \`fplay <song name>\`
 
 Example:
 \`fplay Shape of You\`
