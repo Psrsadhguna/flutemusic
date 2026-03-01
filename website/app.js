@@ -9,12 +9,14 @@ const GIF_LOOP_TIMERS = new WeakMap();
 const DEFAULT_SERVER_LOGO = LOGO_ASSET;
 const SERVER_PAGE_SIZE_DESKTOP = 6;
 const SERVER_PAGE_SIZE_MOBILE = 4;
+const HOME_STATS_REFRESH_MS = 15000;
 const serverPaginationState = {
   allServers: [],
   currentPage: 1
 };
 let serverResizeTimerId = null;
 let hasBoundServerResizeHandler = false;
+let homeStatsIntervalId = null;
 
 function formatNumber(value) {
   return Number(value || 0).toLocaleString("en-IN");
@@ -499,6 +501,28 @@ async function loadFallbackLiveCounts() {
   }
 }
 
+function stopHomeStatsAutoRefresh() {
+  if (homeStatsIntervalId) {
+    clearInterval(homeStatsIntervalId);
+    homeStatsIntervalId = null;
+  }
+}
+
+function startHomeStatsAutoRefresh() {
+  stopHomeStatsAutoRefresh();
+  homeStatsIntervalId = window.setInterval(async () => {
+    try {
+      const livePayload = await fetchLiveServerStats({ trackViews: false });
+      renderServerCards(livePayload.servers);
+      applyPlatformStats(livePayload.platform);
+    } catch {
+      // Keep current UI if a refresh request fails.
+    }
+  }, HOME_STATS_REFRESH_MS);
+
+  window.addEventListener("beforeunload", stopHomeStatsAutoRefresh, { once: true });
+}
+
 async function initHomePage() {
   try {
     const livePayload = await fetchLiveServerStats({ trackViews: true });
@@ -522,6 +546,8 @@ async function initHomePage() {
       await loadFallbackLiveCounts();
     }
   }
+
+  startHomeStatsAutoRefresh();
 }
 
 function initLoginPage() {

@@ -1927,6 +1927,8 @@ client.riffy.on("trackStart", async (player, track) => {
         recordUserHistory(track);
         saveStats().catch(() => {});
         saveUserData().catch(() => {});
+        writeWebsiteStatusSnapshot().catch(() => {});
+        writeLiveServerStatsSnapshot().catch(() => {});
         player.autoCaptionText = "";
         player.autoCaptionLanguage = "";
 
@@ -2132,6 +2134,10 @@ client.riffy.on("queueEnd", async (player) => {
         } else {
             console.log("24/7 mode enabled - bot staying in voice channel");
         }
+
+        saveStats().catch(() => {});
+        writeWebsiteStatusSnapshot().catch(() => {});
+        writeLiveServerStatsSnapshot().catch(() => {});
     } catch {}
 });
 
@@ -2142,10 +2148,13 @@ client.riffy.on("playerDestroy", async (player) => {
         try { messages.clearQueuedTrackNoticesForGuild(player.guildId); } catch (e) {}
 
         const vc = client.channels.cache.get(player.voiceChannel);
-        if (!vc) return;
-
-        await setVoiceStatus(vc, null);
-        console.log("Voice status cleared (player destroyed)");
+        if (vc) {
+            await setVoiceStatus(vc, null);
+            console.log("Voice status cleared (player destroyed)");
+        }
+        saveStats().catch(() => {});
+        writeWebsiteStatusSnapshot().catch(() => {});
+        writeLiveServerStatsSnapshot().catch(() => {});
     } catch {}
 });
 // When queue finishes
@@ -2244,16 +2253,36 @@ function getGuildListenedMs(guildId) {
     return Math.round(averageTrackMs * playedTracks);
 }
 
-function getGuildPlaybackStatus(guildId, playedTracks) {
+function getGuildPlayer(guildId) {
     const playerStore = client?.riffy?.players;
-    const hasLivePlayer = Boolean(
-        playerStore && (
-            (typeof playerStore.has === "function" && playerStore.has(guildId)) ||
-            (typeof playerStore.get === "function" && playerStore.get(guildId))
-        )
-    );
+    if (!playerStore) return null;
+    if (typeof playerStore.get === "function") {
+        return playerStore.get(guildId) || null;
+    }
+    if (typeof playerStore.has === "function" && playerStore.has(guildId)) {
+        return playerStore[guildId] || null;
+    }
+    return null;
+}
 
-    if (hasLivePlayer) return "Playing Now";
+function isPlayerActivelyPlaying(player) {
+    if (!player) return false;
+
+    const queueCurrent = player?.queue?.current || null;
+    const currentTrack = player.current || queueCurrent;
+    if (!currentTrack) return false;
+
+    if (player.playing === true && player.paused !== true) {
+        return true;
+    }
+
+    const positionMs = Number(player.position);
+    return Number.isFinite(positionMs) && positionMs > 0 && player.paused !== true;
+}
+
+function getGuildPlaybackStatus(guildId, playedTracks) {
+    const player = getGuildPlayer(guildId);
+    if (isPlayerActivelyPlaying(player)) return "Playing Now";
     if (playedTracks > 0) return "Active";
     return "Idle";
 }
