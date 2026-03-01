@@ -10,7 +10,13 @@ const CATEGORY_MAP = {
     effect: ['cinema', 'cleareffects', 'echo', 'earrape', 'lofi', 'party', 'radio', 'telephone', 'underwater', 'vocalboost']
 };
 
+const QUICK_START = `
+🎵 **Quick Start**
+Join a voice channel → type \`/play <song name>\`
 
+Example:
+\`fplay Shape of You\`
+`;
 
 const COMMAND_HELP_NOTES = {
     autoplay: [
