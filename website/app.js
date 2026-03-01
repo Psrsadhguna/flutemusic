@@ -2,7 +2,7 @@ const SESSION_KEY = "flute_dashboard_session_v1";
 const LIVE_STATS_ENDPOINT = "/api/live-server-stats";
 const LIVE_STATS_CACHE_KEY = "flute_live_server_stats_v1";
 const LOGO_ASSET = "image.png?v=20260301";
-const GIF_LOGO_ASSET = "logo.gif?v=20260301";
+const GIF_LOGO_ASSET = "logo.gif?v=20260301b";
 const DEFAULT_SERVER_LOGO = LOGO_ASSET;
 
 function formatNumber(value) {
@@ -83,11 +83,57 @@ function attachLogoutHandlers() {
 
 function initGifLogoTargets() {
   document.querySelectorAll("[data-gif-logo]").forEach((imageNode) => {
+    imageNode.classList.add("gif-live");
+    imageNode.decoding = "async";
+    imageNode.loading = "eager";
     imageNode.addEventListener("error", () => {
       imageNode.src = LOGO_ASSET;
     }, { once: true });
     imageNode.src = GIF_LOGO_ASSET;
   });
+}
+
+function getInitialsFromName(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  let initials = (parts[0]?.[0] || "");
+  if (parts.length > 1) {
+    initials += (parts[1]?.[0] || "");
+  }
+  const clean = initials.replace(/[^a-z0-9]/gi, "").toUpperCase();
+  return clean || "SV";
+}
+
+function buildServerFallbackLogo(name) {
+  const safeName = String(name || "Server");
+  const initials = getInitialsFromName(safeName);
+  let hash = 0;
+  for (let i = 0; i < safeName.length; i += 1) {
+    hash = ((hash << 5) - hash) + safeName.charCodeAt(i);
+    hash |= 0;
+  }
+  const color = `#${(Math.abs(hash) % 0xffffff).toString(16).padStart(6, "0")}`;
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="44" fill="${color}" />
+  <text x="50%" y="57%" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="88" font-weight="700">${initials}</text>
+</svg>`.trim();
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function sanitizeServers(servers) {
+  const unique = new Map();
+  for (const server of Array.isArray(servers) ? servers : []) {
+    const guildId = String(server?.guildId || "").trim();
+    const name = String(server?.name || "").trim();
+    if (!name || /^unknown server$/i.test(name)) {
+      continue;
+    }
+    const uniqueKey = guildId || name.toLowerCase();
+    if (!unique.has(uniqueKey)) {
+      unique.set(uniqueKey, server);
+    }
+  }
+  return Array.from(unique.values());
 }
 
 function renderUnavailableServerCard(message) {
@@ -115,19 +161,21 @@ function renderServerCards(servers) {
     return;
   }
 
-  if (!Array.isArray(servers) || servers.length === 0) {
+  const safeServers = sanitizeServers(servers);
+  if (safeServers.length === 0) {
     renderUnavailableServerCard("Start the bot process to fetch active guild names and logos.");
     return;
   }
 
-  wrapper.innerHTML = servers.map((server) => {
-    const logo = String(server?.logo || "").trim() || DEFAULT_SERVER_LOGO;
-    const name = String(server?.name || "Unknown Server");
+  wrapper.innerHTML = safeServers.map((server) => {
+    const name = String(server?.name || "Server");
+    const fallbackLogo = buildServerFallbackLogo(name);
+    const logo = String(server?.logo || "").trim() || fallbackLogo;
     const status = String(server?.status || "Active");
     return `
     <article class="server-card">
       <header class="server-top">
-        <img src="${logo}" data-fallback-logo="${DEFAULT_SERVER_LOGO}" alt="${name} logo" class="server-logo">
+        <img src="${logo}" data-fallback-logo="${fallbackLogo}" alt="${name} logo" class="server-logo">
         <div>
           <h3 class="server-name">${name}</h3>
           <p class="server-sub">${status}</p>
@@ -155,9 +203,10 @@ function renderServerCards(servers) {
   wrapper.querySelectorAll(".server-logo").forEach((imageNode) => {
     imageNode.addEventListener("error", () => {
       const fallbackLogo = imageNode.getAttribute("data-fallback-logo") || DEFAULT_SERVER_LOGO;
-      if (imageNode.src.endsWith(fallbackLogo)) {
+      if (imageNode.dataset.fallbackApplied === "1") {
         return;
       }
+      imageNode.dataset.fallbackApplied = "1";
       imageNode.src = fallbackLogo;
     }, { once: true });
   });

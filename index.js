@@ -83,21 +83,31 @@ function sanitizeGuildMeta(rawMap) {
             continue;
         }
 
-        const name = String(rawMeta.name || "").trim() || "Unknown Server";
+        const rawName = String(rawMeta.name || "").trim();
+        const name = /^unknown server$/i.test(rawName) ? "" : rawName;
         const logo = String(rawMeta.logo || "").trim();
         const memberCount = Number(rawMeta.memberCount);
         const played = Number(rawMeta.played);
         const listeningMs = Number(rawMeta.listeningMs);
         const views = Number(rawMeta.views);
         const lastSeenAt = String(rawMeta.lastSeenAt || "").trim();
+        const safeMemberCount = Number.isFinite(memberCount) && memberCount >= 0 ? memberCount : 0;
+        const safePlayed = Number.isFinite(played) && played >= 0 ? played : 0;
+        const safeListeningMs = Number.isFinite(listeningMs) && listeningMs >= 0 ? listeningMs : 0;
+        const safeViews = Number.isFinite(views) && views >= 0 ? views : 0;
+
+        // Drop empty/placeholder records so stale "Unknown Server" rows never appear on website.
+        if (!name && !logo && safeMemberCount === 0 && safePlayed === 0 && safeListeningMs === 0 && safeViews === 0) {
+            continue;
+        }
 
         sanitized[guildId] = {
             name,
             logo,
-            memberCount: Number.isFinite(memberCount) && memberCount >= 0 ? memberCount : 0,
-            played: Number.isFinite(played) && played >= 0 ? played : 0,
-            listeningMs: Number.isFinite(listeningMs) && listeningMs >= 0 ? listeningMs : 0,
-            views: Number.isFinite(views) && views >= 0 ? views : 0,
+            memberCount: safeMemberCount,
+            played: safePlayed,
+            listeningMs: safeListeningMs,
+            views: safeViews,
             lastSeenAt
         };
     }
@@ -2246,17 +2256,28 @@ function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
     stats.websiteGuildViews = safeViews;
     stats.guildMeta = sanitizeGuildMeta(stats.guildMeta);
 
-    const trackedGuildIds = new Set([
-        ...Object.keys(stats.guildMeta),
-        ...Object.keys(stats.guildActivity || {}),
-        ...Object.keys(stats.guildPlaytime || {}),
-        ...Object.keys(stats.websiteGuildViews || {}),
-        ...guildMap.keys()
-    ]);
+    const trackedGuildIds = guildMap.size > 0
+        ? new Set(guildMap.keys())
+        : new Set([
+            ...Object.keys(stats.guildMeta),
+            ...Object.keys(stats.guildActivity || {}),
+            ...Object.keys(stats.guildPlaytime || {}),
+            ...Object.keys(stats.websiteGuildViews || {})
+        ]);
 
     const servers = Array.from(trackedGuildIds).map((guildId) => {
         const guild = guildMap.get(guildId) || null;
         const existingMeta = stats.guildMeta[guildId] || {};
+        const existingNameRaw = String(existingMeta.name || "").trim();
+        const existingName = /^unknown server$/i.test(existingNameRaw) ? "" : existingNameRaw;
+        const name = guild?.name || existingName;
+
+        if (!name) {
+            delete stats.guildMeta[guildId];
+            delete stats.websiteGuildViews[guildId];
+            return null;
+        }
+
         const basePlayed = toNonNegativeNumber(stats.guildActivity?.[guildId]);
         const baseListenedMs = getGuildListenedMs(guildId);
         const previousViews = toNonNegativeNumber(safeViews[guildId]);
@@ -2270,10 +2291,9 @@ function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
             stats.websiteGuildViews[guildId] = updatedViews;
         }
 
-        const name = guild?.name || existingMeta.name || "Unknown Server";
         const logo = guild
             ? getGuildLogoForWebsite(guild, 256)
-            : (existingMeta.logo || getDefaultServerLogo());
+            : (String(existingMeta.logo || "").trim() || buildGuildPlaceholderLogo({ id: guildId, name }, 256));
         const memberCount = guild
             ? toNonNegativeNumber(guild.memberCount)
             : toNonNegativeNumber(existingMeta.memberCount);
@@ -2302,7 +2322,7 @@ function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
             status: guild ? getGuildPlaybackStatus(guildId, played) : (played > 0 ? "Last Seen" : "Idle"),
             memberCount
         };
-    }).sort((left, right) => {
+    }).filter(Boolean).sort((left, right) => {
         return right.played - left.played || right.memberCount - left.memberCount;
     });
 
@@ -2320,8 +2340,8 @@ function buildLiveServerStatsPayload({ incrementViews = true } = {}) {
             totalListeningHours: Number((toNonNegativeNumber(stats.totalPlaytime) / 3600000).toFixed(2)),
             totalCommandsExecuted: toNonNegativeNumber(stats.totalCommandsExecuted),
             totalServerViews,
-            activeServers: servers.length,
-            liveServers: guilds.length,
+            activeServers: guilds.length > 0 ? guilds.length : servers.length,
+            liveServers: guilds.length > 0 ? guilds.length : servers.length,
             liveMembers
         }
     };

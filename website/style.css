@@ -285,6 +285,23 @@ code {
   background: linear-gradient(120deg, #e7eefe, #f8f9ff);
 }
 
+.hero-image.gif-live {
+  animation: hero-gif-float 4.5s ease-in-out infinite, hero-gif-glow 7s linear infinite;
+  will-change: transform, filter;
+}
+
+@keyframes hero-gif-float {
+  0% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-6px) scale(1.01); }
+  100% { transform: translateY(0px) scale(1); }
+}
+
+@keyframes hero-gif-glow {
+  0% { filter: saturate(1) brightness(1); }
+  50% { filter: saturate(1.08) brightness(1.04); }
+  100% { filter: saturate(1) brightness(1); }
+}
+
 .hero-mini-grid {
   margin-top: 1rem;
   display: grid;
@@ -817,6 +834,10 @@ select:focus {
     padding-top: 3.2rem;
   }
 
+  .hero-image.gif-live {
+    animation-duration: 3.8s, 6.2s;
+  }
+
   .hero-actions .btn {
     width: 100%;
   }
@@ -852,5 +873,11 @@ select:focus {
   .site-nav a {
     padding: 0.35rem 0.5rem;
     font-size: 0.9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-image.gif-live {
+    animation: none;
   }
 }

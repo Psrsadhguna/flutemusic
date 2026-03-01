@@ -67,11 +67,11 @@ const PRESETS = {
     bass: {
         name: "Bass Boost",
         bands: [
-            { band: 0, gain: 0.45 }, { band: 1, gain: 0.35 }, { band: 2, gain: 0.25 },
-            { band: 3, gain: 0.18 }, { band: 4, gain: 0.08 }, { band: 5, gain: 0.00 },
-            { band: 6, gain: -0.03 }, { band: 7, gain: -0.05 }, { band: 8, gain: -0.05 },
-            { band: 9, gain: -0.04 }, { band: 10, gain: -0.02 }, { band: 11, gain: 0.00 },
-            { band: 12, gain: 0.00 }, { band: 13, gain: 0.00 }, { band: 14, gain: 0.00 }
+            { band: 0, gain: 0.22 }, { band: 1, gain: 0.18 }, { band: 2, gain: 0.14 },
+            { band: 3, gain: 0.10 }, { band: 4, gain: 0.05 }, { band: 5, gain: 0.02 },
+            { band: 6, gain: 0.00 }, { band: 7, gain: -0.02 }, { band: 8, gain: -0.03 },
+            { band: 9, gain: -0.03 }, { band: 10, gain: -0.02 }, { band: 11, gain: 0.00 },
+            { band: 12, gain: 0.01 }, { band: 13, gain: 0.01 }, { band: 14, gain: 0.01 }
         ]
     },
     treble: {
@@ -94,7 +94,8 @@ module.exports = {
     name: "equalizer",
     aliases: ["eq"],
     description: "Apply equalizer presets (Premium Only)",
-    usage: "feq <preset|off>",
+    usage: "feq <preset> [on|off] | feq off",
+    cooldownMs: 700,
     execute: async (message, args, client) => {
         if (!await requirePremium(message)) return;
 
@@ -113,7 +114,7 @@ module.exports = {
                 .addFields(
                     {
                         name: "Usage",
-                        value: "`feq <preset>` | `feq off` | `feq <preset> off`",
+                        value: "`feq <preset>` | `feq <preset> on` | `feq <preset> off` | `feq off`",
                         inline: false
                     },
                     {
@@ -126,9 +127,17 @@ module.exports = {
             return message.channel.send({ embeds: [embed] });
         }
 
+        if (toggle && toggle !== "on" && toggle !== "off") {
+            return messages.error(message.channel, "Use `on` or `off` only. Example: `feq bass on`.");
+        }
+
         if (preset === "off" || toggle === "off") {
             try {
                 player.filters ??= {};
+                if (!player.filters.equalizer?.length) {
+                    player.filters._equalizerPreset = null;
+                    return messages.success(message.channel, "Equalizer already disabled.");
+                }
                 player.filters.equalizer = [];
                 player.filters._equalizerPreset = null;
                 await applyFilters(player, message.guild.id);
@@ -149,6 +158,10 @@ module.exports = {
 
         try {
             player.filters ??= {};
+            const currentPreset = String(player.filters._equalizerPreset || "").trim().toLowerCase();
+            if (currentPreset === preset && Array.isArray(player.filters.equalizer) && player.filters.equalizer.length) {
+                return messages.success(message.channel, `${selectedPreset.name} is already enabled.`);
+            }
             player.filters.equalizer = selectedPreset.bands;
             player.filters._equalizerPreset = preset;
             await applyFilters(player, message.guild.id);
