@@ -1098,6 +1098,54 @@ const advancedPremiumCommands = new Set([
     "vocalboost"
 ]);
 
+function resolveWritableDataDir() {
+    const configuredCandidates = [
+        process.env.DATA_DIR,
+        process.env.RAILWAY_VOLUME_MOUNT_PATH,
+        process.env.RAILWAY_VOLUME_PATH,
+        process.env.PERSISTENT_DATA_DIR
+    ];
+
+    // Railway volumes are commonly mounted at /data even without an explicit env var.
+    if (String(process.env.RAILWAY_ENVIRONMENT || "").trim()) {
+        configuredCandidates.push("/data");
+    }
+
+    const seen = new Set();
+    for (const rawCandidate of configuredCandidates) {
+        const trimmedCandidate = String(rawCandidate || "").trim();
+        if (!trimmedCandidate) {
+            continue;
+        }
+
+        const resolvedCandidate = path.isAbsolute(trimmedCandidate)
+            ? path.normalize(trimmedCandidate)
+            : path.join(__dirname, trimmedCandidate);
+
+        if (seen.has(resolvedCandidate)) {
+            continue;
+        }
+        seen.add(resolvedCandidate);
+
+        try {
+            fs.mkdirSync(resolvedCandidate, { recursive: true });
+            fs.accessSync(resolvedCandidate, fs.constants.W_OK);
+            return resolvedCandidate;
+        } catch {
+            // Try next candidate.
+        }
+    }
+
+    return "";
+}
+
+const writableDataDir = resolveWritableDataDir();
+if (writableDataDir) {
+    console.log(`Persistent data directory: ${writableDataDir}`);
+} else if (String(process.env.RAILWAY_ENVIRONMENT || "").trim()) {
+    console.warn("No writable Railway data directory found. stats.json may reset after restart. Set DATA_DIR or RAILWAY_VOLUME_MOUNT_PATH to your mounted volume path.");
+}
+
 function resolveDataFilePath(fileName, explicitEnvKey) {
     const explicitPath = String(process.env[explicitEnvKey] || "").trim();
     if (explicitPath) {
@@ -1106,14 +1154,8 @@ function resolveDataFilePath(fileName, explicitEnvKey) {
             : path.join(__dirname, explicitPath);
     }
 
-    const dataDir = String(
-        process.env.DATA_DIR ||
-        process.env.RAILWAY_VOLUME_MOUNT_PATH ||
-        ""
-    ).trim();
-
-    if (dataDir) {
-        return path.join(dataDir, fileName);
+    if (writableDataDir) {
+        return path.join(writableDataDir, fileName);
     }
 
     return path.join(__dirname, fileName);
@@ -1972,10 +2014,12 @@ client.riffy.on("trackStart", async (player, track) => {
         pushGuildSongHistory(player.guildId, track);
         recordTrackAnalytics(player.guildId, track);
         recordUserHistory(track);
-        saveStats().catch(() => {});
-        saveUserData().catch(() => {});
-        writeWebsiteStatusSnapshot().catch(() => {});
-        writeLiveServerStatsSnapshot().catch(() => {});
+        await Promise.allSettled([
+            saveStats(),
+            saveUserData(),
+            writeWebsiteStatusSnapshot(),
+            writeLiveServerStatsSnapshot()
+        ]);
         player.autoCaptionText = "";
         player.autoCaptionLanguage = "";
 
