@@ -3304,20 +3304,20 @@ process.on("SIGTERM", shutdown);
 if (!String(config.botToken || "").trim()) {
     console.error("BOT_TOKEN is missing. Set BOT_TOKEN in environment variables.");
 } else {
-    console.log("Starting Discord login...");
     discordLoginProbeTimer = setTimeout(() => {
         if (client.isReady()) {
             return;
         }
         console.warn(`Discord login still pending after 30s (ws status: ${client.ws?.status ?? "unknown"}).`);
     }, 30000);
-    client.login(config.botToken).catch((error) => {
-        if (discordLoginProbeTimer) {
-            clearTimeout(discordLoginProbeTimer);
-            discordLoginProbeTimer = null;
-        }
-        console.error("Discord login failed:", error?.message || error);
-    });
+    client.login(config.botToken)
+        .catch((error) => {
+            if (discordLoginProbeTimer) {
+                clearTimeout(discordLoginProbeTimer);
+                discordLoginProbeTimer = null;
+            }
+            console.error("Discord login failed:", error?.message || error);
+        });
 }
 /////client.once('ready', async () => {
   ///console.log(`Logged in as ${client.user.tag}`);

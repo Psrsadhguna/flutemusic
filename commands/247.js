@@ -1,11 +1,27 @@
 const messages = require('../utils/messages.js');
 const { requireReferralAccess } = require('../utils/referralAccess');
+const config = require("../config.js");
 
 module.exports = {
     name: '247',
     description: 'Toggle 24/7 mode - bot stays in voice channel (Referral/Premium)',
     usage: 'f247',
     execute: async (message, args, client) => {
+        const supportServerId = String(config.supportServerId || "").trim();
+        if (!supportServerId) {
+            return messages.error(
+                message.channel,
+                "Support server ID not configured. Set SUPPORT_SERVER_ID in environment variables."
+            );
+        }
+
+        if (String(message.guild?.id || "") !== supportServerId) {
+            return messages.error(
+                message.channel,
+                "24/7 mode support server lo matrame available."
+            );
+        }
+
         if (!await requireReferralAccess(message, { feature: "24/7 Mode" })) return;
         
         const player = client.riffy.players.get(message.guild.id);
