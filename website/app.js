@@ -460,6 +460,10 @@ function renderServerCards(servers) {
           <strong>${formatNumber(server.listeningHours)}h</strong>
         </div>
         <div class="metric-cell">
+          <p>Members</p>
+          <strong>${formatNumber(server.memberCount)}</strong>
+        </div>
+        <div class="metric-cell">
           <p>Views</p>
           <strong>${formatNumber(server.views)}</strong>
         </div>
