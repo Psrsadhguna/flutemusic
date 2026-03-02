@@ -10,6 +10,14 @@ const CATEGORY_MAP = {
     effect: ['cinema', 'cleareffects', 'echo', 'earrape', 'lofi', 'party', 'radio', 'telephone', 'underwater', 'vocalboost']
 };
 
+const QUICK_START = `
+🎵 **Quick Start**
+Join a voice channel → type \`fplay <song name>\`
+
+Example:
+\`fplay Shape of You\`
+`;
+
 const COMMAND_HELP_NOTES = {
     autoplay: [
         'Modes:',
@@ -112,6 +120,7 @@ module.exports = {
 
         const helpData = {
             prefix,
+            quickStart: QUICK_START,
             normalCommands,
             musicCommands,
             playlistCommands,
